@@ -68,8 +68,6 @@ class Node(ScatterLayout):
 	c_padding = 5
 	c_spacing = 2
 	ci_height = 20
-	# 0 = BEGIN, 1 = END, 2 = UNBIND
-	# m_list = [0, 1]
 	m_list = []
 	b_node = None
 	in_list = {}
@@ -207,7 +205,6 @@ class Node(ScatterLayout):
 					   nav=obj._type)
 			return True
 
-	#TODO: CREATE A SORTING ALGORITHM & A CONCATING ALGORITHM
 	@classmethod
 	def _bind(cls, _self=None, state=1, nav=None):
 		if state == 1:
@@ -232,9 +229,6 @@ class Node(ScatterLayout):
 						temp_list.insert(nav, _self.name)
 
 						# Cancel the previous connection
-						# print(cls.in_list[cls.b_node.alg()][cls.b_node.c_nav])
-						# print(cls.in_list[_self.alg()][nav])
-
 						if cls.in_list[cls.b_node.name][nav] != None:
 							for layer in cls.m_list:
 								if cls.in_list[cls.b_node.name][nav] in layer and cls.b_node.name in layer:
@@ -251,9 +245,6 @@ class Node(ScatterLayout):
 						cls.in_list[_self.name][cls.b_node.c_nav] = cls.b_node.name	
 						cls.m_list.append(temp_list)
 					cls.b_node = None
-
-					# print(cls.m_list) 
-					# print(cls.in_list)
 
 	@classmethod
 	def add_info(cls, _alg):
