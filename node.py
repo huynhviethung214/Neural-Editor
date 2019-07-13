@@ -4,8 +4,6 @@ from kivy.base import runTouchApp
 kivy.require('1.10.1')
 
 from kivy.uix.scatterlayout import ScatterLayout
-from kivy.uix.relativelayout import RelativeLayout
-from kivy.uix.scatter import Scatter
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.button import Button
@@ -13,8 +11,33 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.graphics import Line, Rectangle, Bezier, RoundedRectangle
 from kivy.uix.label import Label
-from kivy.clock import Clock
 from functools import partial
+from kivy.lang import Builder
+
+
+class Sorter(object):
+	def __init__(self):
+		self.model = []
+
+	def _setup(self, _model):
+		_appeared = 0
+		for layer in _model:
+			for node in layer:
+				for layer in _model:
+					if node in layer:
+						_appeared += 1
+				if _appeared == 1:
+					if node == layer[0]:
+						self.model.insert(0, node)
+					elif node == layer[1]:
+						self.model.insert(1, node)
+
+	def sort(self, _model):
+		c_node = self.model[0]
+		for layer in _model:
+			if c_node in layer:
+				self.model.insert(1, layer[1])
+				c_node = layer[1]
 
 
 class NodeLink(Widget):
@@ -153,8 +176,7 @@ class Node(ScatterLayout):
 		self._input_node.bind(on_touch_up=self._node_up)
 		self._input_node.bind(on_touch_down=self._node_down)
 
-		_parent_cord = self.to_parent(*self._input_node.pos)
-		self.node_pos.append(_parent_cord)
+		self.node_pos.append(self._input_node.pos)
 		self.add_widget(self._input_node)
 
 	def add_output_node(self):
@@ -164,19 +186,15 @@ class Node(ScatterLayout):
 		self._output_node.bind(on_touch_up=self._node_up)
 		self._output_node.bind(on_touch_down=self._node_down)
 
-		_parent_cord = self.to_parent(*self._output_node.pos)
-		self.node_pos.append(_parent_cord)
+		self.node_pos.append(self._output_node.pos)
 		self.add_widget(self._output_node)
 
 	def draw_border(self):
 		with self.canvas:
-			Line(points=(self.layout.x, self.layout.y,
-						 self.layout.x, self.layout.y + self.layout.height,
-						 self.layout.x+ self.layout.width, self.layout.y + self.layout.height,
-						 self.layout.x+ self.layout.width, self.layout.y,
-						 self.layout.x, self.layout.y),
-				 width=2)
-
+			Line(rounded_rectangle=(self.layout.x, self.layout.y,
+									self.layout.width, self.layout.height,
+									6))
+	
 	def alg(self):
 		return 'Alg {0}'.format(self.name)
 
@@ -228,7 +246,6 @@ class Node(ScatterLayout):
 						temp_list.append(cls.b_node.name)
 						temp_list.insert(nav, _self.name)
 
-						# Cancel the previous connection
 						if cls.in_list[cls.b_node.name][nav] != None:
 							for layer in cls.m_list:
 								if cls.in_list[cls.b_node.name][nav] in layer and cls.b_node.name in layer:
