@@ -91,6 +91,7 @@ class Node(ScatterLayout):
 	c_padding = 5
 	c_spacing = 2
 	ci_height = 20
+	# 0 = BEGIN, 1 = END, 2 = UNBIND
 	m_list = []
 	b_node = None
 	in_list = {}
@@ -171,22 +172,23 @@ class Node(ScatterLayout):
 		self.add_input_node()
 
 	def add_input_node(self):
-		self._input_node = NodeLink(spos=(-6, (self.height - self.c_height) / 2),
+		self._input_node = NodeLink(spos=(-6,
+									(self.height - self.c_height) / 2),
 									_type=1)
-		self._input_node.bind(on_touch_up=self._node_up)
-		self._input_node.bind(on_touch_down=self._node_down)
+		# self._input_node.bind(on_touch_up=self._node_up)
+		# self._input_node.bind(on_touch_down=self._node_down)
 
-		self.node_pos.append(self._input_node.pos)
+		# self.node_pos.append(self._input_node.pos)
 		self.add_widget(self._input_node)
 
 	def add_output_node(self):
 		self._output_node = NodeLink(spos=(self.width-6,
 							 		 (self.height - self.c_height) / 2),
 				 					 _type=0)
-		self._output_node.bind(on_touch_up=self._node_up)
-		self._output_node.bind(on_touch_down=self._node_down)
+		# self._output_node.bind(on_touch_up=self._node_up)
+		# self._output_node.bind(on_touch_down=self._node_down)
 
-		self.node_pos.append(self._output_node.pos)
+		# self.node_pos.append(self._output_node.pos)
 		self.add_widget(self._output_node)
 
 	def draw_border(self):
@@ -210,18 +212,24 @@ class Node(ScatterLayout):
 		except Exception:
 			obj.text = ''
 
-	def _node_up(self, obj, touch):
-		if obj.collide_point(*touch.pos):
-			self._bind(_self=self,
-					   state=2,
-					   nav=obj._type)
-			return True
+	# def _node_up(self, obj, touch):
+	# 	if obj.collide_point(*touch.pos):
+	# 		self._bind(_self=self,
+	# 				   state=2,
+	# 				   nav=obj._type)
+	# 		return True
 
-	def _node_down(self, obj, touch):
-		if obj.collide_point(*touch.pos):
-			self._bind(_self=self,
-					   nav=obj._type)
+	# def _node_down(self, obj, touch):
+	# 	if obj.collide_point(*touch.pos):
+	# 		self._bind(_self=self,
+	# 				   nav=obj._type)
+	# 		return True
+
+	@classmethod
+	def _is_exist(cls, _list):
+		if _list in cls.m_list:
 			return True
+		return False
 
 	@classmethod
 	def _bind(cls, _self=None, state=1, nav=None):
@@ -231,20 +239,24 @@ class Node(ScatterLayout):
 
 		elif state == 2:
 			temp_list = []
-			
+			_existed = False
+
 			if _self is not None and cls.b_node is not None:
 				if _self.name != cls.b_node.name and nav != cls.b_node.c_nav:
 					if cls.in_list[cls.b_node.name][nav] == None and cls.in_list[_self.name][cls.b_node.c_nav] == None:
 						if cls.b_node.name != _self.name:
-							temp_list.append(cls.b_node.name)
-							temp_list.insert(nav, _self.name)
-							cls.m_list.append(temp_list)
+							temp_list.append(cls.b_node.alg())
+							temp_list.insert(nav, _self.alg())
+							_existed = _self._is_exist(temp_list)
+
+							if _existed == False:
+								cls.m_list.append(temp_list)
 
 							cls.in_list[cls.b_node.name][nav] = _self.name
 							cls.in_list[_self.name][cls.b_node.c_nav] = cls.b_node.name
 					else:
-						temp_list.append(cls.b_node.name)
-						temp_list.insert(nav, _self.name)
+						temp_list.append(cls.b_node.alg())
+						temp_list.insert(nav, _self.alg())
 
 						if cls.in_list[cls.b_node.name][nav] != None:
 							for layer in cls.m_list:
@@ -257,11 +269,15 @@ class Node(ScatterLayout):
 								if cls.in_list[_self.name][cls.b_node.c_nav] in layer and _self.name in layer:
 									cls.m_list.remove(layer)
 							cls.in_list[cls.in_list[_self.name][cls.b_node.c_nav]][nav] = None
-						
+							
 						cls.in_list[cls.b_node.name][nav] = _self.name
-						cls.in_list[_self.name][cls.b_node.c_nav] = cls.b_node.name	
-						cls.m_list.append(temp_list)
+						cls.in_list[_self.name][cls.b_node.c_nav] = cls.b_node.name
+						_existed = _self._is_exist(temp_list)
+
+						if _existed == False:
+							cls.m_list.append(temp_list)
 					cls.b_node = None
+		print(cls.m_list)
 
 	@classmethod
 	def add_info(cls, _alg):
