@@ -1,0 +1,51 @@
+#kivy 1.10.1
+
+
+<TrainButton>:
+	size_hint_x: None
+	width: 100
+
+<ToolBar>:
+	size_hint_y: None
+	height: 50
+	orientation: 'horizontal'
+	padding: 10
+	spacing: 10
+
+	canvas:
+		Line:
+			rectangle: (self.x, self.y, self.width, self.height)
+
+<Interface>:
+	canvas:
+		Line:
+			rectangle: (self.x, self.y, self.width, self.height)
+
+<ComponentPanel>:
+	canvas:
+		Line:
+			rectangle: (self.x, self.y, self.width, self.height)
+
+	size_hint_x: None
+	width: 200
+
+<SubContainer>:
+	orientation: 'vertical'
+	spacing: 10
+
+	Interface:
+		ScatterPlaneLayout:
+			do_rotation: False
+			do_scale: False
+			do_scroll: False
+
+	ToolBar:
+		TrainButton:
+
+<Container>:
+	orientation: 'horizontal'
+	spacing: 10
+	padding: 10
+
+	SubContainer:
+	ComponentPanel:
