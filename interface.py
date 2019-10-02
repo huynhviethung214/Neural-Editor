@@ -43,10 +43,6 @@ class _ProgressBar(ProgressBar):
 				loss.backward()
 				optimizer.step()
 				self._update(epoch / epochs)
-
-				# if i % 100 == 0:
-				# 	print('[{0}: {1}]-->[Prediction:{2} | Expected Prediction: {3}]'.format(epoch, loss, torch.argmax(output), y))
-
 		self._evaluate(dataset)
 
 		if is_save:
@@ -71,10 +67,7 @@ class _ProgressBar(ProgressBar):
 				if target == pred:
 					score += 1
 
-		# print('Accuracy: {0}'.format((score / len(dataset[1])) * 100))
-
 	def _update(self, val):
-		# self.value += int(floor(100 / epochs))
 		self.value = val
 
 
@@ -105,7 +98,6 @@ class ComponentPanel(TreeView, Widget):
 		self.root_options = {'text': 'Component Panel'}
 		self.add_node(Linear(interface=Interface))
 		self.add_node(XConv2d(interface=Interface))
-		# self.add_node(ImageDataProcessor(interface=Interface))
 		self.add_node(Flatten(interface=Interface))
 
 
@@ -185,12 +177,6 @@ class Interface(StencilView, Widget):
 							self.ind.remove(info[-1])
 							self.clear_canvas()
 							node.unbind(node_link, node_link._type)
-
-							# node_link.target.t_pos = None
-							# node_link.target.target = None
-
-							# node_link.target = None
-							# node_link.t_pos = None
 
 						except ValueError:
 							pass
