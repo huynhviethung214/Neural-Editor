@@ -1,38 +1,139 @@
 import kivy
+import torch
 from kivy.app import runTouchApp
+from torchsummary import summary
 kivy.require('1.10.1')
 
 from kivy.uix.widget import Widget
+from kivy.uix.button import Button
+from kivy.uix.label import Label
+from kivy.uix.progressbar import ProgressBar
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.stencilview import StencilView
 from kivy.uix.treeview import TreeViewLabel, TreeView
 from kivy.graphics import Bezier
 from kivy.lang import Builder
+from kivy.properties import StringProperty, ListProperty
 from kivy.app import App
 from functools import partial
 from node import Node, NodeLink
+from utils import Sorter, Net
+from torch.nn import Sequential, Module, CrossEntropyLoss, ParameterList
+from nn_components import Linear, XConv2d, Flatten
+from processors import _ImageProcessor
+from math import floor
 
 
-class Component(TreeViewLabel):
-	def __init__(self, _name='Component', _attachment=Node, **kwargs):
-		super(Component, self).__init__()
-		self._attachment = _attachment
-		self.text = _name
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-	def on_touch_down(self, touch):
+
+class _ProgressBar(ProgressBar):
+	def _train(self, model=None, dataset=None, epochs=10, is_save=True, w_name='weights'):
+		criterion = CrossEntropyLoss()
+		optimizer = torch.optim.Adam(ParameterList(model.parameters()),
+									lr=0.001)
+
+		for epoch in range(1, epochs):
+			for i, (X, y) in enumerate(dataset[0]):
+				output = model(X)
+				loss = criterion(output, y).to(device)
+
+				model.zero_grad()
+				loss.backward()
+				optimizer.step()
+				self._update(epoch / epochs)
+
+				# if i % 100 == 0:
+				# 	print('[{0}: {1}]-->[Prediction:{2} | Expected Prediction: {3}]'.format(epoch, loss, torch.argmax(output), y))
+
+		self._evaluate(dataset)
+
+		if is_save:
+			torch.save(model.state_dict(),
+					   '{0}.prmt'.format(w_name))
+
+	def _evaluate(self, dataset=None, epochs=20):
+		self.value = 0
+
+		with torch.no_grad():
+			score = 0
+
+			for epoch in range(epochs):
+				# self._update(epochs)
+				
+				for (X, y) in dataset[1]:
+					output = model(X)
+					pred = torch.argmax(output)
+					target = y.tolist()[0]
+					pred = pred.item()
+
+				if target == pred:
+					score += 1
+
+		# print('Accuracy: {0}'.format((score / len(dataset[1])) * 100))
+
+	def _update(self, val):
+		# self.value += int(floor(100 / epochs))
+		self.value = val
+
+
+class TrainButton(Button):
+	net = Net
+
+	def __init__(self, **kwargs):
+		super(TrainButton, self).__init__()
+		self.text = 'Train'
+		self.bind(on_touch_down=self.train)
+		self.sorter = Sorter()
+
+	def train(self, obj, touch):
 		if self.collide_point(*touch.pos):
-			Interface._node = self._attachment
-			Interface._state = 1
-		return True
+			self.sorter.setup(Node.m_list)
+			# self.sorter.sort(Node.m_list)
+			# print(Node.m_list)
+			# print(Sorter.temp_model)
+			model = self.sorter.sort(Node.m_list)
+			dataset = DatasetForm.processor._dataset()
+			# print(model, (1, 300, 300))
+			self.parent.children[0]._train(model, dataset, 100)
 
 
 class ComponentPanel(TreeView, Widget):
 	def __init__(self, **kwargs):
 		super(ComponentPanel, self).__init__()
 		self.root_options = {'text': 'Component Panel'}
-		self.add_node(Component())
-		self.add_node(Component())
+		self.add_node(Linear(interface=Interface))
+		self.add_node(XConv2d(interface=Interface))
+		# self.add_node(ImageDataProcessor(interface=Interface))
+		self.add_node(Flatten(interface=Interface))
+
+
+class DatasetForm(BoxLayout, Widget):
+	processor = _ImageProcessor()
+
+
+class Form(BoxLayout, Widget):
+	name = StringProperty()
+	_type = None
+
+	def set_val(self, val, tag, obj):
+		try:
+			if val != '':
+				if self._type == int:
+					self.parent.processor.properties[self.name] = int(val)
+
+				elif self._type == float:
+					self.parent.processor.properties[self.name] = float(val)
+
+				elif self._type == bool:
+					self.parent.processor.properties[self.name] = bool(val)
+
+				elif self._type == str:
+					self.parent.processor.properties[self.name] = val
+
+		except Exception:
+			obj.text = ''
 
 
 class ToolBar(BoxLayout, Widget):
@@ -56,6 +157,7 @@ class Interface(StencilView, Widget):
 
 		self.bind(on_touch_up=partial(self._add_node, _self=self))
 		self.bind(on_touch_move=self.is_validate)
+		self.bind(on_touch_move=self.unbind)
 
 		self.bind(on_touch_move=self.draw_link)
 		self.bind(on_touch_move=self.update_canvas)
@@ -68,9 +170,31 @@ class Interface(StencilView, Widget):
 			for node_link in node.children[0].children:
 				if type(node_link) == NodeLink:
 					pos = node_link.to_widget(*touch.pos)
+
 					if node_link.collide_point(*pos):
 						return True, node, node_link
 		return False, None, None
+
+	def unbind(self, obj, touch):
+		_, node, node_link = self._check_nl_collision(touch=touch)
+		if node_link != None:
+			if self.is_drawing and node_link.target != None:
+				for info in self.links:
+					if node_link in info and node_link.target in info:
+						try:
+							self.ind.remove(info[-1])
+							self.clear_canvas()
+							node.unbind(node_link, node_link._type)
+
+							# node_link.target.t_pos = None
+							# node_link.target.target = None
+
+							# node_link.target = None
+							# node_link.t_pos = None
+
+						except ValueError:
+							pass
+			return True
 
 	def node_up(self, obj, touch):
 		valid, node, node_link = self._check_nl_collision(touch=touch)
@@ -79,16 +203,19 @@ class Interface(StencilView, Widget):
 					   state=2,
 					   nav=node_link._type)
 			_pos = self.get_pos(node_link, node_link.pos)
+
 			node_link.c_pos = _pos
 			node_link.target = self.p_node_link
 			node_link.t_pos = self.p_node_link.c_pos
 
 			self.p_node_link.t_pos = _pos
-			_pos = (_pos[0] + 5, _pos[1] + 5)
 			self.p_node_link.target = node_link
+			
+			_pos = (_pos[0] + 5, _pos[1] + 5)
 			bezier = self.draw(self.ori, _pos)
 			self.links.append([node_link, self.p_node_link, bezier])
 			self.ind.append(bezier)
+
 			self.is_drawing = 0
 			return True
 
@@ -101,10 +228,13 @@ class Interface(StencilView, Widget):
 		if valid:
 			node._bind(_self=node,
 					   nav=node_link._type)
+
 			_pos = self.get_pos(node_link, node_link.pos)
 			node_link.c_pos = _pos
+			
 			self.p_node_link = node_link
 			self.ori = (_pos[0] + 5, _pos[1] + 5)
+
 			self.is_drawing = 1
 			return True
 
@@ -131,10 +261,8 @@ class Interface(StencilView, Widget):
 				cls._node = None
 		return True
 
-	def draw(self, ori=None, end=None, clear=True):
-		if clear:
-			self.clear_canvas()
-
+	def draw(self, ori=None, end=None):
+		self.clear_canvas()
 		with self.canvas:
 			bezier = Bezier(points=(ori[0], ori[1],
 									(end[0] + ori[0]) / 2 + 20, ori[1],
@@ -178,17 +306,14 @@ class Interface(StencilView, Widget):
 											node_link.target.t_pos = _pos
 
 
-class SubContainer(BoxLayout, Widget):
-	pass
-
 class Container(BoxLayout, Widget):
 	pass
 
 
 class _app(App):
 	def build(self):
-		return Builder.load_file('_template.kv')
-	
+		return Builder.load_file('interface_template.kv')
+
 
 if __name__ == '__main__':
 	_app().run()
