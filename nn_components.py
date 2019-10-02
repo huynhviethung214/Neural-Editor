@@ -37,12 +37,6 @@ class XConv2d(Component):
 		self.text = 'XConv2d'
 
 
-# class ImageDataProcessor(Component):
-# 	def add_properties(self):
-# 		self._attachment = _ImageDataProcessor
-# 		self.text = 'Image Processor'
-
-
 class Flatten(Component):
 	def add_properties(self):
 		self._attachment = _FlattenLayer
