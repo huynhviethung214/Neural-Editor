@@ -75,20 +75,3 @@ class _ImageProcessor(object):
 class BinaryDataset(object):
 	def __init__(self, **kwargs):
 		pass
-
-# processor = _ImageProcessor(width=300,
-# 						    height=300,
-# 						    split_ratio=0.8,
-# 						    shuffle=True,
-# 						    n_channels=3,
-# 						    dataset='test_set')
-
-# _train_set, _test_set = processor._dataset()
-# print(_train_set.size)
-# for (im, label) in _train_set:
-# 	_im = im.view(300, 300, 3)
-# 	_im = _im.cpu().numpy().astype(np.uint8)
-# 	_im = Image.fromarray(_im, 'RGB')
-# 	_im.save('test.png')
-# 	print(im.size())
-# 	break
