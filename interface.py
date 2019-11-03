@@ -39,24 +39,6 @@ from processors import _ImageProcessor
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-
-# class ThreadManager():
-# 	def __init__(self):
-# 		self.threads = {}
-
-# 	def register_thread(self, _id, func, **kwargs):
-# 		thread = Thread(target=func,
-# 						kwargs=kwargs,
-# 						daemon=True)
-# 		self.threads.update({_id: thread})
-
-# 	def start_thread(self, _id):
-# 		self.threads[_id].start()
-
-# 	def kill_thread(self, _id):
-# 		self.threads[_id].join()
-
-
 class _ProgressBar(ProgressBar):
 	def kill_process(self):
 		self._break = True
@@ -74,7 +56,6 @@ class _ProgressBar(ProgressBar):
 		self._train_thread.start()
 
 	def _train(self, model=None, dataset=None, epochs=10, is_save=True, w_name='weights'):
-		# criterion = CrossEntropyLoss()
 		criterion = CriterionForm._constructed_func
 		optimizer = torch.optim.Adam(ParameterList(model.parameters()),
 									lr=0.001)
@@ -91,12 +72,7 @@ class _ProgressBar(ProgressBar):
 				model.zero_grad()
 				loss.backward()
 				optimizer.step()
-				# self.queue.put(epoch / epochs)
 				self._update((epoch / epochs) * 100, 'Train')
-				# print(epoch)
-
-				# if i % 100 == 0:
-				# 	print('[{0}: {1}]-->[Prediction:{2} | Expected Prediction: {3}]'.format(epoch, loss, torch.argmax(output), y))
 		self._update(100, 'Train')
 		torch.cuda.empty_cache()
 
@@ -125,13 +101,8 @@ class _ProgressBar(ProgressBar):
 					score += 1
 
 			self._update(100, 'Eval')
-		# print('Accuracy: {0}'.format((score / len(dataset[1])) * 100))
-
-	# def free_momery(self):
-	# 	torch.cuda.empty_cache()
 
 	def _update(self, val, _type):
-		# self.value += int(floor(100 / epochs))
 		self.value = val
 		self.parent.children[0].text = '[{0}]:[{1}%/100%]'.format(_type, int(floor(val)))
 
@@ -139,7 +110,6 @@ class _ProgressBar(ProgressBar):
 class IndicatorLabel(Label):
 	def __init__(self, **kwargs):
 		super(IndicatorLabel, self).__init__()
-		# self.bind(size=self.update)
 
 	def update(self, obj, val):
 		self.font_size = (self.parent.width * 0.3,
@@ -167,19 +137,12 @@ class TrainButton(Button):
 		self.bind(on_touch_down=self.train)
 		self.sorter = Sorter()
 
-	#TODO: DO THE DATA PROCESSING ON A SEPARATE THREAD
 	def train(self, obj, touch):
 		if self.collide_point(*touch.pos):
-			# print(self.parent.children)
 			try:
 				self.sorter.setup(Node.m_list)
-				# self.sorter.sort(Node.m_list)
-				# print(Node.m_list)
-				# print(Sorter.temp_model)
 				model = self.sorter.sort(Node.m_list)
 				dataset = DatasetForm.processor._dataset()
-				# print(model, (1, 300, 300))
-				# self.parent.children[0]._train(model, dataset, 100)
 				self.parent.children[1].train(model, dataset, 100)
 
 			except Exception as e:
@@ -192,7 +155,6 @@ class ComponentPanel(TreeView, Widget):
 		self.root_options = {'text': 'Component Panel'}
 		self.add_node(Linear(interface=Interface))
 		self.add_node(XConv2d(interface=Interface))
-		# self.add_node(ImageDataProcessor(interface=Interface))
 		self.add_node(Flatten(interface=Interface))
 
 
@@ -200,16 +162,11 @@ class DatasetForm(BoxLayout, Widget):
 	processor = _ImageProcessor()
 
 
-#TODO: TRY TO COMPLETE OTF AND CTRF
 class OptimizerForm(BoxLayout, Widget):
 	pass
 
 
-#TODO: MANUALLY ADDING CRITERION USING PYTORCH.ORG TO GET THE VALUE TYPE
 class CriterionForm(BoxLayout, Widget):
-	# _constructed_func = None
-	# sub_layout = ObjectProperty(None)
-
 	def __init__(self, **kwargs):
 		super(CriterionForm, self).__init__()
 		self.sub_layout = BoxLayout(orientation='vertical',
@@ -217,11 +174,9 @@ class CriterionForm(BoxLayout, Widget):
 									spacing=30)
 		self.sub_layout.bind(minimum_height=self.sub_layout.setter('height'))
 		self.orientation = 'vertical'
-		# self._criterions = {}
 		self.properties = {}
 		self.add_func_list()
 		self.add_scroll_view()
-		# self.generator(self.criterion[0])
 		self.add_widget(self.scroll_view)
 
 	def add_scroll_view(self):
@@ -247,17 +202,7 @@ class CriterionForm(BoxLayout, Widget):
 			self.add_subform(key,
 							self.properties[optim][key][0],
 							self.properties[optim][key][1])
-		# self.set_func_args_form(optim)
-		# self.construct_function()
-		# self.crit_chooser.text = optim
-		# for prop in self._criterions[optim]._properties:
-		# 	# print(optim._properties[prop][0])
-		# 	self.add_subform(prop,
-		# 					self._criterions[optim]._properties[prop][0],
-		# 					self._criterions[optim]._properties[prop][1])
-		# pass
 
-	# @staticmethod
 	def parse_data(self, fname):
 		html = 'https://pytorch.org/docs/stable/nn.html#l1loss'
 		soup = BeautifulSoup(urlopen(html), "lxml")
@@ -303,46 +248,12 @@ class CriterionForm(BoxLayout, Widget):
 					pass
 		return fnames
 
-	# def set_tf(self, obj, val, _id):
-	# 	self.properties[_id] = bool(val)
-		# tf_butt.text = str(val)
-
-	# def construct_function(self):
-	# 	_kwargs = {}
-	# 	for _id in self.properties.keys():
-	# 		# if self.properties[_id] != None:
-	# 		# 	_kwargs.update({_id:self.properties[_id]})
-	# 		# elif self.properties[_id] == None:
-	# 		# 	_kwargs.update({_id:None})
-	# 		# print(_id, ' ', self.properties[_id])
-	# 		_kwargs.update({_id:self.properties[_id]})
-	# 	CriterionForm._constructed_func = self.func(**_kwargs)
-
-	# def set_val(self, obj, val, _type, _id):
-	# 	try:
-	# 		if val != '':
-	# 			if _type == int:
-	# 				self.properties[_id] = int(val)
-
-	# 			elif _type == float:
-	# 				self.properties[_id] = float(val)
-
-	# 			elif _type == str:
-	# 				self.properties[_id] = val
-
-	# 	except Exception:
-	# 		obj.text = ''
-
 	def tf_drop_list(self, _id, d_val):
 		tf_butt = Spinner(text=str(d_val),
 						values=('True', 'False'),
 						size_hint=(0.6, None),
 						height=26,
 						sync_height=True)
-		# self.properties[_id] = d_val
-
-		# tf_butt.bind(text=lambda obj, text: setattr(self, 'properties[{0}]'.format(_id),
-		# 											bool(text)))
 
 		return tf_butt
 
@@ -366,11 +277,6 @@ class CriterionForm(BoxLayout, Widget):
 							size_hint=(0.6, None),
 							multiline=False,
 							text=str(d_val))
-
-		# self.properties[_id] = d_val
-		# _input.bind(text=partial(self.set_val,
-		# 						_type=_type,
-		# 						_id=_id))
 		subform.add_widget(_input)
 		return subform
 
@@ -379,56 +285,6 @@ class CriterionForm(BoxLayout, Widget):
 			self.sub_layout.add_widget(self.boolean_form(_id, d_val))
 		else:
 			self.sub_layout.add_widget(self._subform(_id, _type, d_val))
-
-	# PARSE DEFAULT VALUE AND ARGUMENT TYPE ERROR OCCUR BECAUSE 
-	# OF ADAPTIVELOGSOFTMAXWITHLOSS FUNCTION
-	# def add_form(self, params):
-	# 	val = None
-	# 	_id = None
-	# 	_type = None
-
-	# 	for pval in params.parameters.values():
-	# 		try:
-	# 			val = str(pval).split('=')[1]
-	# 			_id = str(pval).split('=')[0]
-
-	# 			if 'False' == val or 'True' == val:
-	# 				_type = bool
-	# 				val = bool(val)
-
-	# 			elif '\'' in val:
-	# 				_type = str
-	# 				val = val.split('\'')[1]
-
-	# 			elif '.' in val:
-	# 				_type = float
-	# 				val = float(val)
-
-	# 			else:
-	# 				_type = int
-	# 				val = int(val)
-
-	# 		except Exception:
-	# 			val = None
-	# 			_type = int
-
-	# 		self.add_subform(_id, _type, val)
-			# print(_id, val, _type)
-
-	# def set_func_args_form(self, func_name):
-	# 	for func in self.get_func():
-	# 		if func == func_name:
-	# 			module = __import__('torch.nn', fromlist=[func_name])
-	# 			self.func = getattr(module, func_name)
-	# 			params = signature(self.func)
-	# 			self.add_form(params)
-
-	# 			for param in params.parameters:
-	# 				# print(param)
-	# 				# print(params.parameters[param])
-	# 				self.add_subform(_id=param,
-	# 								_type=self.get_type(params))
-	# 				self.properties.update({param:None})
 
 
 class Form(BoxLayout, Widget):
@@ -503,12 +359,6 @@ class Interface(StencilView, Widget):
 							self.ind.remove(info[-1])
 							self.clear_canvas()
 							node.unbind(node_link, node_link._type)
-
-							# node_link.target.t_pos = None
-							# node_link.target.target = None
-
-							# node_link.target = None
-							# node_link.t_pos = None
 
 						except ValueError:
 							pass
@@ -626,12 +476,3 @@ class Interface(StencilView, Widget):
 
 class Container(BoxLayout, Widget):
 	pass
-
-
-# class _app(App):
-# 	def build(self):
-# 		return Builder.load_file('interface_template.kv')
-
-
-# if __name__ == '__main__':
-# 	_app().run()
