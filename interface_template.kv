@@ -1,0 +1,143 @@
+#kivy 1.10.1
+
+
+<IndicatorLabel>:
+	text: '[TYPE]:[PERCENTAGE]'
+	size_hint_x: 0.4
+
+<KillProcessButton>:
+	size_hint_x: 0.3
+	text: 'Kill Process'
+
+<TrainButton>:
+	size_hint_x: 0.3
+	text: 'Train'
+	# width: 100
+
+<ToolBar>:
+	size_hint_y: 0.1
+	# height: 50
+	orientation: 'horizontal'
+	padding: 10
+	spacing: 5
+
+	canvas:
+		Line:
+			rectangle: (self.x, self.y, self.width, self.height)
+
+<Interface>:
+	canvas:
+		Line:
+			rectangle: (self.x, self.y, self.width, self.height)
+			width: 2
+
+<ComponentPanel>:
+	canvas:
+		Line:
+			rectangle: (self.x, self.y, self.width, self.height)
+
+	size_hint_y: 0.5
+
+<OptimizerForm>:
+	size_hint_y: 0.3
+	canvas:
+		Color:
+			rgb: (1, 1, 1)
+		Line:
+			rectangle: (self.x, self.y, self.width, self.height)
+
+<CriterionForm>:
+	size_hint_y: 0.3
+	padding: 3
+
+	canvas:
+		Color:
+			rgb: (1, 1, 1)
+		Line:
+			rectangle: (self.x, self.y, self.width, self.height)
+
+<DatasetForm>:
+	canvas:
+		Color:
+			rgb: (1, 1, 1)
+		Line:
+			rectangle: (self.x, self.y, self.width, self.height)
+
+	size_hint_x: 1
+	size_hint_y: 0.4
+
+<Nametag@Label>:
+	text: 'Nametag'
+	size_hint_x: 0.6
+
+<Form>:
+	Nametag:
+		id: nametag
+		text: root.name
+
+	TextInput:
+		on_text: root.set_val(self.text, nametag.text, self)
+		padding: [5, 2, 5, 2]
+		multiline: False
+
+<SubContainer2@BoxLayout>:
+	orientation: 'vertical'
+	size_hint_x: 0.3
+	spacing: 10
+
+	ComponentPanel:
+
+	OptimizerForm:
+
+	CriterionForm:
+
+	DatasetForm:
+		orientation: 'vertical'
+		padding: 10
+
+		Label:
+			text: 'Dataset'
+		Form:
+			_type: str
+			name: 'dataset'
+		Form:
+			_type: int
+			name: 'width'
+		Form:
+			_type: int
+			name: 'height'
+		Form:
+			_type: int
+			name: 'z'
+		Form:
+			_type: float
+			name: 'split'
+		Form:
+			_type: bool
+			name: 'shuffle'
+
+<SubContainer1@BoxLayout>:
+	orientation: 'vertical'
+	spacing: 10
+
+	Interface:
+		ScatterPlaneLayout:
+			do_rotation: False
+			do_scale: False
+			do_scroll: False
+
+	ToolBar:
+		TrainButton:
+		KillProcessButton:
+		_ProgressBar:
+		IndicatorLabel:
+
+<Container>:
+	orientation: 'horizontal'
+	spacing: 10
+	padding: 10
+
+	SubContainer1:
+	# ComponentPanel:
+	# DatasetForm:
+	SubContainer2:
