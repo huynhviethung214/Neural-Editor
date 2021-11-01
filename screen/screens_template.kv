@@ -1,0 +1,48 @@
+# kivy 2.0.0
+#:include force i_modules/interface/interface.kv
+#:include force editor_modules/scripting_interface_template.kv
+#:include force settings/settings_template.kv
+
+<MainScreen>:
+	name: 'interface'
+
+
+<SettingScreen>:
+	name: 'setting'
+
+
+<ScriptingScreen>:
+	name: 'scripting'
+
+
+<ToolPanel>:
+	orientation: 'vertical'
+	size_hint_x: None
+	width: 80
+	padding: 0
+
+	Button:
+		text: 'Main'
+		on_press: root.parent.children[1].current = 'interface'
+
+	Button:
+		text: 'Settings'
+		on_press: root.parent.children[1].current = 'setting'
+
+	Button:
+		text: 'Scripting'
+		on_press: root.parent.children[1].current = 'scripting'
+
+
+<Manager>:
+	current: 'interface'
+
+	MainScreen:
+		Overlay:
+			Container:
+
+	SettingScreen:
+	    SettingsLayout:
+
+	ScriptingScreen:
+		Editor:

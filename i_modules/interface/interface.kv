@@ -1,0 +1,115 @@
+# kivy 2.0.0
+#:include force utility/base_form/baseform_template.kv
+#:include force utility/custom_input/custom_input.kv
+#:include force i_modules/interface_actionbar/interface_actionbar.kv
+
+
+<SIToolBar>:
+	spacing: 5
+	padding: 5
+	size_hint: (1, 0.05)
+	width: 100
+
+	canvas:
+		Line:
+			rectangle: (self.x, self.y, self.width, self.height)
+			width: 1
+
+
+<TabManager>:
+	background_image: ''
+	background_color: (0, 0, 0, 0)
+
+
+<Interface>:
+	canvas:
+		Color:
+			rgba: (1, 1, 1, 1)
+
+		Line:
+			rectangle: (self.x, self.y, self.width, self.height)
+			width: 1
+
+
+<CreateBlock>:
+	size_hint: (1, 0.08)
+
+	Label:
+		size_hint_x: 0.6
+
+	Button:
+		text: 'Create Node'
+		size_hint_x: 0.4
+		on_press: root.create_block()
+
+
+<NodeEditor>:
+	size_hint: (0.26, 0.8)
+
+
+<ComponentPanel>:
+	canvas:
+		Line:
+			rectangle: (self.x, self.y, self.width, self.height)
+
+	size_hint: (1, 0.8)
+
+
+#<MainBar>:
+#	text: 'New Model'
+
+
+<IToolBar>:
+    size_hint: (1, 0.4)
+    do_default_tab: False
+    tab_pos: 'left_top'
+    tab_height: 30
+    tab_width: 80
+
+    TabbedPanelItem:
+    	text: 'Criterion'
+    	CriterionForm:
+    		size_hint: (1, 1)
+
+    TabbedPanelItem:
+    	text: 'Optimizer'
+    	OptimizerForm:
+    		size_hint: (1, 1)
+
+    TabbedPanelItem:
+    	text: 'Processor'
+
+    	DatasetForm:
+    		size_hint: (1, 1)
+
+    TabbedPanelItem:
+    	text: 'Training'
+
+    	TrainingForm:
+    		size_hint: (1, 1)
+
+    TabbedPanelItem:
+    	text: 'Evaluating'
+
+    	EvaluatingForm:
+    		size_hint: (1, 1)
+
+
+<CustomActionBar>:
+    canvas:
+        Line:
+            rectangle: (self.x, self.y, self.width, self.height)
+
+
+# <Container>:
+# 	orientation: 'vertical'
+# 	spacing: 10
+# 	padding: 10
+
+# 	BoxLayout:
+# 		spacing: 10
+# 		padding: 10
+# 		orientation: 'horizontal'
+
+# 		SubContainer1:
+# 		SubContainer2:

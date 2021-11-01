@@ -1,0 +1,18 @@
+# kivy 2.0.0
+
+
+<CustomTextInput>:
+	canvas.after:
+		Color:
+			rgb: 128 / 255, 128 / 255, 128 / 255
+
+		Line:
+			rectangle: (self.x, self.y, self.width, self.height)
+
+	# padding_x: 10
+	multiline: False
+	background_color: (0, 0, 0, 0)
+	foreground_color: (1, 1, 1, 1)
+	cursor_color: (1, 1, 1, 1)
+
+	#on_text: root.update_padding(args[0])

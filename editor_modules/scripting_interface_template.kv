@@ -1,0 +1,61 @@
+# kivy 2.0.0
+#:include force utility/custom_input/custom_input.kv
+
+
+<_FileChooser>:
+	size_hint: (0.6, 0.6)
+
+	BoxLayout:
+		FileChooserIconView:
+			#rootpath: 'algorithms'
+			on_submit: root._submit()
+
+
+#<SavePopup>:
+	#size_hint: (0.3, 0.18)
+
+	#BoxLayout:
+	#	orientation: 'vertical'
+	#	spacing: 5
+
+	#	CustomTextInput:
+	#		size_hint_y: 0.5
+	#		id: file_name
+
+	#	BoxLayout:
+	#		size_hint_y: 0.5
+	#		Label:
+	#			size_hint: (0.7, 1)
+
+	#		Button:
+	#			text: 'Submit'
+	#			size_hint: (0.3, 1)
+	#			on_press: root.save(file_name.text)
+
+
+# <Editor>:
+	# orientation: 'vertical'
+	# padding: 5
+	# spacing: 5
+
+	# TabManager:
+
+	# __ToolBar:
+	# 	size_hint_y: 0.05
+		
+	# 	Label:
+		
+	# 	Button:
+	# 		size_hint_x: 0.3
+	# 		text: 'Save'
+	# 		on_press: root.children[0].save()
+		
+	# 	Button:
+	# 		size_hint_x: 0.3
+	# 		text: 'Save As'
+	# 		on_press: root.children[0].save_as()
+		
+	# 	Button:
+	# 		size_hint_x: 0.3
+	# 		text: 'Open File'
+	# 		on_press: root.children[0].open_file()

@@ -1,0 +1,292 @@
+{
+    "Concatenate": {
+        "dimension": [
+            1,
+            0
+        ],
+        "nl_input": {
+            "n_links": 2,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 1,
+            "position": 13,
+            "type": "input"
+        },
+        "node_type": 8
+    },
+    "Conv1D": {
+        "bias": [
+            3,
+            true
+        ],
+        "dilation": [
+            1,
+            10
+        ],
+        "groups": [
+            1,
+            10
+        ],
+        "in_channels": [
+            1,
+            10
+        ],
+        "kernel_size": [
+            11,
+            [
+                2,
+                2
+            ]
+        ],
+        "nl_input": {
+            "n_links": 1,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 1,
+            "position": 13,
+            "type": "input"
+        },
+        "node_type": 10,
+        "out_channels": [
+            1,
+            10
+        ],
+        "padding": [
+            1,
+            10
+        ],
+        "padding_mode": [
+            2,
+            10
+        ],
+        "stride": [
+            1,
+            10
+        ]
+    },
+    "Conv2D": {
+        "bias": [
+            3,
+            true
+        ],
+        "dilation": [
+            1,
+            10
+        ],
+        "groups": [
+            1,
+            10
+        ],
+        "in_channels": [
+            1,
+            10
+        ],
+        "kernel_size": [
+            11,
+            [
+                2,
+                2
+            ]
+        ],
+        "nl_input": {
+            "n_links": 1,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 1,
+            "position": 13,
+            "type": "input"
+        },
+        "node_type": 10,
+        "out_channels": [
+            1,
+            10
+        ],
+        "padding": [
+            1,
+            10
+        ],
+        "padding_mode": [
+            2,
+            10
+        ],
+        "stride": [
+            1,
+            10
+        ]
+    },
+    "Conv3D": {
+        "bias": [
+            3,
+            true
+        ],
+        "dilation": [
+            1,
+            10
+        ],
+        "groups": [
+            1,
+            10
+        ],
+        "in_channels": [
+            1,
+            10
+        ],
+        "kernel_size": [
+            11,
+            [
+                2,
+                2
+            ]
+        ],
+        "nl_input": {
+            "n_links": 1,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 1,
+            "position": 13,
+            "type": "input"
+        },
+        "node_type": 10,
+        "out_channels": [
+            1,
+            10
+        ],
+        "padding": [
+            1,
+            10
+        ],
+        "padding_mode": [
+            2,
+            10
+        ],
+        "stride": [
+            1,
+            10
+        ]
+    },
+    "Duplicate": {
+        "nl_input": {
+            "n_links": 1,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 2,
+            "position": 13,
+            "type": "input"
+        },
+        "node_type": 8
+    },
+    "Flatten": {
+        "nl_input": {
+            "n_links": 1,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 1,
+            "position": 13,
+            "type": "input"
+        },
+        "node_type": 8
+    },
+    "Linear": {
+        "bias": [
+            3,
+            true
+        ],
+        "n_in": [
+            1,
+            10
+        ],
+        "n_out": [
+            1,
+            10
+        ],
+        "nl_input": {
+            "n_links": 1,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 1,
+            "position": 13,
+            "type": "input"
+        },
+        "node_type": 10
+    },
+    "Reshape": {
+        "nl_input": {
+            "n_links": 1,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 1,
+            "position": 13,
+            "type": "input"
+        },
+        "node_type": 8,
+        "x": [
+            1,
+            1
+        ],
+        "y": [
+            1,
+            1
+        ]
+    },
+    "XConv2d": {
+        "b_norm": [
+            1,
+            10
+        ],
+        "f_size": [
+            1,
+            10
+        ],
+        "mp_stride": [
+            1,
+            10
+        ],
+        "mpk_size": [
+            1,
+            10
+        ],
+        "n_in": [
+            1,
+            10
+        ],
+        "n_out": [
+            1,
+            10
+        ],
+        "nl_input": {
+            "n_links": 1,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 1,
+            "position": 13,
+            "type": "input"
+        },
+        "node_type": 9,
+        "padding": [
+            1,
+            10
+        ],
+        "stride": [
+            1,
+            10
+        ]
+    }
+}

@@ -1,0 +1,16 @@
+def training_alg(self, properties):
+    # Your code goes here
+
+
+    # Use this line of code to update ProgressBar value, remember to put it inside
+    # the training loop
+    # Add 'epochs' key to your dict
+    #properties['obj']._update((epoch / properties['epochs']) * 100, 'Train')
+
+	properties['obj']._evaluate(properties['eval_properties'],
+								properties['eval_properties']['eval_code'])
+
+	if properties['is_save']:
+		# Uncomment to save model's output
+		#torch.save(properties['model'].state_dict(), '{0}.prmt'.format(properties['output_file_name']))
+		#torch.cuda.empty_cache()

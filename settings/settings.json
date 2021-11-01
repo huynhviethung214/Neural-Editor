@@ -1,0 +1,8 @@
+{
+    "device": {
+        "id": "cuda:0",
+        "name": "NVIDIA GeForce RTX 2060 (cuda:0)"
+    },
+    "models_path": "D:\\Python Projects\\Project Alpha\\Neural Editor\\models",
+    "weight_path": "D:\\Python Projects\\Project Alpha\\Neural Editor\\weights"
+}

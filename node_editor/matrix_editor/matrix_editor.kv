@@ -1,0 +1,21 @@
+<T>:
+    multiline: False
+    padding_x: 0
+    padding_y: 0
+    foreground_color: (1, 1, 1, 1)
+    background_color: (0, 0, 0, 0)
+    background_active: ''
+    background_normal: ''
+
+    canvas.after:
+        Line:
+			rectangle: (self.x, self.y, self.width, self.height)
+
+
+<BoxLayout>:
+    canvas:
+        Line:
+			rectangle: (self.x, self.y, self.width, self.height)
+
+
+MatrixEditor:
