@@ -1,4 +1,190 @@
 {
-    "beziers_coord": [],
-    "rels": []
+    "Concatenate 0": {
+        "pos": [
+            972.3999999999999,
+            666.9999999999998
+        ],
+        "properties": {
+            "Layer": [
+                5,
+                "Hidden Layer"
+            ],
+            "dimension": [
+                1,
+                0
+            ]
+        }
+    },
+    "Conv3D 0": {
+        "pos": [
+            -57.60000000000008,
+            437.99999999999994
+        ],
+        "properties": {
+            "Layer": [
+                5,
+                "Hidden Layer"
+            ],
+            "bias": [
+                3,
+                true
+            ],
+            "dilation": [
+                1,
+                0
+            ],
+            "groups": [
+                1,
+                0
+            ],
+            "in_channels": [
+                1,
+                0
+            ],
+            "kernel_size": [
+                11,
+                [
+                    2,
+                    2
+                ]
+            ],
+            "out_channels": [
+                1,
+                0
+            ],
+            "padding": [
+                1,
+                0
+            ],
+            "padding_mode": [
+                2,
+                0
+            ],
+            "stride": [
+                1,
+                0
+            ]
+        }
+    },
+    "Conv3D 1": {
+        "pos": [
+            422.39999999999986,
+            140.99999999999983
+        ],
+        "properties": {
+            "Layer": [
+                5,
+                "Hidden Layer"
+            ],
+            "bias": [
+                3,
+                true
+            ],
+            "dilation": [
+                1,
+                0
+            ],
+            "groups": [
+                1,
+                0
+            ],
+            "in_channels": [
+                1,
+                0
+            ],
+            "kernel_size": [
+                11,
+                [
+                    2,
+                    2
+                ]
+            ],
+            "out_channels": [
+                1,
+                0
+            ],
+            "padding": [
+                1,
+                0
+            ],
+            "padding_mode": [
+                2,
+                0
+            ],
+            "stride": [
+                1,
+                0
+            ]
+        }
+    },
+    "Linear 0": {
+        "pos": [
+            397.3999999999999,
+            647.9999999999998
+        ],
+        "properties": {
+            "Layer": [
+                5,
+                "Hidden Layer"
+            ],
+            "bias": [
+                3,
+                true
+            ],
+            "n_in": [
+                1,
+                0
+            ],
+            "n_out": [
+                1,
+                0
+            ]
+        }
+    },
+    "beziers_coord": [
+        [
+            [
+                180.39999999999992,
+                613.9999999999998
+            ],
+            [
+                321.3999999999999,
+                726.9999999999998
+            ]
+        ],
+        [
+            [
+                632.3999999999999,
+                734.9999999999998
+            ],
+            [
+                973.3999999999999,
+                754.9999999999998
+            ]
+        ],
+        [
+            [
+                663.3999999999999,
+                319.9999999999998
+            ],
+            [
+                969.4000000000001,
+                692.9999999999998
+            ]
+        ]
+    ],
+    "rels": [
+        [
+            "Conv3D 0 Output 0",
+            "Linear 0 Input 0"
+        ],
+        [
+            "Linear 0 Output 0",
+            "Concatenate 0 Input 0"
+        ],
+        [
+            "Conv3D 1 Output 0",
+            "Concatenate 0 Input 1"
+        ]
+    ]
 }

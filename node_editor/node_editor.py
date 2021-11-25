@@ -16,6 +16,7 @@ from nn_modules.code_names import *
 from utility.custom_input.custom_input import CustomTextInput
 from .property_form import PropertyForm
 from .nl_form import NLForm
+from .node_form import NodeForm
 
 
 class NodeEditor(Popup):
@@ -32,6 +33,7 @@ class NodeEditor(Popup):
                                'Stacked': STACKED,
                                'Function': FUNCTION}
         self.node_type = self.node_type_list['Normal']
+        self.key = 'Normal'
 
         self.n_in_links = NLForm()
         self.n_out_links = NLForm()
@@ -65,9 +67,7 @@ class NodeEditor(Popup):
                                                  'Stacked',
                                                  'Function'),
                                          size_hint_x=0.28)
-        self.node_type_chooser.bind(text=lambda obj, text: setattr(self,
-                                                                   'node_type',
-                                                                   self.node_type_list[text]))
+        self.node_type_chooser.bind(text=self.change_node)
 
         self.add_custom_title()
         self.init_layouts()
@@ -134,16 +134,23 @@ class NodeEditor(Popup):
         # self.main_sub_layout.add_widget(Label(text='n_outputs', size_hint_x=0.2))
         # self.main_sub_layout.add_widget(n_outputs_layout)
 
-        labels_layout = BoxLayout(size_hint=(0.9, 0.05))
-        labels_layout.add_widget(Label(text='Property Name', size_hint_x=0.8))
-        labels_layout.add_widget(Label(text='Datatype', size_hint_x=0.2))
+        labels_layout = GridLayout(size_hint=(1, 0.04),
+                                   cols=2,
+                                   row_force_default=True,
+                                   row_default_height=30,
+                                   spacing=5)
 
-        self.main_sub_layout.add_widget(Label(size_hint=(0.1, 1)))
-        self.main_sub_layout.add_widget(labels_layout)
+        labels_sub_layout = BoxLayout()
+        labels_sub_layout.add_widget(Label(text='Property Name', size_hint_x=0.8))
+        labels_sub_layout.add_widget(Label(text='Datatype', size_hint_x=0.2))
+
+        labels_layout.add_widget(Label(size_hint_x=0.1))
+        labels_layout.add_widget(labels_sub_layout)
 
         self.scroll_view.add_widget(self.main_sub_layout)
 
         self.add_nn_links()
+        self.main_layout.add_widget(labels_layout)
         self.main_layout.add_widget(self.scroll_view)
 
     def add_nn_links(self):
@@ -185,9 +192,21 @@ class NodeEditor(Popup):
         button.bind(on_press=self.add_property_form)
         self.main_sub_layout.add_widget(button)
 
+    def change_node(self, obj, text):
+        self.key = text
+        self.clear_main_sub_layout()
+
+    def clear_main_sub_layout(self):
+        self.main_sub_layout.clear_widgets()
+        self.add_adding_button()
+
     def add_property_form(self, obj):
-        property_form = PropertyForm()
-        self.main_sub_layout.add_widget(property_form)
+        if self.key == 'Normal' or self.key == 'Function':
+            form_type = PropertyForm()
+        else:
+            form_type = NodeForm()
+
+        self.main_sub_layout.add_widget(form_type)
 
         self.add_adding_button()
         self.change_button_functionality(obj)
@@ -240,10 +259,7 @@ class NodeEditor(Popup):
                               code_template)
 
             with open('nn_modules\\nn_nodes.json', 'w') as f:
-                json.dump(nodes,
-                          f,
-                          sort_keys=True,
-                          indent=4)
+                json.dump(nodes, f, sort_keys=True, indent=4)
 
             importlib.reload(nn_modules.nn_components)
             self.component_panel.update_panel()

@@ -218,10 +218,6 @@ class Node(ScatterLayout):
     #     for node, x in zip(self.connecting_nodes, self.outputs):
     #         node.inputs.append(x)
 
-    def update_pos(self, obj, touch):
-        if touch.button == 'left':
-            print(obj.to_parent(*touch.pos))
-
     def num_nl(self, nl_type=1):
         count = 0
 

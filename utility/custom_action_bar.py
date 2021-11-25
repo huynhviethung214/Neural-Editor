@@ -83,6 +83,10 @@ class CustomActionBar(ActionBar):
         # self.add_widget(Label(size_hint_x=1))
         self.add_widget(self.action_view)
 
+    def create_stacked_node(self, obj):
+        stacked_node_editor = StackedNodeEditor()
+        stacked_node_editor.open()
+
     def create_node(self, obj):
         screen_manager = get_obj(self, '_Container').request_obj('Manager')
         component_panel = get_obj(self, '_Container').request_obj('ComponentPanel')
