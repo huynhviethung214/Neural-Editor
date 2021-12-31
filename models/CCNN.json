@@ -1,0 +1,963 @@
+{
+    "beziers_coord": [
+        [
+            [
+                209.39999999999992,
+                537.9999999999999
+            ],
+            [
+                42.39999999999992,
+                536.9999999999999
+            ]
+        ],
+        [
+            [
+                600.3999999999999,
+                532.0
+            ],
+            [
+                449.3999999999999,
+                537.9999999999999
+            ]
+        ],
+        [
+            [
+                1007.3999999999999,
+                499.9999999999999
+            ],
+            [
+                840.3999999999999,
+                532.0
+            ]
+        ],
+        [
+            [
+                1406.3999999999999,
+                506.9999999999999
+            ],
+            [
+                1247.3999999999999,
+                499.9999999999999
+            ]
+        ],
+        [
+            [
+                1761.3999999999999,
+                487.99999999999983
+            ],
+            [
+                1646.3999999999999,
+                506.9999999999999
+            ]
+        ],
+        [
+            [
+                2098.3999999999996,
+                502.9999999999997
+            ],
+            [
+                2001.3999999999999,
+                487.99999999999983
+            ]
+        ],
+        [
+            [
+                2503.4,
+                528.9999999999998
+            ],
+            [
+                2338.3999999999996,
+                502.9999999999997
+            ]
+        ]
+    ],
+    "hvfs": {
+        "Criterion": {
+            "CrossEntropyLoss": {
+                "ignore_index": "-100",
+                "reduce": "True",
+                "reduction": "mean",
+                "size_average": "True"
+            }
+        },
+        "Evaluating": {
+            "PerceptronExample": {
+                "epochs": "10",
+                "file_path": "hyper_variables_forms\\perceptron_example\\eval\\evaluating.py"
+            }
+        },
+        "Optimizer": {
+            "Adam": {
+                "amsgrad": "False",
+                "eps": "1e-08",
+                "lr": "0.001",
+                "weight_decay": "0"
+            }
+        },
+        "Processor": {
+            "ImageProcessor": {
+                "channels": "3",
+                "fpath": "D:\\Python Projects\\Project Alpha\\S&U\\PyTorch\\TreeRecognition\\test_set",
+                "height": "300",
+                "output_file": "tree_dataset",
+                "shuffle": "True",
+                "split": "0.3",
+                "width": "300"
+            }
+        },
+        "Training": {
+            "TestCNN": {
+                "epochs": "20",
+                "file_path": "hyper_variables_forms\\test_cnn\\train\\training.py",
+                "is_save": "True",
+                "output_file_name": "test1"
+            }
+        }
+    },
+    "mapped_path": [
+        "Conv2dBlock 0",
+        "Conv2dBlock 1",
+        "Conv2dBlock 2",
+        "Conv2dBlock 3",
+        "Conv2dBlock 4",
+        "Conv2dBlock 5",
+        "Flatten 0",
+        "Linear 0"
+    ],
+    "model": {
+        "Conv2dBlock 0": {
+            "pos": [
+                -196.60000000000008,
+                361.9999999999999
+            ],
+            "properties": {
+                "BatchNorm2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "affine": [
+                            3,
+                            "True"
+                        ],
+                        "eps": [
+                            4,
+                            "1e-05"
+                        ],
+                        "momentum": [
+                            4,
+                            "0.1"
+                        ],
+                        "num_features": [
+                            1,
+                            "16"
+                        ],
+                        "track_running_stats": [
+                            3,
+                            "True"
+                        ]
+                    }
+                },
+                "Conv2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Input Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "dilation": [
+                            1,
+                            "1"
+                        ],
+                        "groups": [
+                            1,
+                            "1"
+                        ],
+                        "in_channels": [
+                            1,
+                            "3"
+                        ],
+                        "kernel_size": [
+                            1,
+                            "5"
+                        ],
+                        "out_channels": [
+                            1,
+                            "16"
+                        ],
+                        "padding": [
+                            1,
+                            "2"
+                        ],
+                        "padding_mode": [
+                            2,
+                            "zeros"
+                        ],
+                        "stride": [
+                            1,
+                            "1"
+                        ]
+                    }
+                },
+                "Layer": [
+                    5,
+                    "Input Layer"
+                ],
+                "MaxPool2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Output Layer"
+                        ],
+                        "ceil_mode": [
+                            3,
+                            "False"
+                        ],
+                        "dilation": [
+                            1,
+                            "1"
+                        ],
+                        "kernel_size": [
+                            1,
+                            "2"
+                        ],
+                        "padding": [
+                            1,
+                            "0"
+                        ],
+                        "return_indices": [
+                            3,
+                            "False"
+                        ],
+                        "stride": [
+                            1,
+                            "2"
+                        ]
+                    }
+                },
+                "ReLU 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "inplace": [
+                            3,
+                            "False"
+                        ]
+                    }
+                }
+            }
+        },
+        "Conv2dBlock 1": {
+            "pos": [
+                210.39999999999992,
+                362.9999999999999
+            ],
+            "properties": {
+                "BatchNorm2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "affine": [
+                            3,
+                            "True"
+                        ],
+                        "eps": [
+                            4,
+                            "1e-05"
+                        ],
+                        "momentum": [
+                            4,
+                            "0.1"
+                        ],
+                        "num_features": [
+                            1,
+                            "32"
+                        ],
+                        "track_running_stats": [
+                            3,
+                            "True"
+                        ]
+                    }
+                },
+                "Conv2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Input Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "dilation": [
+                            1,
+                            "1"
+                        ],
+                        "groups": [
+                            1,
+                            "1"
+                        ],
+                        "in_channels": [
+                            1,
+                            "16"
+                        ],
+                        "kernel_size": [
+                            1,
+                            "5"
+                        ],
+                        "out_channels": [
+                            1,
+                            "32"
+                        ],
+                        "padding": [
+                            1,
+                            "2"
+                        ],
+                        "padding_mode": [
+                            2,
+                            "zeros"
+                        ],
+                        "stride": [
+                            1,
+                            "1"
+                        ]
+                    }
+                },
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "MaxPool2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Output Layer"
+                        ],
+                        "ceil_mode": [
+                            3,
+                            "False"
+                        ],
+                        "dilation": [
+                            1,
+                            "1"
+                        ],
+                        "kernel_size": [
+                            1,
+                            "2"
+                        ],
+                        "padding": [
+                            1,
+                            "0"
+                        ],
+                        "return_indices": [
+                            3,
+                            "False"
+                        ],
+                        "stride": [
+                            1,
+                            "2"
+                        ]
+                    }
+                },
+                "ReLU 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "inplace": [
+                            3,
+                            "False"
+                        ]
+                    }
+                }
+            }
+        },
+        "Conv2dBlock 2": {
+            "pos": [
+                601.3999999999999,
+                356.99999999999994
+            ],
+            "properties": {
+                "BatchNorm2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "affine": [
+                            3,
+                            "True"
+                        ],
+                        "eps": [
+                            4,
+                            "1e-05"
+                        ],
+                        "momentum": [
+                            4,
+                            "0.1"
+                        ],
+                        "num_features": [
+                            1,
+                            "64"
+                        ],
+                        "track_running_stats": [
+                            3,
+                            "True"
+                        ]
+                    }
+                },
+                "Conv2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Input Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "dilation": [
+                            1,
+                            "1"
+                        ],
+                        "groups": [
+                            1,
+                            "1"
+                        ],
+                        "in_channels": [
+                            1,
+                            "32"
+                        ],
+                        "kernel_size": [
+                            1,
+                            "5"
+                        ],
+                        "out_channels": [
+                            1,
+                            "64"
+                        ],
+                        "padding": [
+                            1,
+                            "2"
+                        ],
+                        "padding_mode": [
+                            2,
+                            "zeros"
+                        ],
+                        "stride": [
+                            1,
+                            "1"
+                        ]
+                    }
+                },
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "MaxPool2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Output Layer"
+                        ],
+                        "ceil_mode": [
+                            3,
+                            "False"
+                        ],
+                        "dilation": [
+                            1,
+                            "1"
+                        ],
+                        "kernel_size": [
+                            1,
+                            "2"
+                        ],
+                        "padding": [
+                            1,
+                            "0"
+                        ],
+                        "return_indices": [
+                            3,
+                            "False"
+                        ],
+                        "stride": [
+                            1,
+                            "2"
+                        ]
+                    }
+                },
+                "ReLU 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "inplace": [
+                            3,
+                            "False"
+                        ]
+                    }
+                }
+            }
+        },
+        "Conv2dBlock 3": {
+            "pos": [
+                1008.3999999999999,
+                324.9999999999999
+            ],
+            "properties": {
+                "BatchNorm2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "affine": [
+                            3,
+                            "True"
+                        ],
+                        "eps": [
+                            4,
+                            "1e-05"
+                        ],
+                        "momentum": [
+                            4,
+                            "0.1"
+                        ],
+                        "num_features": [
+                            1,
+                            "128"
+                        ],
+                        "track_running_stats": [
+                            3,
+                            "True"
+                        ]
+                    }
+                },
+                "Conv2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Input Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "dilation": [
+                            1,
+                            "1"
+                        ],
+                        "groups": [
+                            1,
+                            "1"
+                        ],
+                        "in_channels": [
+                            1,
+                            "64"
+                        ],
+                        "kernel_size": [
+                            1,
+                            "5"
+                        ],
+                        "out_channels": [
+                            1,
+                            "128"
+                        ],
+                        "padding": [
+                            1,
+                            "2"
+                        ],
+                        "padding_mode": [
+                            2,
+                            "zeros"
+                        ],
+                        "stride": [
+                            1,
+                            "1"
+                        ]
+                    }
+                },
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "MaxPool2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Output Layer"
+                        ],
+                        "ceil_mode": [
+                            3,
+                            "False"
+                        ],
+                        "dilation": [
+                            1,
+                            "1"
+                        ],
+                        "kernel_size": [
+                            1,
+                            "2"
+                        ],
+                        "padding": [
+                            1,
+                            "0"
+                        ],
+                        "return_indices": [
+                            3,
+                            "False"
+                        ],
+                        "stride": [
+                            1,
+                            "2"
+                        ]
+                    }
+                },
+                "ReLU 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "inplace": [
+                            3,
+                            "False"
+                        ]
+                    }
+                }
+            }
+        },
+        "Conv2dBlock 4": {
+            "pos": [
+                1407.3999999999999,
+                331.9999999999999
+            ],
+            "properties": {
+                "BatchNorm2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "affine": [
+                            3,
+                            "True"
+                        ],
+                        "eps": [
+                            4,
+                            "1e-05"
+                        ],
+                        "momentum": [
+                            4,
+                            "0.1"
+                        ],
+                        "num_features": [
+                            1,
+                            "64"
+                        ],
+                        "track_running_stats": [
+                            3,
+                            "True"
+                        ]
+                    }
+                },
+                "Conv2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Input Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "dilation": [
+                            1,
+                            "1"
+                        ],
+                        "groups": [
+                            1,
+                            "1"
+                        ],
+                        "in_channels": [
+                            1,
+                            "128"
+                        ],
+                        "kernel_size": [
+                            1,
+                            "5"
+                        ],
+                        "out_channels": [
+                            1,
+                            "64"
+                        ],
+                        "padding": [
+                            1,
+                            "2"
+                        ],
+                        "padding_mode": [
+                            2,
+                            "zeros"
+                        ],
+                        "stride": [
+                            1,
+                            "1"
+                        ]
+                    }
+                },
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "MaxPool2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Output Layer"
+                        ],
+                        "ceil_mode": [
+                            3,
+                            "False"
+                        ],
+                        "dilation": [
+                            1,
+                            "1"
+                        ],
+                        "kernel_size": [
+                            1,
+                            "2"
+                        ],
+                        "padding": [
+                            1,
+                            "0"
+                        ],
+                        "return_indices": [
+                            3,
+                            "False"
+                        ],
+                        "stride": [
+                            1,
+                            "2"
+                        ]
+                    }
+                },
+                "ReLU 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "inplace": [
+                            3,
+                            "False"
+                        ]
+                    }
+                }
+            }
+        },
+        "Conv2dBlock 5": {
+            "pos": [
+                1762.3999999999999,
+                312.99999999999983
+            ],
+            "properties": {
+                "BatchNorm2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "affine": [
+                            3,
+                            "True"
+                        ],
+                        "eps": [
+                            4,
+                            "1e-05"
+                        ],
+                        "momentum": [
+                            4,
+                            "0.1"
+                        ],
+                        "num_features": [
+                            1,
+                            "32"
+                        ],
+                        "track_running_stats": [
+                            3,
+                            "True"
+                        ]
+                    }
+                },
+                "Conv2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Input Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "dilation": [
+                            1,
+                            "1"
+                        ],
+                        "groups": [
+                            1,
+                            "1"
+                        ],
+                        "in_channels": [
+                            1,
+                            "64"
+                        ],
+                        "kernel_size": [
+                            1,
+                            "5"
+                        ],
+                        "out_channels": [
+                            1,
+                            "32"
+                        ],
+                        "padding": [
+                            1,
+                            "2"
+                        ],
+                        "padding_mode": [
+                            2,
+                            "zeros"
+                        ],
+                        "stride": [
+                            1,
+                            "1"
+                        ]
+                    }
+                },
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "MaxPool2D 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Output Layer"
+                        ],
+                        "ceil_mode": [
+                            3,
+                            "False"
+                        ],
+                        "dilation": [
+                            1,
+                            "1"
+                        ],
+                        "kernel_size": [
+                            1,
+                            "2"
+                        ],
+                        "padding": [
+                            1,
+                            "0"
+                        ],
+                        "return_indices": [
+                            3,
+                            "False"
+                        ],
+                        "stride": [
+                            1,
+                            "2"
+                        ]
+                    }
+                },
+                "ReLU 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "inplace": [
+                            3,
+                            "False"
+                        ]
+                    }
+                }
+            }
+        },
+        "Flatten 0": {
+            "pos": [
+                2099.3999999999996,
+                447.9999999999997
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ]
+            }
+        },
+        "Linear 0": {
+            "pos": [
+                2504.4,
+                428.9999999999998
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Output Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "512"
+                ],
+                "out_features": [
+                    1,
+                    "6"
+                ]
+            }
+        }
+    },
+    "rels": [
+        [
+            "Conv2dBlock 0 Output 0",
+            "Conv2dBlock 1 Input 0"
+        ],
+        [
+            "Conv2dBlock 1 Output 0",
+            "Conv2dBlock 2 Input 0"
+        ],
+        [
+            "Conv2dBlock 2 Output 0",
+            "Conv2dBlock 3 Input 0"
+        ],
+        [
+            "Conv2dBlock 3 Output 0",
+            "Conv2dBlock 4 Input 0"
+        ],
+        [
+            "Conv2dBlock 4 Output 0",
+            "Conv2dBlock 5 Input 0"
+        ],
+        [
+            "Conv2dBlock 5 Output 0",
+            "Flatten 0 Input 0"
+        ],
+        [
+            "Flatten 0 Output 0",
+            "Linear 0 Input 0"
+        ]
+    ]
+}

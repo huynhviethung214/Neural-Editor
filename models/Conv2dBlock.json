@@ -1,0 +1,219 @@
+{
+    "beziers_coord": [
+        [
+            [
+                38.39999999999992,
+                591.0
+            ],
+            [
+                174.39999999999998,
+                589.9999999999995
+            ]
+        ],
+        [
+            [
+                552.3999999999999,
+                666.9999999999999
+            ],
+            [
+                414.3999999999999,
+                589.9999999999995
+            ]
+        ],
+        [
+            [
+                792.3999999999999,
+                666.9999999999999
+            ],
+            [
+                936.3999999999999,
+                555.9999999999999
+            ]
+        ]
+    ],
+    "hvfs": {
+        "Criterion": {
+            "BCELoss": {
+                "reduce": "True",
+                "reduction": "mean",
+                "size_average": "True"
+            }
+        },
+        "Evaluating": {
+            "PerceptronExample": {
+                "epochs": "10",
+                "file_path": "hyper_variables_forms\\perceptron_example\\eval\\evaluating.py"
+            }
+        },
+        "Optimizer": {
+            "ASGD": {
+                "alpha": "0.75",
+                "lambd": "0.0001",
+                "lr": "0.01",
+                "t0": "1000000.0",
+                "weight_decay": "0"
+            }
+        },
+        "Processor": {
+            "BinaryProcessor": {
+                "fpath": "test_set\\binary_dataset.txt"
+            }
+        },
+        "Training": {
+            "PerceptronExample": {
+                "epochs": "10",
+                "file_path": "hyper_variables_forms\\perceptron_example\\train\\training.py",
+                "is_save": "True",
+                "output_file_name": "test"
+            }
+        }
+    },
+    "model": {
+        "BatchNorm2D 0": {
+            "pos": [
+                175.39999999999998,
+                459.9999999999995
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "affine": [
+                    3,
+                    true
+                ],
+                "eps": [
+                    4,
+                    "1e-05"
+                ],
+                "momentum": [
+                    4,
+                    "0.1"
+                ],
+                "num_features": [
+                    1,
+                    "0"
+                ],
+                "track_running_stats": [
+                    3,
+                    true
+                ]
+            }
+        },
+        "Conv2D 0": {
+            "pos": [
+                -200.60000000000008,
+                400.99999999999994
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Input Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "dilation": [
+                    1,
+                    "1"
+                ],
+                "groups": [
+                    1,
+                    "1"
+                ],
+                "in_channels": [
+                    1,
+                    "0"
+                ],
+                "kernel_size": [
+                    1,
+                    "0"
+                ],
+                "out_channels": [
+                    1,
+                    "0"
+                ],
+                "padding": [
+                    1,
+                    "0"
+                ],
+                "padding_mode": [
+                    2,
+                    "zeros"
+                ],
+                "stride": [
+                    1,
+                    "1"
+                ]
+            }
+        },
+        "MaxPool2D 0": {
+            "pos": [
+                937.3999999999999,
+                410.9999999999999
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Output Layer"
+                ],
+                "ceil_mode": [
+                    3,
+                    "False"
+                ],
+                "dilation": [
+                    1,
+                    "1"
+                ],
+                "kernel_size": [
+                    1,
+                    "0"
+                ],
+                "padding": [
+                    1,
+                    "0"
+                ],
+                "return_indices": [
+                    3,
+                    "False"
+                ],
+                "stride": [
+                    1,
+                    "0"
+                ]
+            }
+        },
+        "ReLU 0": {
+            "pos": [
+                553.3999999999999,
+                596.9999999999999
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "inplace": [
+                    3,
+                    "False"
+                ]
+            }
+        }
+    },
+    "rels": [
+        [
+            "Conv2D 0 Output 0",
+            "BatchNorm2D 0 Input 0"
+        ],
+        [
+            "BatchNorm2D 0 Output 0",
+            "ReLU 0 Input 0"
+        ],
+        [
+            "ReLU 0 Output 0",
+            "MaxPool2D 0 Input 0"
+        ]
+    ]
+}
