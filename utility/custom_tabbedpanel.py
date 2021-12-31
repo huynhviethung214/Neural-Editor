@@ -13,9 +13,9 @@ from time import sleep
 
 
 class TabManager(TabbedPanel):
-    def __init__(self, **kwargs):
+    def __init__(self, add_default_tab=True, **kwargs):
         super(TabManager, self).__init__()
-        self.size_hint_y = 0.95
+        # self.size_hint_y = 0.95
         self.do_default_tab = False
         self.tab_pos = 'top_left'
         self.tab_height = 30
@@ -27,8 +27,9 @@ class TabManager(TabbedPanel):
 
         self.func = kwargs.get('func')
 
-        self.add_tab(func_name=self.default_name,
-                     _fkwargs=self._fkwargs)
+        if add_default_tab:
+            self.add_tab(func_name=self.default_name,
+                         _fkwargs=self._fkwargs)
 
         add_button_layout = BoxLayout()
         add_button = Button(text='+',
@@ -47,11 +48,10 @@ class TabManager(TabbedPanel):
         # print(fkwargs)
         ntabs = 0
 
-        if func_name in self.tab_name_list:
-            for fname in self.tab_name_list:
-                if func_name in fname:
-                    ntabs += 1
-            func_name = f'{func_name} {str(ntabs)}'
+        for fname in self.tab_name_list:
+            if func_name in fname:
+                ntabs += 1
+        func_name = f'{func_name} {str(ntabs)}'
 
         # print(func_name)
         header = CustomHeader(func_name=func_name,

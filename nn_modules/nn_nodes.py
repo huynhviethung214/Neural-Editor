@@ -4,7 +4,7 @@ import importlib
 from nn_modules.node import Node
 # from nn_modules.base_node import BaseNode
 
-
+from i_modules.interface.interface import Interface
 # from torch.nn import ReLU, BatchNorm2d, Conv2d, MaxPool2d, Linear, Sequential
 
 
@@ -35,6 +35,7 @@ def generate_nn_nodes():
                 globals()[_name].name = node_name
                 globals()[_name].node_type = nodes[node_name]['node_type']
                 globals()[_name].algorithm = algo
+                # globals()[_name].interface_template = Interface()
                 # globals()[_name].node_name = node_name
 
 

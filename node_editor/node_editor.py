@@ -22,7 +22,7 @@ from .node_form import NodeForm
 class NodeEditor(Popup):
     def __init__(self, **kwargs):
         super(NodeEditor, self).__init__()
-        self.size_hint_x = 0.2
+        self.size_hint_x = 0.3
         self.scroll_view = ScrollView(size_hint=(1, 0.9))
 
         self.code_names = [INT_CODE,
@@ -35,8 +35,9 @@ class NodeEditor(Popup):
         self.node_type = self.node_type_list['Normal']
         self.key = 'Normal'
 
-        self.n_in_links = NLForm()
-        self.n_out_links = NLForm()
+        self.n_in_links = NLForm(hint_text='Number of Inputs')
+        self.n_out_links = NLForm(hint_text='Number of Outputs',
+                                  nl_type='output')
 
         self.main_layout = BoxLayout(size_hint=(1, 1),
                                      orientation='vertical',
@@ -88,7 +89,8 @@ class NodeEditor(Popup):
         button.bind(on_press=lambda obj: self.dismiss())
 
         self.custom_title.add_widget(CustomTextInput(size_hint_x=0.4,
-                                                     size_hint_y=0.65))
+                                                     size_hint_y=0.65,
+                                                     max_length=100))
         # self.custom_title.add_widget(Label(size_hint_x=0.48))
         self.custom_title.add_widget(self.node_type_chooser)
         self.custom_title.add_widget(button)
@@ -141,7 +143,8 @@ class NodeEditor(Popup):
                                    spacing=5)
 
         labels_sub_layout = BoxLayout()
-        labels_sub_layout.add_widget(Label(text='Property Name', size_hint_x=0.8))
+        labels_sub_layout.add_widget(Label(text='Property Name', size_hint_x=0.6))
+        labels_sub_layout.add_widget(Label(text='Value', size_hint_x=0.2))
         labels_sub_layout.add_widget(Label(text='Datatype', size_hint_x=0.2))
 
         labels_layout.add_widget(Label(size_hint_x=0.1))
@@ -222,15 +225,8 @@ class NodeEditor(Popup):
             _property = self.main_sub_layout.children[i].property
 
             if type(_property) == dict and 'position' not in _property.keys():
-                # print(_property)
-                if _property['dtype'] in self.code_names:
-                    properties.update({_property['property_name']: [_property['dtype'], 0]})
-
-                elif _property['dtype'] == BOOL_CODE:
-                    properties.update({_property['property_name']: [_property['dtype'], True]})
-
-                elif _property['dtype'] == MATRIX_CODE:
-                    properties.update({_property['property_name']: [_property['dtype'], (2, 2)]})
+                properties.update({_property['property_name']: [_property['dtype'],
+                                                                str(_property['default_value'])]})
 
         # Add `node_type` property
         properties.update({'node_type': self.node_type})
@@ -238,7 +234,6 @@ class NodeEditor(Popup):
         properties.update({'nl_output': self.n_out_links.property})
 
         node_name = self.custom_title.children[2].text
-        # print(node_name)
 
         if node_name != '':
             if node_name[0].islower():

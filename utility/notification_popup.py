@@ -5,7 +5,7 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 
-from utility.utils import Sorter
+from utility.utils import get_obj
 
 
 class NotificationPopup(Popup):
@@ -29,7 +29,7 @@ class NotificationPopup(Popup):
         self.sub_layout.add_widget(deny_button)
         self.sub_layout.add_widget(cancel_button)
 
-        self.layout.add_widget(Label(text='New file has been modified, save changes?',
+        self.layout.add_widget(Label(text='This model has been modified, save changes?',
                                      size_hint=(1, 0.6)))
         self.layout.add_widget(self.sub_layout)
         self.add_widget(self.layout)
@@ -40,21 +40,23 @@ class NotificationPopup(Popup):
 
     # TODO: FIX `saved_model` function
     def save_model(self, obj):
-        tab_manager = [widget for widget in self.container.walk(loopback=True) if 'TabManager' in str(widget)][0]
-        interface = tab_manager.current_tab.content.children[-1]
-        model = interface.m_list
-
-        sorter = Sorter()
-        sorted_model = sorter.sort(model)
-
-        interface._template.update({'links': [block for block in sorted_model.blocks.keys()],
-                                    'beziers': [bezier.points for bezier in interface.beziers]})
-
-        with open('models\\' + interface.model_name + '.json', 'w') as f:
-            json.dump(interface._template,
-                      f,
-                      sort_keys=True,
-                      indent=4)
+        custom_action_bar = get_obj(self.container, 'CustomActionBar')
+        custom_action_bar.save_model(None)
+        # tab_manager = [widget for widget in self.container.walk(loopback=True) if 'TabManager' in str(widget)][0]
+        # interface = tab_manager.current_tab.content.children[-1]
+        # model = interface.m_list
+        #
+        # sorter = Sorter()
+        # sorted_model = sorter.sort(model)
+        #
+        # interface._template.update({'links': [block for block in sorted_model.blocks.keys()],
+        #                             'beziers': [bezier.points for bezier in interface.beziers]})
+        #
+        # with open('models\\' + interface.model_name + '.json', 'w') as f:
+        #     json.dump(interface._template,
+        #               f,
+        #               sort_keys=True,
+        #               indent=4)
         self.obj.stop()
 
     def cancel(self, obj):

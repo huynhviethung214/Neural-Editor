@@ -1,6 +1,5 @@
 from torch.nn import Conv2d, BatchNorm2d, ReLU, MaxPool2d, Sequential
 
-
 # class xconv2d:
 #     def __init__(self):
 #         super(xconv2d, self).__init__()

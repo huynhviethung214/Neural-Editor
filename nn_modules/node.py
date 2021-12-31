@@ -1,25 +1,34 @@
-import kivy
+import json
 import os
+import kivy
+
+
+from os.path import abspath
 from kivy.base import runTouchApp
 from kivy.event import EventDispatcher
-
 from kivy.uix.scatterlayout import ScatterLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.anchorlayout import AnchorLayout
+from kivy.uix.scrollview import ScrollView
 from kivy.uix.spinner import Spinner
+from kivy.uix.treeview import TreeView, TreeViewLabel, TreeViewNode
 from kivy.uix.widget import Widget
 from kivy.graphics import Line, Rectangle
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
 from functools import partial
 
-from utility.rightclick_toolbar.rightclick_toolbar import RightClickToolBar
+from utility.rightclick_toolbar.rightclick_toolbar import RightClickMenu
 from utility.utils import get_obj
 from utility.custom_input.custom_input import CustomTextInput
 from nn_modules.code_names import *
 
 kivy.require('2.0.0')
+
+
+class TreeViewLayout(BoxLayout, TreeViewNode):
+    pass
 
 
 class StateEvent(EventDispatcher):
@@ -82,28 +91,55 @@ class NodeLink(Widget):
         return self.name
 
 
-class CustomValueInput(BoxLayout, Widget):
-    def __init__(self, **kwargs):
-        super(CustomValueInput, self).__init__()
-        self.size_hint = (1, 0.2)
+class CustomSpinnerInput(BoxLayout):
+    def __init__(self, c_height=None, default_halign='center', **kwargs):
+        super(CustomSpinnerInput, self).__init__()
+        self.size_hint = (1, 1)
+        self.height = c_height
         self.spacing = 20
+        self.height = 25
 
-        self._input = CustomTextInput(font_size=13,
-                                      width=90,
-                                      size_hint=(0.6, 1))
+        self.label = Label(text=kwargs.get('property_name'),
+                           halign=default_halign,
+                           valign='middle',
+                           width=100,
+                           font_size=14,
+                           text_size=(100, 35),
+                           size_hint=(0.4, 1),
+                           max_lines=1,
+                           shorten=True,
+                           shorten_from='right')
+        self.input = Spinner(text='False',
+                             values=('True', 'False'),
+                             size_hint=(0.6, 1),
+                             sync_height=True)
+        self.add_widget(self.label)
+        self.add_widget(self.input)
 
-        self._label = Label(text=kwargs.get('name'),
-                            halign='center',
-                            valign='middle',
-                            width=100,
-                            font_size=14,
-                            text_size=(100, 35),
-                            size_hint=(0.4, 1),
-                            max_lines=1,
-                            shorten=True)
 
-        self.add_widget(self._label)
-        self.add_widget(self._input)
+class CustomValueInput(BoxLayout):
+    def __init__(self, default_halign='center', **kwargs):
+        super(CustomValueInput, self).__init__()
+        self.size_hint = (1, 1)
+        self.spacing = 20
+        self.height = 25
+
+        self.label = Label(text=kwargs.get('name'),
+                           halign=default_halign,
+                           valign='middle',
+                           width=100,
+                           font_size=14,
+                           text_size=(100, 35),
+                           size_hint=(0.4, 1),
+                           max_lines=1,
+                           shorten=True,
+                           shorten_from='right')
+        self.input = CustomTextInput(font_size=13,
+                                     width=90,
+                                     size_hint=(0.6, 1))
+
+        self.add_widget(self.label)
+        self.add_widget(self.input)
 
 
 class KernelInput(BoxLayout):
@@ -112,6 +148,7 @@ class KernelInput(BoxLayout):
         self.default_size = kwargs.get('default_size')
         self.size_hint = (0.6, 1)
         self.spacing = 4
+        self.height = 25
 
         self.m = CustomTextInput(text=str(self.default_size[0]),
                                  font_size=12)
@@ -144,25 +181,20 @@ class Node(ScatterLayout):
 
         self.sub_layout = GridLayout()
         self.sub_layout.cols = 1
-        self.sub_layout.row_force_default = True
-        self.sub_layout.row_default_height = 25
+        self.sub_layout.rows = 1
+        # self.sub_layout.row_force_default = True
+        # self.sub_layout.row_default_height = 25
 
         self.do_scale = False
         self.do_rotation = False
         self.width = 240
 
-        # self.input_bezier = None
-        # self.output_bezier = None
-        self.beziers = {'input': None,
-                        'output': None
-                        }
+        # self.beziers = {'input': None,
+        #                 'output': None}
 
-        # self.name = kwargs.get('name')
         self.pos = kwargs.get('spawn_position')
-        # self.to_parent_pos = self.to_parent(*self.pos)
         self.widget_height = 0
         self.c_nav = None
-        # self.is_finished = False
 
         self.code2pos = {
             LEFT_CODE: 'left',
@@ -176,7 +208,10 @@ class Node(ScatterLayout):
                       'Hidden Layer',
                       'Output Layer',)
         self.c_type = self.types[1]
+        self.type = NORM
+        self.is_loaded = False
 
+        # self.flag = -1  # -1 = Normal, 0 = Move, 1 = Down, 2 = Up
         self.properties = {}
         self.objs = []
         self.connected_nodes = []
@@ -191,27 +226,26 @@ class Node(ScatterLayout):
         self.code_names = [INT_CODE, STR_CODE, FLOAT_CODE, OBJ_CODE]
 
         self.interface = kwargs.get('interface')
-        # self.get_node_names()
+        self.interface_template = type(self.interface)()
         self.add_components()
         self.add_ib()
 
         self.combine()
 
         self.add_info(self.name)
-        # self.add_custom_properties()
         self._import_algorithm_file()
 
         self.overlay = get_obj(self.interface, 'OverLay')
 
         # EXTENDABLE `func_list`
-        self.right_click_toolbar = RightClickToolBar(func_list={'delete': self.delete_node},
-                                                     obj=self,
-                                                     interface=self.interface)
+        # self.right_click_toolbar = RightClickMenu(func_list={'delete': self.delete_node},
+        #                                              obj=self,
+        #                                              interface=self.interface)
         # self.bind(on_touch_up=self.right_click_toolbar.open_toolbar)
         # self.bind(on_touch_move=self.right_click_toolbar.remove_toolbar)
-        self.right_click_toolbar.add_buttons()
+        # self.right_click_toolbar.add_buttons()
 
-        self.bind(on_touch_down=self.right_click_toolbar.open_toolbar)
+        # self.bind(on_touch_down=self.right_click_toolbar.open_toolbar)
         # self.bind(on_touch_down=self.update_pos)
 
     # def pass_outputs(self):
@@ -293,9 +327,6 @@ class Node(ScatterLayout):
             self.name = 'Layer {0}'.format(self.n_layer)
             self.n_layer += 1
 
-    # def add_components(self):
-    # 	pass
-
     def add_components(self):
         self.set_id(node_name=self.name)
         # print(self.name)
@@ -303,21 +334,29 @@ class Node(ScatterLayout):
         self.add_drop_down_list()
 
         # print(self.node_template)
-        for key in sorted(self.node_template.keys()):
-            if key != 'node_type' and 'nl' not in key:
-                if self.node_template[key][0] in self.code_names:
-                    self.add_val_input(name=key,
-                                       _type=self.node_template[key][0])
+        if self.node_template['node_type'] == STACKED:
+            self.add_stacked_nodes()
+            self.type = STACKED
+        else:
+            self.sub_layout.row_force_default = True
+            self.sub_layout.row_default_height = 25
 
-                elif self.node_template[key][0] == BOOL_CODE:
-                    self.add_list_data(name=key,
-                                       datas=[True, False],
-                                       _type=BOOL_CODE)
+            for key in sorted(self.node_template.keys()):
+                if key != 'node_type' and 'nl' not in key:
+                    if self.node_template[key][0] in self.code_names:
+                        self.add_val_input(name=key,
+                                           _type=self.node_template[key][0],
+                                           default_val=self.node_template[key][1])
 
-                elif self.node_template[key][0] == MATRIX_CODE:
-                    self.add_kernel_input(name=key,
-                                          default_size=(2, 2),
-                                          _type=MATRIX_CODE)
+                    elif self.node_template[key][0] == BOOL_CODE:
+                        self.add_list_data(name=key,
+                                           datas=[True, False],
+                                           _type=BOOL_CODE)
+
+                    elif self.node_template[key][0] == MATRIX_CODE:
+                        self.add_kernel_input(name=key,
+                                              default_size=(2, 2),
+                                              _type=MATRIX_CODE)
 
     # def add_custom_properties(self):
     # 	pass
@@ -370,6 +409,145 @@ class Node(ScatterLayout):
                 self.inputs.append(in2)
                 self.inputs.append(in3)
 
+    @staticmethod
+    def get_functions(node_name):
+        module = __import__('nn_modules.nn_nodes',
+                            fromlist=[node_name + 'Node'])
+        _class = getattr(module, node_name + 'Node')
+
+        return _class
+
+    # Split `Stacked Node` properties to separate child's properties
+    def set_nodes_properties(self, node_obj, properties):
+        for widget in node_obj.sub_layout.children:
+            if type(widget) == CustomValueInput or type(widget) == CustomSpinnerInput:
+                variable = self.properties[node_obj.name]['properties'][widget.label.text]
+
+                node_obj.properties[widget.label.text][1] = str(variable[1])
+                node_obj.properties[widget.label.text][0] = variable[0]
+
+    def load_nodes(self):
+        if not self.is_loaded:
+            with open(abspath('models/' + self.name.split(' ')[0] + '.json'), 'r') as f:
+                datas = json.load(f)
+                model = datas['model']
+
+                for key in model.keys():
+                    try:
+                        node_type = key.split(' ')[0]
+                        node = self.get_functions(node_type)
+
+                        self.interface_template._node = node
+                        node = self.interface_template.add_node2interface()
+
+                        for widget in node.sub_layout.children:
+                            if type(widget) == Spinner:
+                                # print(self.properties.keys())
+                                # print(self.properties['Layer'][1], node.name)
+                                node.c_type = self.properties[node.name]['properties']['Layer'][1]
+                                # print(node.c_type, node.name, '\n')
+
+                        self.set_nodes_properties(node_obj=node,
+                                                  properties=self.properties[key]['properties'])
+
+                    except AttributeError as e:
+                        pass
+
+                self.binding(datas=datas)
+                self.is_loaded = True
+                # print(self.properties)
+
+    @staticmethod
+    def formatting_rels(rels, node_links):
+        formatted_rels = []
+        current_rel = []
+
+        for rel in rels:
+            for rel_name in rel:
+                for node_link in node_links:
+                    if f'{node_link.node.name} {node_link.name}' == rel_name:
+                        current_rel.append(node_link)
+
+                    if len(current_rel) == 2:
+                        formatted_rels.append(current_rel)
+                        current_rel = []
+
+        return formatted_rels
+
+    def binding(self, datas=None):
+        rels = self.formatting_rels(datas['rels'], self.interface_template.node_links())
+
+        for rel in rels:
+            # Touch Down
+            rel[0].node._bind(nav=rel[0].link_type)
+
+            # Touch Up
+            rel[1].node._bind(state=2,
+                              nav=rel[1].link_type)
+            rel[1].target = rel[0]
+
+            rel[0].target = rel[1]
+            nl_index = rel[0].index()
+            node_name = rel[0].node.name
+
+            rel[0].target.node.connected_nodes.append(
+                f'{node_name} {nl_index}'
+            )
+
+            rel[0].connected = 1
+            rel[1].connected = 1
+
+    def add_stacked_nodes(self):
+        model = self.node_template['model']
+
+        scroll_view = ScrollView(size_hint=(1, 1))
+        tree_view = TreeView(size_hint=(1, None),
+                             height=25,
+                             hide_root=True)
+        tree_view.bind(minimum_height=tree_view.setter('height'))
+        scroll_view.add_widget(tree_view)
+
+        for node in model.keys():
+            tree_node = tree_view.add_node(TreeViewLabel(text=node))
+            self.properties.update({node: {'properties': {}}})
+
+            for property_key in model[node]['properties'].keys():
+                if property_key != 'Layer':
+                    value = str(model[node]['properties'][property_key][1])
+                    variable_type = model[node]['properties'][property_key][0]
+
+                    self.properties[node]['properties'].update({property_key: [variable_type, value]})
+
+                    _layout = TreeViewLayout(height=25,
+                                             spacing=20)
+
+                    if variable_type == BOOL_CODE:
+                        spinner_form = CustomSpinnerInput(property_name=property_key,
+                                                          c_height=self.c_height)
+                        spinner_form.input.text = value
+                        spinner_form.input.bind(text=partial(self.set_stacked_val,
+                                                             name=property_key,
+                                                             node=node))
+                        _layout.add_widget(spinner_form)
+                    else:
+                        input_form = CustomValueInput(name=property_key,
+                                                      font_size=10)
+                        input_form.input.text = value
+                        input_form.input.bind(text=partial(self.set_stacked_val,
+                                                           name=property_key,
+                                                           node=node))
+                        _layout.add_widget(input_form)
+
+                    tree_view.add_node(_layout, tree_node)
+                else:
+                    self.properties[node]['properties'].update({property_key: [
+                        LAYER_CODE,
+                        model[node]['properties'][property_key][1]]
+                    })
+
+        self.sub_layout.rows = 10
+        self.add_component(scroll_view)
+
     def add_kernel_input(self, name=None, default_size=None, _type=MATRIX_CODE):
         if not default_size:
             default_size = (2, 2)
@@ -391,6 +569,7 @@ class Node(ScatterLayout):
         _layout.add_widget(kernel_input)
         self.add_component(_layout)
 
+    # CAN BE OPTIMIZED
     def add_list_data(self, name=None, datas=None, _type=BOOL_CODE):
         if not datas:
             datas = [True, False]
@@ -408,8 +587,8 @@ class Node(ScatterLayout):
                             values=_datas,
                             size_hint=(0.6, 1),
                             sync_height=True)
-
         drop_butt.bind(text=partial(self.set_val, name=name))
+        drop_butt.text = str(self.node_template[name][1])
 
         _layout.add_widget(Label(text=name,
                                  size_hint=(0.4, 1),
@@ -434,11 +613,12 @@ class Node(ScatterLayout):
         self.add_component(drop_butt)
 
     def set_type(self, obj, text):
-        template = self.interface.template[self.name]
+        template = self.interface.template['model'][self.name]
         template['properties']['Layer'] = [LAYER_CODE, text]
         self.c_type = text
 
     def add_component(self, obj):
+        self.sub_layout.rows += 1
         self.objs.append(obj)
 
     def add_id(self):
@@ -450,16 +630,16 @@ class Node(ScatterLayout):
         self.add_component(Label(height=1,
                                  size_hint=(1, None)))
 
-    def add_val_input(self, name=None, _type=None):
+    def add_val_input(self, name=None, _type=None, default_val=None):
         input_form = CustomValueInput(name=name,
                                       font_size=10)
-        input_form._input.bind(text=partial(self.set_val, name=name))
+        input_form.input.text = str(self.node_template[name][1])
+        input_form.input.bind(text=partial(self.set_val, name=name))
 
-        self.properties.update({name: [_type, 0]})
+        self.properties.update({name: [_type, str(default_val)]})
         self.add_component(input_form)
 
     def combine(self):
-        self.sub_layout.rows = len(self.objs)
         self.sub_layout.padding = (20, self.c_padding, 20, self.c_padding)
         self.sub_layout.spacing = self.c_spacing
 
@@ -468,6 +648,7 @@ class Node(ScatterLayout):
 
         self.widget_height = self.c_height * self.sub_layout.rows + self.c_padding * 2
         self.widget_height += (self.sub_layout.rows - 1) * self.c_spacing
+
         self.height = self.widget_height
         self.layout.size = self.size
 
@@ -495,22 +676,6 @@ class Node(ScatterLayout):
 
         self.add_node_links()
 
-        # self.add_output_node()
-        # self.add_output_node(pos='left-top')
-        # self.add_output_node(pos='left-bottom')
-        #
-        # self.add_input_node()
-        # self.add_input_node(pos='right-top')
-        # self.add_input_node(pos='right-bottom')
-        #
-        # self.add_input_node(pos='bottom-middle')
-        # self.add_input_node(pos='bottom-right')
-        # self.add_input_node(pos='bottom-left')
-        #
-        # self.add_input_node(pos='top-middle')
-        # self.add_input_node(pos='top-right')
-        # self.add_input_node(pos='top-left')
-
     def add_input_node(self, pos: str = 'left-middle', name: str = 'Input 0'):
         input_node = NodeLink(spawn_position=self.string_pos[pos],
                               _type=1,
@@ -533,24 +698,21 @@ class Node(ScatterLayout):
                                     self.layout.width, self.layout.height,
                                     6))
 
+    def set_stacked_val(self, obj, val, name, node):
+        try:
+            if val:
+                self.interface.template['model'][self.name]['properties'][node]['properties'][name][1] = val
+                # print(val)
+                # print(self.interface.template['model'][self.name]['properties'][node]['properties'][name])
+        except Exception as e:
+            obj.text = ''
+            raise e
+
     def set_val(self, obj, val, name):
         try:
-            if val != '':
-                if self.properties[name][0] == INT_CODE:
-                    self.properties[name][1] = int(val)
-
-                elif self.properties[name][0] == FLOAT_CODE:
-                    self.properties[name][1] == float(val)
-
-                elif self.properties[name][0] == STR_CODE:
-                    self.properties[name][1] = val
-
-                elif self.properties[name][0] == BOOL_CODE:
-                    self.properties[name][1] = bool(val)
-
-                elif self.properties[name][0] == MATRIX_CODE:
-                    self.properties[name][0] = val
-
+            if val:
+                self.properties[name][1] = val
+                # print(self.interface.template)
         except Exception as e:
             obj.text = ''
 
@@ -610,6 +772,7 @@ class Node(ScatterLayout):
                     # print(self.name, Node.b_node.name)
                     Node.b_node = None
 
+    # OPTIMIZE THIS FUNCTION
     def unbind(self, obj=None, nav=None):
         try:
             for layer in self.interface.mn_list:

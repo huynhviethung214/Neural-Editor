@@ -14,10 +14,37 @@ from kivy.uix.checkbox import CheckBox
 from kivy.uix.popup import Popup
 from kivy.uix.spinner import Spinner
 
+from custom_filechooser.custom_filechooser import FileChooser
+from nn_modules.code_names import NORM, STACKED
 from nn_modules.node import CustomValueInput, NodeLink
 from node_editor.node_editor import NodeEditor
-from utility.utils import get_obj, Sorter
+from utility.utils import get_obj
 from settings.config import configs
+
+
+class CustomSpinnerInput(BoxLayout):
+    def __init__(self, c_height=None, default_halign='center', **kwargs):
+        super(CustomSpinnerInput, self).__init__()
+        self.size_hint = (1, None)
+        self.height = c_height
+        self.spacing = 20
+
+        self.label = Label(text=kwargs.get('property_name'),
+                           halign=default_halign,
+                           valign='middle',
+                           width=100,
+                           font_size=14,
+                           text_size=(100, 35),
+                           size_hint=(0.4, 1),
+                           max_lines=1,
+                           shorten=True,
+                           shorten_from='right')
+        self.input = Spinner(text='False',
+                             values=('True', 'False'),
+                             size_hint=(0.6, 1),
+                             sync_height=True)
+        self.add_widget(self.label)
+        self.add_widget(self.input)
 
 
 class CustomActionBar(ActionBar):
@@ -59,7 +86,7 @@ class CustomActionBar(ActionBar):
 
         self.file_chooser_popup = Popup(size_hint=(0.6, 0.6),
                                         title='Models')
-        self.file_chooser = FileChooserIconView(rootpath='models')
+        self.file_chooser = FileChooser(component_panel=kwargs.get('component_panel'))
         self.file_chooser.bind(on_submit=self.load_model)
         self.file_chooser_popup.content = self.file_chooser
 
@@ -67,6 +94,7 @@ class CustomActionBar(ActionBar):
         self.save_button.bind(on_release=self.save_model)
 
         self.load_button = ActionButton(text='Load File', size_hint_x=0.05)
+        self.load_button.bind(on_release=lambda obj: self.file_chooser_popup.open())
         self.load_button.bind(on_release=lambda obj: self.file_chooser_popup.open())
 
         # self.setting_button.add_widget(self.setting_button_view)
@@ -82,10 +110,6 @@ class CustomActionBar(ActionBar):
                                                    app_icon=''))
         # self.add_widget(Label(size_hint_x=1))
         self.add_widget(self.action_view)
-
-    def create_stacked_node(self, obj):
-        stacked_node_editor = StackedNodeEditor()
-        stacked_node_editor.open()
 
     def create_node(self, obj):
         screen_manager = get_obj(self, '_Container').request_obj('Manager')
@@ -122,6 +146,32 @@ class CustomActionBar(ActionBar):
 
     # component_panel._update_panel()
 
+    def get_hvfs(self, interface):
+        hvfs = get_obj(interface, 'IToolBar')
+        hvfs_properties = {}
+
+        for tab in hvfs.tab_list:
+            # print(tab.text)
+            # print(tab.content)
+            current_func = tab.content.children[1].text
+            hvfs_properties.update({tab.text: {current_func: {}}})
+
+            for obj in tab.content.children:
+                if type(obj) == GridLayout:
+                    for children in obj.children:
+                        hvfs_properties[tab.text][current_func].update({children.name: str(children.value)})
+
+        return hvfs_properties
+
+    @staticmethod
+    def get_beziers_points(interface=None):
+        coordinates = []
+
+        for children in interface.scatter_plane.canvas.children:
+            if type(children) == Bezier:
+                coordinates.append([children.points[0:2], children.points[-2:]])
+        return coordinates
+
     @staticmethod
     def get_nodes(node_name):
         module = __import__('nn_modules.nn_nodes',
@@ -130,31 +180,73 @@ class CustomActionBar(ActionBar):
 
         return _class
 
+    def load_hvfs(self, datas, interface):
+        itoolbar = get_obj(interface, 'IToolBar')
+        hvfs = datas['hvfs']
+
+        for tab in itoolbar.tab_list:
+            for form_type in hvfs.keys():
+                if tab.text == form_type:
+                    itoolbar.switch_to(tab, do_scroll=True)
+                    current_function = tab.content.children[1].text = [key for key in hvfs[form_type].keys()][0]
+                    properties_form = tab.content.children[0]
+
+                    for children in properties_form.children:
+                        for _property in hvfs[form_type][current_function].keys():
+                            if children.name == _property:
+                                children.value = hvfs[form_type][current_function][_property]
+                                children.input.text = children.value
+
     def load_model(self, obj, selection, touch):
-        tab_manager = get_obj(self, 'TabManager')
+        interface_tab_manager = get_obj(self, 'TabManager')
 
         func_name = selection[0].split('\\')[-1].split('.')[0]
-        tab_manager.add_tab(func_name=func_name,
-                            _fkwargs={})
+        interface_tab_manager.add_tab(func_name=func_name,
+                                      _fkwargs={})
 
         # Add nodes 1 frame after tab_manager.add_tab function is called
         Clock.schedule_once(partial(self.add_nodes,
-                                    tab_manager,
+                                    interface_tab_manager,
                                     func_name,
                                     selection), 0)
 
     # Clock.schedule_once(partial(self.set_model_name, tab_manager, func_name), 0)
 
     @staticmethod
+    def set_stacked_node_properties(node_obj, properties, *args):
+        scroll_view = node_obj.sub_layout.children[1]
+        tree_view = scroll_view.children[0]
+
+        for widget in node_obj.sub_layout.children:
+            if type(widget) == Spinner:
+                node_obj.c_type = widget.text = properties['Layer'][1]
+
+        for parent_node in tree_view.children:
+            for leaf in parent_node.nodes:
+                for widget in leaf.children:
+                    if type(widget) != Spinner:
+                        value = str(properties[parent_node.text]['properties'][widget.label.text][1])
+
+                        widget.input.text = value
+                        # node_obj.properties[parent_node.text]['properties'][widget.label.text] = value
+
+    @staticmethod
     def set_nodes_properties(node_obj, properties, *args):
         for widget in node_obj.sub_layout.children:
             if type(widget) == CustomValueInput:
-                widget._input.text = str(properties[widget._label.text][1])
+                value = str(properties[widget.label.text][1])
+
+                widget.input.text = value
+                node_obj.properties[widget.label.text][1] = value
 
             elif type(widget) == Spinner:
-                if 'Layer' in widget.text:
-                    widget.text = properties['Layer'][1]
-                    node_obj.c_type = properties['Layer'][1]
+                node_obj.c_type = widget.text = properties['Layer'][1]
+
+            elif type(widget) == CustomSpinnerInput:
+                value = str(properties[widget.label.text][1])
+
+                widget.input.text = value
+                node_obj.properties[widget.label.text][1] = value
 
     @staticmethod
     def set_model_name(interface, func_name, *args):
@@ -169,25 +261,27 @@ class CustomActionBar(ActionBar):
         with open(selection[0], 'r') as f:
             datas = json.load(f)
 
-            for key in datas.keys():
+            for key in datas['model'].keys():
                 try:
                     node_type = key.split(' ')[0]
                     node = self.get_nodes(node_type)
 
-                    # spl = get_obj(interface, 'ScatterPlaneLayout')
-                    # TODO: FIX NODE SPAWNING POSITION
                     interface._node = node
                     node = interface.add_node2interface(
-                        spawn_position=datas[key]['pos']
+                        spawn_position=datas['model'][key]['pos']
                     )
-                    # node_list.append(node_obj)
 
                     interface.create_template(node)
 
-                    Clock.schedule_once(partial(self.set_nodes_properties,
-                                                node,
-                                                datas[key]['properties'],
-                                                interface), 1)
+                    if node.type == NORM:
+                        Clock.schedule_once(partial(self.set_nodes_properties,
+                                                    node,
+                                                    datas['model'][key]['properties']), 1)
+                    elif node.type == STACKED:
+                        node.properties = datas['model'][key]['properties']
+                        Clock.schedule_once(partial(self.set_stacked_node_properties,
+                                                    node,
+                                                    datas['model'][key]['properties']), 1)
 
                     # self.set_nodes_properties(node_obj=node_obj,
                     #                           properties=datas[key]['properties'],
@@ -197,10 +291,17 @@ class CustomActionBar(ActionBar):
                     pass
 
             # interface.draw()
+            if 'mapped_path' in datas.keys():
+                interface.str_mapped_path = datas['mapped_path']
+                interface.is_trained = True
+
             self.draw_beziers(datas=datas,
                               interface=interface)
+            self.load_hvfs(datas=datas,
+                           interface=interface)
 
-    def formatting_rels(self, rels, node_links, nodes):
+    @staticmethod
+    def formatting_rels(rels, node_links):
         formatted_rels = []
         current_rel = []
 
@@ -214,13 +315,12 @@ class CustomActionBar(ActionBar):
                     if len(current_rel) == 2:
                         formatted_rels.append(current_rel)
                         current_rel = []
-                        # print('\n')
 
         return formatted_rels
 
     # TODO: FIX BEZIERS LINE
     def draw_beziers(self, datas, interface):
-        rels = self.formatting_rels(datas['rels'], interface.node_links(), interface.nodes())
+        rels = self.formatting_rels(datas['rels'], interface.node_links())
 
         # for coord, rel in zip(datas['beziers_coord'], rels):
         for coord, rel in zip(datas['beziers_coord'], rels):
@@ -257,34 +357,34 @@ class CustomActionBar(ActionBar):
             # print(coord)
             bezier = interface.draw(*coord)
 
-            rel[0].node.beziers['output'] = rel[1].node.beziers['input'] = bezier
+            # rel[0].node.beziers['output'] = rel[1].node.beziers['input'] = bezier
 
             interface.links.append([rel[1], rel[0], bezier])
             interface.instructions.append(bezier)
-            interface.bezier_points = datas['beziers_coord']
+            # interface.bezier_points = datas['beziers_coord']
             interface.rels = datas['rels']
 
     def save_nodes_pos(self, template, interface):
         for node in get_obj(self, 'Interface').nodes():
-            template[node.name].update({'pos': node.pos})
+            template['model'][node.name].update({'pos': node.pos})
 
         return template
 
     def save_model(self, obj):
         model_name = None
-        tab_manager = get_obj(self, 'TabManager')
-        # interface = tab_manager.current_tab.content.children[-1]
+        interface_tab_manager = get_obj(self, 'InterfaceTabManager')
         interface = get_obj(self, 'Interface')
 
         try:
             model_name = interface.model_name
-            tab_manager.current_tab.text = model_name
+            interface_tab_manager.current_tab.text = model_name
 
         except AttributeError as e:
             if 'model_name' in str(e):
-                model_name = tab_manager.current_tab.text
+                model_name = interface_tab_manager.current_tab.text
 
-        tab_manager.tab_name_list.append(model_name)
+        interface_tab_manager.tab_name_list.append(model_name)
+        # print(interface.template)
 
         # model = interface.m_list
         # sorter = Sorter()
@@ -294,11 +394,17 @@ class CustomActionBar(ActionBar):
         #                            'links_pos': [bezier.points for bezier in interface.beziers]})
         # interface.template.update({'relationship': interface.mn_list})
         # self.get_nodes_pos()
-        interface.template.update({'beziers_coord': interface.bezier_points,
-                                   'rels': interface.rels
+        interface.template.update({'beziers_coord': self.get_beziers_points(interface=interface),
+                                   'rels': interface.rels,
+                                   'hvfs': self.get_hvfs(interface)
         })
         interface.template = self.save_nodes_pos(interface.template,
                                                  interface)
+
+        if interface.is_trained:
+            interface.template.update({
+                'mapped_path': interface.str_mapped_path
+            })
 
         with open('{0}\\{1}.json'.format(configs['models_path'],
                                          model_name), 'w') as f:

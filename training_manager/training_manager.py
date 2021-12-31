@@ -12,15 +12,17 @@ from queue import Queue
 
 from utility.utils import get_obj
 from utility.base_form.baseform import BaseForm
-from utility.utils import Sorter, get_obj, Net
 from settings.config import configs
+from message_box.message_box import MessageBox
 
 
 class TrainingManager:
-    def __init__(self, interface=None, **kwargs):
+    def __init__(self, **kwargs):
         super(TrainingManager, self).__init__(**kwargs)
         self.std_val = 0
         self.end_task = False
+        self.save_checkpoint = True
+        self.model_name = None
         self.queue = Queue(4)
 
         self.thread = Thread(target=self._queue_training, daemon=True)
@@ -35,7 +37,7 @@ class TrainingManager:
     #     except AttributeError as e:
     #         pass
 
-    def add_job(self, model=None, obj=None):
+    def add_job(self, model=None, obj=None, interface=None):
         train_properties, train_code = BaseForm._children[3].get_alg(_type=2)
         eval_properties, eval_code = BaseForm._children[4].get_alg(_type=3)
 
@@ -46,7 +48,7 @@ class TrainingManager:
                       'evaluating': eval_properties}
 
         # Dynamic threading for training
-        self.setup_train(model, properties, code, obj)
+        self.setup_train(model, properties, code, obj, interface)
 
     @staticmethod
     def get_functions(model=None):
@@ -60,14 +62,15 @@ class TrainingManager:
         except Exception as e:
             raise e
 
-    def setup_train(self, model, properties, code, obj):
+    def setup_train(self, model, properties, code, obj, interface):
         criterion, optimizer, dataset = self.get_functions(model=model)
 
         properties['evaluating'].update({'obj': self,
                                          'eval_code': code['evaluating'],
                                          'model': model,
                                          'device': configs['device']['id'],
-                                         'dataset': dataset})
+                                         'dataset': dataset,
+                                         'interface': interface})
 
         properties['training'].update({'criterion': criterion,
                                        'optimizer': optimizer,
@@ -76,7 +79,8 @@ class TrainingManager:
                                        'model': model,
                                        'device': configs['device']['id'],
                                        'weight_path': configs['weight_path'],
-                                       'eval_properties': properties['evaluating']})
+                                       'eval_properties': properties['evaluating'],
+                                       'interface': interface})
 
         self.queue.put([properties, code, obj])
 
@@ -92,7 +96,9 @@ class TrainingManager:
                     obj.is_training = False
 
                     torch.cuda.empty_cache()
-                    print('Close Job')
+                    MessageBox(message_type='Training Succeed',
+                               message='').open()
+                    # print('Close Job')
 
                 # print(gc.get_count())
                 # gc.collect()
@@ -101,16 +107,33 @@ class TrainingManager:
 
     # Dynamic evaluating algorithm
     def _evaluate(self, properties=None, code=None):
-        exec(code, locals())
-        locals()['evaluating_alg'](self, properties)
-        return 1
+        try:
+            exec(code, locals())
+            locals()['evaluating_alg'](self, properties)
+
+            return 1
+
+        except Exception as e:
+            raise e
+            # MessageBox(message=str(e),
+            #            message_type='Error Message').open()
+            #
+            # return 0
 
     # COULD MERGE TRAINING AND EVALUATING FUNCTIONS INTO 1 FUNCTION
     # Dynamic training algorithm
     def _train(self, properties=None, code=None):
-        exec(code['training'], locals())
-        locals()['training_alg'](self, properties['training'])
-        return 1
+        try:
+            exec(code['training'], locals())
+            locals()['training_alg'](self, properties['training'])
+
+            return 1
+
+        except Exception as e:
+            raise e
+            # MessageBox(message=str(e),
+            #            message_type='Error Message').open()
+            # return 0
 
     # def _update(self, val, _type):
     #     self.progress_bar.value = int(floor(val))

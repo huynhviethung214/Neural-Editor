@@ -11,11 +11,12 @@ class CustomTextInput(TextInput):
 	# 	)
 	# 	obj.padding_x = (obj.width - text_width) / 2
 
-	def __init__(self, max_length=9, filter='str', **kwargs):
+	def __init__(self, max_length=9, filter='str', hint_text='', font_size=16, **kwargs):
 		super(CustomTextInput, self).__init__(**kwargs)
 		self.max_length = max_length
 		self.filter = filter
-		# self.font_size = 16
+		self.hint_text = hint_text
+		self.font_size = font_size
 
 	def insert_text(self, substring, from_undo=False):
 		if self.filter == 'int' or self.filter == 'float':

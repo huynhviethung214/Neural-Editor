@@ -1,4 +1,37 @@
 {
+    "BatchNorm2D": {
+        "affine": [
+            3,
+            "True"
+        ],
+        "eps": [
+            4,
+            "1e-05"
+        ],
+        "momentum": [
+            4,
+            "0.1"
+        ],
+        "nl_input": {
+            "n_links": 1,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 1,
+            "position": 13,
+            "type": "output"
+        },
+        "node_type": 10,
+        "num_features": [
+            1,
+            "0"
+        ],
+        "track_running_stats": [
+            3,
+            "True"
+        ]
+    },
     "Concatenate": {
         "dimension": [
             1,
@@ -12,7 +45,7 @@
         "nl_output": {
             "n_links": 1,
             "position": 13,
-            "type": "input"
+            "type": "output"
         },
         "node_type": 8
     },
@@ -48,7 +81,7 @@
         "nl_output": {
             "n_links": 1,
             "position": 13,
-            "type": "input"
+            "type": "output"
         },
         "node_type": 10,
         "out_channels": [
@@ -71,26 +104,23 @@
     "Conv2D": {
         "bias": [
             3,
-            true
+            "True"
         ],
         "dilation": [
             1,
-            10
+            "1"
         ],
         "groups": [
             1,
-            10
+            "1"
         ],
         "in_channels": [
             1,
-            10
+            "0"
         ],
         "kernel_size": [
-            11,
-            [
-                2,
-                2
-            ]
+            1,
+            "0"
         ],
         "nl_input": {
             "n_links": 1,
@@ -100,24 +130,189 @@
         "nl_output": {
             "n_links": 1,
             "position": 13,
-            "type": "input"
+            "type": "output"
         },
         "node_type": 10,
         "out_channels": [
             1,
-            10
+            "0"
         ],
         "padding": [
             1,
-            10
+            "0"
         ],
         "padding_mode": [
             2,
-            10
+            "zeros"
         ],
         "stride": [
             1,
-            10
+            "1"
+        ]
+    },
+    "Conv2dBlock": {
+        "Layer": [
+            5,
+            "Hidden Layer"
+        ],
+        "model": {
+            "BatchNorm2D 0": {
+                "pos": [
+                    306.3999999999999,
+                    593.9999999999998
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "affine": [
+                        3,
+                        true
+                    ],
+                    "eps": [
+                        4,
+                        "1e-05"
+                    ],
+                    "momentum": [
+                        4,
+                        "0.1"
+                    ],
+                    "num_features": [
+                        1,
+                        "0"
+                    ],
+                    "track_running_stats": [
+                        3,
+                        true
+                    ]
+                }
+            },
+            "Conv2D 0": {
+                "pos": [
+                    -50.60000000000008,
+                    460.9999999999999
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Input Layer"
+                    ],
+                    "bias": [
+                        3,
+                        true
+                    ],
+                    "dilation": [
+                        1,
+                        "1"
+                    ],
+                    "groups": [
+                        1,
+                        "1"
+                    ],
+                    "in_channels": [
+                        1,
+                        "0"
+                    ],
+                    "kernel_size": [
+                        1,
+                        "0"
+                    ],
+                    "out_channels": [
+                        1,
+                        "0"
+                    ],
+                    "padding": [
+                        1,
+                        "0"
+                    ],
+                    "padding_mode": [
+                        2,
+                        "zeros"
+                    ],
+                    "stride": [
+                        1,
+                        "1"
+                    ]
+                }
+            },
+            "MaxPool2D 0": {
+                "pos": [
+                    1046.3999999999999,
+                    595.9999999999999
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Output Layer"
+                    ],
+                    "ceil_mode": [
+                        3,
+                        "False"
+                    ],
+                    "dilation": [
+                        1,
+                        "1"
+                    ],
+                    "kernel_size": [
+                        1,
+                        "0"
+                    ],
+                    "padding": [
+                        1,
+                        "0"
+                    ],
+                    "return_indices": [
+                        3,
+                        "False"
+                    ],
+                    "stride": [
+                        1,
+                        "0"
+                    ]
+                }
+            },
+            "ReLU 0": {
+                "pos": [
+                    676.3999999999999,
+                    678.9999999999999
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "inplace": [
+                        3,
+                        "False"
+                    ]
+                }
+            }
+        },
+        "nl_input": {
+            "n_links": 1,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 1,
+            "position": 13,
+            "type": "output"
+        },
+        "node_type": 9,
+        "rels": [
+            [
+                "ReLU 0 Output 0",
+                "MaxPool2D 0 Input 0"
+            ],
+            [
+                "BatchNorm2D 0 Output 0",
+                "ReLU 0 Input 0"
+            ],
+            [
+                "Conv2D 0 Output 0",
+                "BatchNorm2D 0 Input 0"
+            ]
         ]
     },
     "Conv3D": {
@@ -152,7 +347,7 @@
         "nl_output": {
             "n_links": 1,
             "position": 13,
-            "type": "input"
+            "type": "output"
         },
         "node_type": 10,
         "out_channels": [
@@ -181,7 +376,7 @@
         "nl_output": {
             "n_links": 2,
             "position": 13,
-            "type": "input"
+            "type": "output"
         },
         "node_type": 8
     },
@@ -194,22 +389,18 @@
         "nl_output": {
             "n_links": 1,
             "position": 13,
-            "type": "input"
+            "type": "output"
         },
         "node_type": 8
     },
     "Linear": {
         "bias": [
             3,
-            true
+            "True"
         ],
-        "n_in": [
+        "in_features": [
             1,
-            10
-        ],
-        "n_out": [
-            1,
-            10
+            "0"
         ],
         "nl_input": {
             "n_links": 1,
@@ -219,55 +410,26 @@
         "nl_output": {
             "n_links": 1,
             "position": 13,
-            "type": "input"
+            "type": "output"
         },
-        "node_type": 10
-    },
-    "Reshape": {
-        "nl_input": {
-            "n_links": 1,
-            "position": 12,
-            "type": "input"
-        },
-        "nl_output": {
-            "n_links": 1,
-            "position": 13,
-            "type": "input"
-        },
-        "node_type": 8,
-        "x": [
+        "node_type": 10,
+        "out_features": [
             1,
-            1
-        ],
-        "y": [
-            1,
-            1
+            "0"
         ]
     },
-    "XConv2d": {
-        "b_norm": [
-            1,
-            10
+    "MaxPool2D": {
+        "ceil_mode": [
+            3,
+            "False"
         ],
-        "f_size": [
+        "dilation": [
             1,
-            10
+            "1"
         ],
-        "mp_stride": [
+        "kernel_size": [
             1,
-            10
-        ],
-        "mpk_size": [
-            1,
-            10
-        ],
-        "n_in": [
-            1,
-            10
-        ],
-        "n_out": [
-            1,
-            10
+            "0"
         ],
         "nl_input": {
             "n_links": 1,
@@ -277,16 +439,37 @@
         "nl_output": {
             "n_links": 1,
             "position": 13,
-            "type": "input"
+            "type": "output"
         },
-        "node_type": 9,
+        "node_type": 10,
         "padding": [
             1,
-            10
+            "0"
+        ],
+        "return_indices": [
+            3,
+            "False"
         ],
         "stride": [
             1,
-            10
+            "0"
         ]
+    },
+    "ReLU": {
+        "inplace": [
+            3,
+            "False"
+        ],
+        "nl_input": {
+            "n_links": 1,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 1,
+            "position": 13,
+            "type": "output"
+        },
+        "node_type": 10
     }
 }

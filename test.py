@@ -645,74 +645,6 @@ from importlib import reload
 # print(np.array([10]).shape)
 # print(torch.LongTensor(10))
 
-
-class Queue:
-    def __init__(self):
-        self.data = []
-
-    def enQueue(self, x):
-        self.data.append(x)
-
-    def deQueue(self):
-        val = self.get_val()
-        self.data.pop(0)
-        return val
-
-    def get_val(self):
-        return self.data[0]
-
-    def is_empty(self):
-        if len(self.data) == 0:
-            return 1
-        return 0
-
-
-class Node:
-    def __init__(self, next=None, data=None):
-        self.next = next
-        self.data = data
-
-
-class LinkedList:
-    def __init__(self):
-        self.head = Node()
-
-    def insertNode(self, x):
-        pos = self.head
-
-        while pos.next:
-            pos = pos.next
-
-        newNode = Node(data=x,
-                       next=None)
-        pos.next = newNode
-
-    def printList(self):
-        pos = self.head
-
-        while pos.next:
-            # print(pos.next, pos.next.data, pos.next.next)
-            print(pos.next.data)
-            pos = pos.next
-
-    def deleteList(self, x):
-        pos = self.head
-
-        while pos.next:
-            if pos.next.data == x:
-                pos.next = pos.next.next
-                break
-            pos = pos.next
-
-    def locate(self, x):
-        pos = self.head
-
-        while pos.next:
-            if pos.next.data == x:
-                return pos.next
-            pos = pos.next
-
-
 # ll = LinkedList()
 # ll.insertNode(2)
 # ll.insertNode(4)
@@ -775,3 +707,72 @@ class LinkedList:
 #
 # print(c)
 
+
+# def map_properties(fn):
+#     from functools import wraps
+#     @wraps(fn)
+#     def _map_properties(*args, **kwargs):
+#         self = args[0]
+#         a = fn(self)
+#         return a, self.properties
+#     return _map_properties
+#
+#
+# class Conv2d:
+#     def __init__(self):
+#         self.properties = {
+#             '1': 1,
+#             '2': 2,
+#             '3': 3,
+#             '4': 4,
+#         }
+#
+#     @map_properties
+#     def alg(self):
+#         func = object
+#         return func
+#
+#
+# conv2d = Conv2d()
+# a, b = conv2d.alg()
+# print(a, b)
+
+class BreakException(Exception):
+    def __str__(self):
+        return 'break'
+
+
+def break_loop(fn):
+    # from functools import wraps
+    # @wraps(fn)
+    def _break_loop(*args, **kwargs):
+        try:
+            fn()
+        except BreakException:
+            return None, None
+    return _break_loop
+
+
+def add_breaker():
+    raise BreakException
+
+
+def record(fn):
+    # from functools import wraps
+    # @wraps(fn)
+    def _record(*args, **kwargs):
+        v1, v2 = fn()
+    return _record
+
+
+@record
+@break_loop
+def a():
+    for i in range(10):
+        print(i)
+        add_breaker()
+
+    return 0, 0
+
+
+a()

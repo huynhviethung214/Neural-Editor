@@ -38,15 +38,13 @@ class BaseInputForm(BaseWidget):
                                      size_hint_x=0.4,
                                      multiline=False,
                                      max_length=max_len)
-        self.input.bind(text=self.to_datatype)
+        # self.input.bind(text=self.to_datatype)
 
         self.add_label(self.name)
         self.add_widget(self.input)
         
         Clock.schedule_once(self.update_text, 0)
-
-    def to_datatype(self, obj, text):
-        self.value = self.dtype(self.value)
+        # Clock.schedule_once(lambda *args: setattr(self, 'input.text', str(self.value)), 0)
 
     def update_text(self, *args):
         self.input.text = str(self.value)

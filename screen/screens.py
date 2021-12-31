@@ -5,6 +5,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.core.window import Window
 
+from graph.graph import Graphs
 from training_manager.training_manager import TrainingManager
 from utility.notification_popup import NotificationPopup
 from i_modules.interface.interface import Container
@@ -13,6 +14,10 @@ from editor_modules.scripting_interface import *
 from kivy.config import Config
 
 import kivy
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+
+from utility.rightclick_toolbar.rightclick_toolbar import RightClickMenu
 
 kivy.require('2.0.0')
 
@@ -39,6 +44,19 @@ class ScriptingScreen(Screen):
     pass
 
 
+class GraphScreen(Screen):
+    def __init__(self, **kwargs):
+        super(GraphScreen, self).__init__(**kwargs)
+        self.layout = BoxLayout()
+        self.graph_tab_manager = TabManager(func=Graphs,
+                                            default_name='New Graph',
+                                            _fkwargs={},
+                                            add_default_tab=False)
+
+        self.layout.add_widget(self.graph_tab_manager)
+        self.add_widget(self.layout)
+
+
 class Manager(ScreenManager):
     pass
 
@@ -48,7 +66,17 @@ class ToolPanel(BoxLayout):
 
 
 class Overlay(FloatLayout):
-    pass
+    def __init__(self, **kwargs):
+        super(Overlay, self).__init__()
+    #     self.bind(on_touch_down=self.clear)
+    #
+    # def clear(self, obj, touch):
+    #     self.remove_toolbar()
+    #
+    # def remove_toolbar(self):
+    #     for children in get_obj(self, 'Overlay').children:
+    #         if type(children) == RightClickMenu:
+    #             get_obj(self, 'Overlay').remove_widget(children)
 
 
 class _Container(BoxLayout):
@@ -81,7 +109,7 @@ class _app(App):
 
         self.main_container = _Container()
         self.main_container.tree_hierarchy()
-        
+
         Window.size = (1980, 1080)
         Window.maximize()
 

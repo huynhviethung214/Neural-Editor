@@ -15,10 +15,7 @@ class Template:
 		elif _type == 1:
 			return self.alg(properties=self.prop_dict).dataset()
 		
-		elif _type == 2:
-			return self.alg(properties=self.prop_dict).load_algorithm()
-		
-		elif _type == 3:
+		else:
 			return self.alg(properties=self.prop_dict).load_algorithm()
 
 	def __str__(self):

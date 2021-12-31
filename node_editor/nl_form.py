@@ -7,13 +7,15 @@ from utility.custom_input.custom_input import CustomTextInput
 
 
 class NLForm(BoxLayout):
-    def __init__(self, **kwargs):
+    def __init__(self, nl_type='input', **kwargs):
         super(NLForm, self).__init__()
         self.size_hint = (1, 1)
         self.spacing = 4
-        self.property = {'type': 'input',
+
+        self.property = {'type': nl_type,
                          'position': LEFT_CODE,
                          'n_links': 2}
+        self.hint_text = kwargs.get('hint_text')
 
         self.str_to_type = {'left': LEFT_CODE,
                             'right': RIGHT_CODE,
@@ -32,7 +34,8 @@ class NLForm(BoxLayout):
         self.position.bind(text=self.set_position)
 
         self.inputs = CustomTextInput(size_hint=(0.6, 1),
-                                      filter='int')
+                                      filter='int',
+                                      hint_text=self.hint_text)
         self.inputs.bind(text=self.set_n_links)
 
         # self.link_type = Spinner(values=('input',

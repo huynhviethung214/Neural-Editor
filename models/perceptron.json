@@ -1,102 +1,165 @@
 {
-    "Linear 0": {
-        "pos": [
-            -334.6000000000001,
-            366.99999999999983
-        ],
-        "properties": {
-            "Layer": [
-                5,
-                "Input Layer"
-            ],
-            "bias": [
-                3,
-                true
-            ],
-            "n_in": [
-                1,
-                5
-            ],
-            "n_out": [
-                1,
-                10
-            ]
-        }
-    },
-    "Linear 1": {
-        "pos": [
-            230.39999999999992,
-            514.9999999999999
-        ],
-        "properties": {
-            "Layer": [
-                5,
-                "Hidden Layer"
-            ],
-            "bias": [
-                3,
-                true
-            ],
-            "n_in": [
-                1,
-                10
-            ],
-            "n_out": [
-                1,
-                20
-            ]
-        }
-    },
-    "Linear 2": {
-        "pos": [
-            661.4000000000001,
-            380.9999999999999
-        ],
-        "properties": {
-            "Layer": [
-                5,
-                "Output Layer"
-            ],
-            "bias": [
-                3,
-                true
-            ],
-            "n_in": [
-                1,
-                20
-            ],
-            "n_out": [
-                1,
-                10
-            ]
-        }
-    },
     "beziers_coord": [
         [
             [
-                464.3999999999999,
-                602.0
+                861.4000000000001,
+                464.9999999999998
             ],
             [
-                663.3999999999999,
-                466.99999999999994
+                560.3999999999999,
+                887.9999999999995
             ]
         ],
         [
             [
-                -90.60000000000008,
-                454.0
+                28.39999999999992,
+                527.9999999999999
             ],
             [
-                227.39999999999992,
-                602.0
+                320.3999999999999,
+                887.9999999999995
             ]
         ]
     ],
+    "hvfs": {
+        "Criterion": {
+            "BCEWithLogitsLoss": {
+                "reduce": "True",
+                "reduction": "mean",
+                "size_average": "True"
+            }
+        },
+        "Evaluating": {
+            "PerceptronExample": {
+                "epochs": "10",
+                "file_path": "hyper_variables_forms\\perceptron_example\\eval\\evaluating.py"
+            }
+        },
+        "Optimizer": {
+            "Adam": {
+                "amsgrad": "False",
+                "eps": "1e-08",
+                "lr": "0.001",
+                "weight_decay": "0"
+            }
+        },
+        "Processor": {
+            "BinaryProcessor": {
+                "fpath": "test_set\\binary_dataset.txt"
+            }
+        },
+        "Training": {
+            "PerceptronExample": {
+                "epochs": "10",
+                "file_path": "hyper_variables_forms\\perceptron_example\\train\\training.py",
+                "is_save": "True",
+                "output_file_name": "test"
+            }
+        }
+    },
+    "mapped_path": [
+        "Linear 0",
+        "Linear 1",
+        "Linear 2"
+    ],
+    "model": {
+        "Linear 0": {
+            "pos": [
+                -210.60000000000008,
+                427.9999999999999
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Input Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "5"
+                ],
+                "out_features": [
+                    1,
+                    "10"
+                ]
+            }
+        },
+        "Linear 1": {
+            "pos": [
+                321.3999999999999,
+                787.9999999999997
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "10"
+                ],
+                "out_features": [
+                    1,
+                    "20"
+                ]
+            }
+        },
+        "Linear 2": {
+            "pos": [
+                862.4000000000001,
+                364.9999999999998
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Output Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "20"
+                ],
+                "out_features": [
+                    1,
+                    "10"
+                ]
+            }
+        }
+    },
     "rels": [
         [
             "Linear 1 Output 0",
             "Linear 2 Input 0"
+        ],
+        [
+            "Linear 0 Output 0",
+            "Linear 1 Input 0"
+        ],
+        [
+            "Linear 0 Output 0",
+            "Linear 1 Input 0"
+        ],
+        [
+            "Linear 0 Output 0",
+            "Linear 1 Input 0"
+        ],
+        [
+            "Linear 1 Output 0",
+            "Linear 2 Input 0"
+        ],
+        [
+            "Linear 0 Output 0",
+            "Linear 1 Input 0"
         ],
         [
             "Linear 0 Output 0",

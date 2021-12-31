@@ -2,21 +2,25 @@ from torch.nn import Module, ModuleDict
 
 
 class Net(Module):
-    def __init__(self, interface=None, **kwargs):
+    def __init__(self, nodes=None, mapped_path=None, **kwargs):
         super(Net, self).__init__()
-        self.nodes = interface.nodes()
-        self.layers = ModuleDict()
+        self.nodes = nodes
+        self.interface = kwargs.get('interface')
 
-        self.current_path = {'data': None,
-                             'node': None}
+        self.layers = ModuleDict()
 
         self.queue = []
         self.outputs = {}
-        self.mapped_path = []
 
         # If `use_mapped` = 0 => using random node's path
         # Otherwise, when `use_mapped` = 1 => using mapped node's path
-        self.use_mapped = 0
+        self.use_mapped = False
+
+        self.mapped_path = mapped_path
+        if not mapped_path:
+            self.mapped_path = []
+        else:
+            self.use_mapped = True
 
         # Add nodes as layers to the Module
         for node in self.nodes:
@@ -33,9 +37,11 @@ class Net(Module):
 
             if not self.use_mapped:
                 if 'Input' in node.c_type:
+                    # print('Input Node: ' + node.name)
                     self.queue.insert(0, node)
 
                 elif 'Output' in node.c_type:
+                    # print('Output Node: ' + node.name)
                     self.queue.insert(len(self.queue), node)
 
                 else:
@@ -60,7 +66,7 @@ class Net(Module):
 
     # Add outputs to self.outputs
     def add_output(self, node, x):
-        # x = (x)  # Cast to tuple for dynamic programming reason
+        # x = (x)  # Cast to tuple for dynamic inputs processing
         x = (*x,)
         n = len(x)  # Number of outputs
 
@@ -76,10 +82,6 @@ class Net(Module):
                 # print('Remove Output: ', node.name)
                 self.outputs.pop(output)
                 break
-
-    def update_current_path(self, node, x):
-        self.current_path['data'] = x
-        self.current_path['node'] = node
 
     def is_existed_inputs(self, cted_nodes):
         count = 0
@@ -102,7 +104,6 @@ class Net(Module):
 
         x = self.layers[input_node.name](x)
         # Set Input Node's RFO (Ready For Output) = 1
-        self.update_current_path(input_node, x)
 
         self.add_output(input_node, (x,))
 
@@ -121,9 +122,10 @@ class Net(Module):
             for node in self.queue:
                 try:
                     cted_nodes = node.connected_nodes
+                    # print(cted_nodes)
 
                     if self.is_existed_inputs(cted_nodes):
-                        print(f'\nEnough Inputs To Process: {node.name}')
+                        # print(f'\nEnough Inputs To Process: {node.name}')
                         # print(self.outputs)
                         # print(cted_nodes)
                         if len(cted_nodes) == 1:
@@ -142,7 +144,6 @@ class Net(Module):
                             self.add_output(node, (x,))
 
                         # node.rfo = 1
-                        self.update_current_path(node, x)
 
                         if not self.use_mapped:
                             self.queue.remove(node)
@@ -172,7 +173,11 @@ class Net(Module):
 
         self.use_mapped = 1
         self.outputs.clear()
-        self.queue = self.mapped_path
+
+        if self.interface:
+            self.interface.mapped_path = self.queue = self.mapped_path
+            self.interface.is_trained = True
+            self.interface.str_mapped_path = [node.name for node in self.mapped_path if node != []]
 
         return x
 
