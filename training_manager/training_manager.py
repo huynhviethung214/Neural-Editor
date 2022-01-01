@@ -38,6 +38,7 @@ class TrainingManager:
     #         pass
 
     def add_job(self, model=None, obj=None, interface=None):
+        # print('Add Job')
         train_properties, train_code = BaseForm._children[3].get_alg(_type=2)
         eval_properties, eval_code = BaseForm._children[4].get_alg(_type=3)
 
@@ -90,14 +91,18 @@ class TrainingManager:
             if self.queue.not_empty:
                 properties, code, obj = self.queue.get()
                 ret = self._train(properties, code)
+                # print(ret)
 
                 if ret:
                     obj.text = '>'
                     obj.is_training = False
 
                     torch.cuda.empty_cache()
-                    MessageBox(message_type='Training Succeed',
-                               message='').open()
+                    training_properties = properties['training']
+                    if 'interface' in training_properties.keys():
+                        if training_properties['interface'].is_trained:
+                            MessageBox(message_type='Training Succeed',
+                                       message='').open()
                     # print('Close Job')
 
                 # print(gc.get_count())

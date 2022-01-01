@@ -73,12 +73,15 @@ def checkpoint(fn):
 
         try:
             fn(self, properties)
+
         except BreakException:
             if self.save_checkpoint:
                 name = self.model_name.replace(' ', '_').lower()
                 torch.save(properties['model'].state_dict(),
                            f'checkpoints/{name}.state')
-            return
+            properties['interface'].is_trained = False
+            self.end_task = False
+            return 0
     return _checkpoint
 
 
@@ -105,6 +108,7 @@ def record_graph(fn):
                                           'epochs': epochs
                                       }
                                   }})
+        return 1
 
         # graph_tab_manager = get_obj(interface, 'ModelGraphView')
         # print(get_obj(interface, 'ModelGraphView'))

@@ -28,9 +28,12 @@ class Graphs(GridLayout):
             ylabel = self.graphs[graph_name]['ylabel']
 
             plt.figure()
+            epochs = self.graphs[graph_name]['epochs']
             plt.plot(range(len(self.graphs[graph_name]['losses'])),
                      self.graphs[graph_name]['losses'])
-            plt.xticks(np.arange(0, self.graphs[graph_name]['epochs'], 1.0))
+            plt.xticks(np.arange(0,
+                                 epochs,
+                                 [1.0 if epochs <= 20 else int((epochs * 5.0) / 20.0)][0]))
             plt.xlabel(xlabel)
             plt.ylabel(ylabel)
             plt.grid(True, color='lightgray')

@@ -90,8 +90,8 @@ class TrainButton(Button):
             else:
                 # print('Break Current Process')
                 self.training_manager.end_task = True
-                self.is_training = False
                 self.text = '>'
+                self.is_training = False
 
         except ValueError as e:
             raise e
