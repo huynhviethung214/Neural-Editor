@@ -1,0 +1,341 @@
+{
+    "beziers_coord": [
+        [
+            [
+                2533.3999999999996,
+                606.9999999999998
+            ],
+            [
+                2608.3999999999996,
+                610.9999999999994
+            ]
+        ],
+        [
+            [
+                2293.3999999999996,
+                606.9999999999998
+            ],
+            [
+                2197.3999999999996,
+                571.0
+            ]
+        ],
+        [
+            [
+                1824.3999999999999,
+                585.9999999999997
+            ],
+            [
+                1957.3999999999999,
+                571.0
+            ]
+        ],
+        [
+            [
+                1584.3999999999999,
+                585.9999999999997
+            ],
+            [
+                1459.3999999999999,
+                588.9999999999998
+            ]
+        ],
+        [
+            [
+                1124.3999999999999,
+                620.9999999999998
+            ],
+            [
+                1219.3999999999999,
+                588.9999999999998
+            ]
+        ],
+        [
+            [
+                884.3999999999999,
+                620.9999999999998
+            ],
+            [
+                775.3999999999999,
+                598.9999999999998
+            ]
+        ],
+        [
+            [
+                535.3999999999999,
+                598.9999999999998
+            ],
+            [
+                399.39999999999986,
+                617.9999999999999
+            ]
+        ],
+        [
+            [
+                83.39999999999986,
+                586.0
+            ],
+            [
+                159.39999999999986,
+                617.9999999999999
+            ]
+        ]
+    ],
+    "hvfs": {
+        "Criterion": {
+            "BCELoss": {
+                "reduce": "True",
+                "reduction": "mean",
+                "size_average": "True"
+            }
+        },
+        "Evaluating": {
+            "PerceptronExample": {
+                "epochs": "10",
+                "file_path": "hyper_variables_forms\\perceptron_example\\eval\\evaluating.py"
+            }
+        },
+        "Optimizer": {
+            "ASGD": {
+                "alpha": "0.75",
+                "lambd": "0.0001",
+                "lr": "0.01",
+                "t0": "1000000.0",
+                "weight_decay": "0"
+            }
+        },
+        "Processor": {
+            "BinaryProcessor": {
+                "fpath": "test_set\\binary_dataset.txt"
+            }
+        },
+        "Training": {
+            "PerceptronExample": {
+                "epochs": "10",
+                "file_path": "hyper_variables_forms\\perceptron_example\\train\\training.py",
+                "is_save": "True",
+                "output_file_name": "test"
+            }
+        }
+    },
+    "model": {
+        "Linear 0": {
+            "pos": [
+                -155.60000000000008,
+                485.99999999999994
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Input Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "784"
+                ],
+                "out_features": [
+                    1,
+                    "128"
+                ]
+            }
+        },
+        "Linear 1": {
+            "pos": [
+                536.3999999999999,
+                498.9999999999997
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "128"
+                ],
+                "out_features": [
+                    1,
+                    "64"
+                ]
+            }
+        },
+        "Linear 2": {
+            "pos": [
+                1220.3999999999999,
+                488.9999999999998
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "64"
+                ],
+                "out_features": [
+                    1,
+                    "36"
+                ]
+            }
+        },
+        "Linear 3": {
+            "pos": [
+                1958.3999999999999,
+                470.99999999999994
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "36"
+                ],
+                "out_features": [
+                    1,
+                    "18"
+                ]
+            }
+        },
+        "Linear 4": {
+            "pos": [
+                2609.3999999999996,
+                510.99999999999943
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Output Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "18"
+                ],
+                "out_features": [
+                    1,
+                    "9"
+                ]
+            }
+        },
+        "ReLU 0": {
+            "pos": [
+                160.39999999999998,
+                547.9999999999999
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "inplace": [
+                    3,
+                    "False"
+                ]
+            }
+        },
+        "ReLU 1": {
+            "pos": [
+                885.3999999999999,
+                550.9999999999998
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "inplace": [
+                    3,
+                    "False"
+                ]
+            }
+        },
+        "ReLU 2": {
+            "pos": [
+                1585.3999999999999,
+                515.9999999999997
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "inplace": [
+                    3,
+                    "False"
+                ]
+            }
+        },
+        "ReLU 3": {
+            "pos": [
+                2294.3999999999996,
+                536.9999999999998
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "inplace": [
+                    3,
+                    "False"
+                ]
+            }
+        }
+    },
+    "rels": [
+        [
+            "ReLU 3 Output 0",
+            "Linear 4 Input 0"
+        ],
+        [
+            "Linear 3 Output 0",
+            "ReLU 3 Input 0"
+        ],
+        [
+            "ReLU 2 Output 0",
+            "Linear 3 Input 0"
+        ],
+        [
+            "Linear 2 Output 0",
+            "ReLU 2 Input 0"
+        ],
+        [
+            "ReLU 1 Output 0",
+            "Linear 2 Input 0"
+        ],
+        [
+            "Linear 1 Output 0",
+            "ReLU 1 Input 0"
+        ],
+        [
+            "ReLU 0 Output 0",
+            "Linear 1 Input 0"
+        ],
+        [
+            "Linear 0 Output 0",
+            "ReLU 0 Input 0"
+        ]
+    ]
+}

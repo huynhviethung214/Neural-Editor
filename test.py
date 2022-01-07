@@ -737,42 +737,44 @@ from importlib import reload
 # a, b = conv2d.alg()
 # print(a, b)
 
-class BreakException(Exception):
-    def __str__(self):
-        return 'break'
+# class BreakException(Exception):
+#     def __str__(self):
+#         return 'break'
+#
+#
+# def break_loop(fn):
+#     # from functools import wraps
+#     # @wraps(fn)
+#     def _break_loop(*args, **kwargs):
+#         try:
+#             fn()
+#         except BreakException:
+#             return None, None
+#     return _break_loop
+#
+#
+# def add_breaker():
+#     raise BreakException
+#
+#
+# def record(fn):
+#     # from functools import wraps
+#     # @wraps(fn)
+#     def _record(*args, **kwargs):
+#         v1, v2 = fn()
+#     return _record
+#
+#
+# @record
+# @break_loop
+# def a():
+#     for i in range(10):
+#         print(i)
+#         add_breaker()
+#
+#     return 0, 0
+#
+#
+# a()
 
-
-def break_loop(fn):
-    # from functools import wraps
-    # @wraps(fn)
-    def _break_loop(*args, **kwargs):
-        try:
-            fn()
-        except BreakException:
-            return None, None
-    return _break_loop
-
-
-def add_breaker():
-    raise BreakException
-
-
-def record(fn):
-    # from functools import wraps
-    # @wraps(fn)
-    def _record(*args, **kwargs):
-        v1, v2 = fn()
-    return _record
-
-
-@record
-@break_loop
-def a():
-    for i in range(10):
-        print(i)
-        add_breaker()
-
-    return 0, 0
-
-
-a()
+a = '8 + 9 / 3'

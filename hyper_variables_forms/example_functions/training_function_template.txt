@@ -14,7 +14,9 @@ def training_alg(self, properties):
 
     # Use this line of code to update ProgressBar value, remember to put it inside
     # the epoch's loop
-    #properties['obj']._update((epoch / properties['epochs']) * 100, 'Train')
+    #update_progress_bar(properties['interface'],
+    #                    epoch + 1,
+    #                    properties['epochs'])
 
 	properties['obj']._evaluate(properties['eval_properties'],
 								properties['eval_properties']['eval_code'])

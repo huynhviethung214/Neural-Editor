@@ -11,7 +11,7 @@ class Configuration(dict):
     def __init__(self):
         super(Configuration, self).__init__()
 
-        self.fpath = 'settings/settings.json'
+        self.fpath = './settings/settings.json'
         self.devices = self.get_devices_info()
         self.default_config = {}
 

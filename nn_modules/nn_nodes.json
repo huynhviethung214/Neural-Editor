@@ -367,6 +367,259 @@
             10
         ]
     },
+    "Decoder": {
+        "Layer": [
+            5,
+            "Hidden Layer"
+        ],
+        "model": {
+            "Linear 0": {
+                "pos": [
+                    -395.6000000000001,
+                    378.9999999999999
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Input Layer"
+                    ],
+                    "bias": [
+                        3,
+                        true
+                    ],
+                    "in_features": [
+                        1,
+                        "9"
+                    ],
+                    "out_features": [
+                        1,
+                        "18"
+                    ]
+                }
+            },
+            "Linear 1": {
+                "pos": [
+                    345.3999999999999,
+                    379.99999999999994
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "bias": [
+                        3,
+                        true
+                    ],
+                    "in_features": [
+                        1,
+                        "18"
+                    ],
+                    "out_features": [
+                        1,
+                        "36"
+                    ]
+                }
+            },
+            "Linear 2": {
+                "pos": [
+                    990.3999999999999,
+                    373.99999999999983
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "bias": [
+                        3,
+                        true
+                    ],
+                    "in_features": [
+                        1,
+                        "36"
+                    ],
+                    "out_features": [
+                        1,
+                        "64"
+                    ]
+                }
+            },
+            "Linear 3": {
+                "pos": [
+                    1670.3999999999999,
+                    353.0
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "bias": [
+                        3,
+                        true
+                    ],
+                    "in_features": [
+                        1,
+                        "64"
+                    ],
+                    "out_features": [
+                        1,
+                        "128"
+                    ]
+                }
+            },
+            "Linear 4": {
+                "pos": [
+                    2348.3999999999996,
+                    346.9999999999999
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "bias": [
+                        3,
+                        true
+                    ],
+                    "in_features": [
+                        1,
+                        "128"
+                    ],
+                    "out_features": [
+                        1,
+                        "784"
+                    ]
+                }
+            },
+            "ReLU 0": {
+                "pos": [
+                    -23.60000000000008,
+                    405.99999999999994
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "inplace": [
+                        3,
+                        "False"
+                    ]
+                }
+            },
+            "ReLU 1": {
+                "pos": [
+                    685.3999999999999,
+                    415.0
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "inplace": [
+                        3,
+                        "False"
+                    ]
+                }
+            },
+            "ReLU 2": {
+                "pos": [
+                    1335.3999999999999,
+                    431.9999999999999
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "inplace": [
+                        3,
+                        "False"
+                    ]
+                }
+            },
+            "ReLU 3": {
+                "pos": [
+                    1987.3999999999999,
+                    409.99999999999994
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "inplace": [
+                        3,
+                        "False"
+                    ]
+                }
+            },
+            "Sigmoid 0": {
+                "pos": [
+                    2696.3999999999996,
+                    338.9999999999999
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Output Layer"
+                    ]
+                }
+            }
+        },
+        "nl_input": {
+            "n_links": 1,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 1,
+            "position": 13,
+            "type": "output"
+        },
+        "node_type": 9,
+        "rels": [
+            [
+                "Linear 0 Output 0",
+                "ReLU 0 Input 0"
+            ],
+            [
+                "ReLU 0 Output 0",
+                "Linear 1 Input 0"
+            ],
+            [
+                "Linear 1 Output 0",
+                "ReLU 1 Input 0"
+            ],
+            [
+                "ReLU 1 Output 0",
+                "Linear 2 Input 0"
+            ],
+            [
+                "Linear 2 Output 0",
+                "ReLU 2 Input 0"
+            ],
+            [
+                "ReLU 2 Output 0",
+                "Linear 3 Input 0"
+            ],
+            [
+                "Linear 3 Output 0",
+                "ReLU 3 Input 0"
+            ],
+            [
+                "ReLU 3 Output 0",
+                "Linear 4 Input 0"
+            ],
+            [
+                "Linear 4 Output 0",
+                "Sigmoid 0 Input 0"
+            ]
+        ]
+    },
     "Duplicate": {
         "nl_input": {
             "n_links": 1,
@@ -379,6 +632,243 @@
             "type": "output"
         },
         "node_type": 8
+    },
+    "Encoder": {
+        "Layer": [
+            5,
+            "Hidden Layer"
+        ],
+        "model": {
+            "Linear 0": {
+                "pos": [
+                    -155.60000000000008,
+                    485.99999999999994
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Input Layer"
+                    ],
+                    "bias": [
+                        3,
+                        true
+                    ],
+                    "in_features": [
+                        1,
+                        "784"
+                    ],
+                    "out_features": [
+                        1,
+                        "128"
+                    ]
+                }
+            },
+            "Linear 1": {
+                "pos": [
+                    536.3999999999999,
+                    498.9999999999997
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "bias": [
+                        3,
+                        true
+                    ],
+                    "in_features": [
+                        1,
+                        "128"
+                    ],
+                    "out_features": [
+                        1,
+                        "64"
+                    ]
+                }
+            },
+            "Linear 2": {
+                "pos": [
+                    1220.3999999999999,
+                    488.9999999999998
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "bias": [
+                        3,
+                        true
+                    ],
+                    "in_features": [
+                        1,
+                        "64"
+                    ],
+                    "out_features": [
+                        1,
+                        "36"
+                    ]
+                }
+            },
+            "Linear 3": {
+                "pos": [
+                    1958.3999999999999,
+                    470.99999999999994
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "bias": [
+                        3,
+                        true
+                    ],
+                    "in_features": [
+                        1,
+                        "36"
+                    ],
+                    "out_features": [
+                        1,
+                        "18"
+                    ]
+                }
+            },
+            "Linear 4": {
+                "pos": [
+                    2609.3999999999996,
+                    510.99999999999943
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Output Layer"
+                    ],
+                    "bias": [
+                        3,
+                        true
+                    ],
+                    "in_features": [
+                        1,
+                        "18"
+                    ],
+                    "out_features": [
+                        1,
+                        "9"
+                    ]
+                }
+            },
+            "ReLU 0": {
+                "pos": [
+                    160.39999999999998,
+                    547.9999999999999
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "inplace": [
+                        3,
+                        "False"
+                    ]
+                }
+            },
+            "ReLU 1": {
+                "pos": [
+                    885.3999999999999,
+                    550.9999999999998
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "inplace": [
+                        3,
+                        "False"
+                    ]
+                }
+            },
+            "ReLU 2": {
+                "pos": [
+                    1585.3999999999999,
+                    515.9999999999997
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "inplace": [
+                        3,
+                        "False"
+                    ]
+                }
+            },
+            "ReLU 3": {
+                "pos": [
+                    2294.3999999999996,
+                    536.9999999999998
+                ],
+                "properties": {
+                    "Layer": [
+                        5,
+                        "Hidden Layer"
+                    ],
+                    "inplace": [
+                        3,
+                        "False"
+                    ]
+                }
+            }
+        },
+        "nl_input": {
+            "n_links": 1,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 1,
+            "position": 13,
+            "type": "output"
+        },
+        "node_type": 9,
+        "rels": [
+            [
+                "ReLU 3 Output 0",
+                "Linear 4 Input 0"
+            ],
+            [
+                "Linear 3 Output 0",
+                "ReLU 3 Input 0"
+            ],
+            [
+                "ReLU 2 Output 0",
+                "Linear 3 Input 0"
+            ],
+            [
+                "Linear 2 Output 0",
+                "ReLU 2 Input 0"
+            ],
+            [
+                "ReLU 1 Output 0",
+                "Linear 2 Input 0"
+            ],
+            [
+                "Linear 1 Output 0",
+                "ReLU 1 Input 0"
+            ],
+            [
+                "ReLU 0 Output 0",
+                "Linear 1 Input 0"
+            ],
+            [
+                "Linear 0 Output 0",
+                "ReLU 0 Input 0"
+            ]
+        ]
     },
     "Flatten": {
         "nl_input": {
@@ -460,6 +950,19 @@
             3,
             "False"
         ],
+        "nl_input": {
+            "n_links": 1,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 1,
+            "position": 13,
+            "type": "output"
+        },
+        "node_type": 10
+    },
+    "Sigmoid": {
         "nl_input": {
             "n_links": 1,
             "position": 12,

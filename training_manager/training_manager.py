@@ -90,8 +90,21 @@ class TrainingManager:
         while True:
             if self.queue.not_empty:
                 properties, code, obj = self.queue.get()
+
+                interface = properties['training']['interface']
+                progress_bar = get_obj(interface, 'ProgressBar')
+                model_name = get_obj(interface, 'TrainedModelLabel')
+
+                # Set Progress Bar maximum value
+                progress_bar.max = properties['training']['epochs']
+
+                # Reset Progress Bar to 0
+                progress_bar.value = 0
+
+                # Set Model's name
+                model_name.text = f'Model: {self.model_name}'
+
                 ret = self._train(properties, code)
-                # print(ret)
 
                 if ret:
                     obj.text = '>'
@@ -99,6 +112,7 @@ class TrainingManager:
 
                     torch.cuda.empty_cache()
                     training_properties = properties['training']
+
                     if 'interface' in training_properties.keys():
                         if training_properties['interface'].is_trained:
                             MessageBox(message_type='Training Succeed',

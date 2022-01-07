@@ -60,9 +60,15 @@ def map_properties(fn):
     return _map_properties
 
 
-def breaker(obj):
-    if obj.end_task:
+def breaker(training_manager):
+    if training_manager.end_task:
         raise BreakException
+
+
+def update_progress_bar(interface, epoch, epochs):
+    current_percentage = int(((epoch + 1) / epochs) * 100)
+    get_obj(interface, 'ProgressBar').value = current_percentage
+    get_obj(interface, 'ProgressIndicator').text = f'{current_percentage}% / 100%'
 
 
 def checkpoint(fn):
@@ -92,9 +98,6 @@ def record_graph(fn):
         self = args[0]
         properties = args[1]
 
-        # model_graph_view = get_obj(interface, 'ModelGraphView')
-        # model_graph_view.current = 'graph'
-
         screen_manager = get_obj(interface, '_Container').request_obj('Manager')
         graph_tab_manager = screen_manager.get_screen('graph').children[-1].children[-1]
 
@@ -110,23 +113,4 @@ def record_graph(fn):
                                   }})
         return 1
 
-        # graph_tab_manager = get_obj(interface, 'ModelGraphView')
-        # print(get_obj(interface, 'ModelGraphView'))
-        # graph_tab_manager.add_tab(func_name=interface.model_name,
-        #                           _fkwargs={'xmax': n_iter,
-        #                                     'ymax': int(max(losses)) + 1})
-
     return _record_graph
-
-# class LinksManager():
-# 	def __init__(self):
-# 		self.objs_list = {}
-
-# 	def register_obj(self, name, obj):
-# 		self.objs_list.update({name: obj})
-
-# 	def remove_obj(self, name):
-# 		self.objs_list.remove(name)
-
-# 	def get_obj(self, name):
-# 		return self.objs_list[name]

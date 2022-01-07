@@ -55,10 +55,6 @@
 	size_hint: (1, 0.8)
 
 
-#<MainBar>:
-#	text: 'New Model'
-
-
 <IToolBar>:
     size_hint: (1, 0.4)
     do_default_tab: False
@@ -99,6 +95,12 @@
     canvas:
         Line:
             rectangle: (self.x, self.y, self.width, self.height)
+
+
+<SubLayout>:
+    canvas:
+        Line:
+            points: [self.x, self.y, self.x + self.width, self.y, self.x + self.width, self.y + self.height, self.x, self.y + self.height, self.x, self.y]
 
 
 # <Container>:

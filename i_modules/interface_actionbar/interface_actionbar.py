@@ -5,12 +5,12 @@
 # import torch
 from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivy.uix.progressbar import ProgressBar
 from kivy.uix.boxlayout import BoxLayout
 from kivy.app import App
 
 # from nn_modules.node import Node
 # from utility.base_form.baseform import BaseForm
+from message_box.message_box import MessageBox
 from training_manager.training_manager import TrainingManager
 from utility.utils import get_obj
 from settings.config import configs
@@ -33,17 +33,25 @@ class CheckpointButton(BoxLayout):
     #     self.training_manager.save_checkpoint = val
 
 
-class IndicatorLabel(Label):
+class ModeLabel(Label):
     def __init__(self, **kwargs):
-        super(IndicatorLabel, self).__init__()
-
-    def update(self, obj, val):
-        self.font_size = (self.parent.width * 0.3,
-                          self.parent.height * 0.3)
+        super(ModeLabel, self).__init__(**kwargs)
+        self.text = 'Mode: '
 
 
-class _ProgressBar(ProgressBar):
-    pass
+class TrainedModelLabel(Label):
+    def __init__(self, **kwargs):
+        super(TrainedModelLabel, self).__init__(**kwargs)
+        self.text = 'Model: '
+
+    def update_text(self, model_name):
+        self.text += model_name
+
+
+class ProgressIndicator(Label):
+    def __init__(self, **kwargs):
+        super(ProgressIndicator, self).__init__(**kwargs)
+        self.text = '0% / 0%'
 
 
 class TrainButton(Button):
@@ -94,5 +102,7 @@ class TrainButton(Button):
                 self.is_training = False
 
         except ValueError as e:
-            raise e
+
+            MessageBox(message_type='Failed To Queue Model',
+                       message=str(e)).open()
         return True

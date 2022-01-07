@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from utility.utils import record_graph, checkpoint, breaker
+from utility.utils import record_graph, checkpoint, breaker, update_progress_bar
 
 
 @checkpoint
@@ -30,7 +30,11 @@ def training_alg(self, properties):
             properties['model'].zero_grad()
             loss.backward()
             properties['optimizer'].step()
+
         losses.append(epoch_loss)
+        update_progress_bar(properties['interface'],
+                            epoch,
+                            properties['epochs'])
 
     # properties['obj']._evaluate(properties['eval_properties'],
     #                             properties['eval_properties']['eval_code'])

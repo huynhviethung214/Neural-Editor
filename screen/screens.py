@@ -15,7 +15,7 @@ from kivy.config import Config
 
 import kivy
 import os
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 from utility.rightclick_toolbar.rightclick_toolbar import RightClickMenu
 

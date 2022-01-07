@@ -1,10 +1,11 @@
 import torch
-from utility.utils import record_graph, checkpoint, breaker
+from utility.utils import record_graph, checkpoint, breaker, update_progress_bar, get_obj
 
 
 @checkpoint
 @record_graph
 def training_alg(self, properties):
+    get_obj(properties['interface'], 'ModeLabel').text = 'Mode: Train'
     losses = []
 
     for epoch in range(1, properties['epochs']):
@@ -28,7 +29,11 @@ def training_alg(self, properties):
 
             loss.backward()
             properties['optimizer'].step()
+
         losses.append(epoch_loss)
+        update_progress_bar(properties['interface'],
+                            epoch + 1,
+                            properties['epochs'])
 
     properties['obj']._evaluate(properties['eval_properties'],
                                 properties['eval_properties']['eval_code'])

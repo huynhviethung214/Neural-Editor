@@ -1,0 +1,367 @@
+{
+    "beziers_coord": [
+        [
+            [
+                -156.60000000000014,
+                478.9999999999999
+            ],
+            [
+                -24.600000000000136,
+                476.0
+            ]
+        ],
+        [
+            [
+                215.39999999999986,
+                476.0
+            ],
+            [
+                344.39999999999986,
+                480.0
+            ]
+        ],
+        [
+            [
+                684.3999999999999,
+                485.0
+            ],
+            [
+                584.3999999999999,
+                480.0
+            ]
+        ],
+        [
+            [
+                924.3999999999999,
+                485.0
+            ],
+            [
+                989.3999999999999,
+                473.9999999999998
+            ]
+        ],
+        [
+            [
+                1334.3999999999999,
+                501.9999999999999
+            ],
+            [
+                1229.3999999999999,
+                473.9999999999998
+            ]
+        ],
+        [
+            [
+                1574.3999999999999,
+                501.9999999999999
+            ],
+            [
+                1669.3999999999999,
+                453.0
+            ]
+        ],
+        [
+            [
+                1909.3999999999999,
+                453.0
+            ],
+            [
+                1986.3999999999999,
+                480.0
+            ]
+        ],
+        [
+            [
+                2347.3999999999996,
+                446.9999999999999
+            ],
+            [
+                2226.3999999999996,
+                480.0
+            ]
+        ],
+        [
+            [
+                2695.3999999999996,
+                393.9999999999999
+            ],
+            [
+                2587.3999999999996,
+                446.9999999999999
+            ]
+        ]
+    ],
+    "hvfs": {
+        "Criterion": {
+            "BCELoss": {
+                "reduce": "True",
+                "reduction": "mean",
+                "size_average": "True"
+            }
+        },
+        "Evaluating": {
+            "PerceptronExample": {
+                "epochs": "10",
+                "file_path": "hyper_variables_forms\\perceptron_example\\eval\\evaluating.py"
+            }
+        },
+        "Optimizer": {
+            "ASGD": {
+                "alpha": "0.75",
+                "lambd": "0.0001",
+                "lr": "0.01",
+                "t0": "1000000.0",
+                "weight_decay": "0"
+            }
+        },
+        "Processor": {
+            "BinaryProcessor": {
+                "fpath": "test_set\\binary_dataset.txt"
+            }
+        },
+        "Training": {
+            "PerceptronExample": {
+                "epochs": "10",
+                "file_path": "hyper_variables_forms\\perceptron_example\\train\\training.py",
+                "is_save": "True",
+                "output_file_name": "test"
+            }
+        }
+    },
+    "model": {
+        "Linear 0": {
+            "pos": [
+                -395.6000000000001,
+                378.9999999999999
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Input Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "9"
+                ],
+                "out_features": [
+                    1,
+                    "18"
+                ]
+            }
+        },
+        "Linear 1": {
+            "pos": [
+                345.3999999999999,
+                379.99999999999994
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "18"
+                ],
+                "out_features": [
+                    1,
+                    "36"
+                ]
+            }
+        },
+        "Linear 2": {
+            "pos": [
+                990.3999999999999,
+                373.99999999999983
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "36"
+                ],
+                "out_features": [
+                    1,
+                    "64"
+                ]
+            }
+        },
+        "Linear 3": {
+            "pos": [
+                1670.3999999999999,
+                353.0
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "64"
+                ],
+                "out_features": [
+                    1,
+                    "128"
+                ]
+            }
+        },
+        "Linear 4": {
+            "pos": [
+                2348.3999999999996,
+                346.9999999999999
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "128"
+                ],
+                "out_features": [
+                    1,
+                    "784"
+                ]
+            }
+        },
+        "ReLU 0": {
+            "pos": [
+                -23.60000000000008,
+                405.99999999999994
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "inplace": [
+                    3,
+                    "False"
+                ]
+            }
+        },
+        "ReLU 1": {
+            "pos": [
+                685.3999999999999,
+                415.0
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "inplace": [
+                    3,
+                    "False"
+                ]
+            }
+        },
+        "ReLU 2": {
+            "pos": [
+                1335.3999999999999,
+                431.9999999999999
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "inplace": [
+                    3,
+                    "False"
+                ]
+            }
+        },
+        "ReLU 3": {
+            "pos": [
+                1987.3999999999999,
+                409.99999999999994
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "inplace": [
+                    3,
+                    "False"
+                ]
+            }
+        },
+        "Sigmoid 0": {
+            "pos": [
+                2696.3999999999996,
+                338.9999999999999
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Output Layer"
+                ]
+            }
+        }
+    },
+    "rels": [
+        [
+            "Linear 0 Output 0",
+            "ReLU 0 Input 0"
+        ],
+        [
+            "ReLU 0 Output 0",
+            "Linear 1 Input 0"
+        ],
+        [
+            "Linear 1 Output 0",
+            "ReLU 1 Input 0"
+        ],
+        [
+            "ReLU 1 Output 0",
+            "Linear 2 Input 0"
+        ],
+        [
+            "Linear 2 Output 0",
+            "ReLU 2 Input 0"
+        ],
+        [
+            "ReLU 2 Output 0",
+            "Linear 3 Input 0"
+        ],
+        [
+            "Linear 3 Output 0",
+            "ReLU 3 Input 0"
+        ],
+        [
+            "ReLU 3 Output 0",
+            "Linear 4 Input 0"
+        ],
+        [
+            "Linear 4 Output 0",
+            "Sigmoid 0 Input 0"
+        ]
+    ]
+}
