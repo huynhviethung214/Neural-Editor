@@ -182,7 +182,7 @@ class CustomActionBar(ActionBar):
 
     def load_hvfs(self, datas, interface):
         itoolbar = get_obj(interface, 'IToolBar')
-        hvfs = datas['hvfs']
+        hvfs = interface.hvfs = datas['hvfs']
 
         for tab in itoolbar.tab_list:
             for form_type in hvfs.keys():
@@ -198,7 +198,7 @@ class CustomActionBar(ActionBar):
                                 children.input.text = children.value
 
     def load_model(self, obj, selection, touch):
-        interface_tab_manager = get_obj(self, 'TabManager')
+        interface_tab_manager = get_obj(self, 'InterfaceTabManager')
 
         func_name = selection[0].split('\\')[-1].split('.')[0]
         interface_tab_manager.add_tab(func_name=func_name,
@@ -372,18 +372,18 @@ class CustomActionBar(ActionBar):
 
     def save_model(self, obj):
         model_name = None
-        interface_tab_manager = get_obj(self, 'InterfaceTabManager')
+        tab_manager = get_obj(self, 'TabManager')
         interface = get_obj(self, 'Interface')
 
         try:
             model_name = interface.model_name
-            interface_tab_manager.current_tab.text = model_name
+            tab_manager.current_tab.text = model_name
 
         except AttributeError as e:
             if 'model_name' in str(e):
-                model_name = interface_tab_manager.current_tab.text
+                model_name = tab_manager.current_tab.text
 
-        interface_tab_manager.tab_name_list.append(model_name)
+        tab_manager.tab_name_list.append(model_name)
         # print(interface.template)
 
         # model = interface.m_list
@@ -396,8 +396,7 @@ class CustomActionBar(ActionBar):
         # self.get_nodes_pos()
         interface.template.update({'beziers_coord': self.get_beziers_points(interface=interface),
                                    'rels': interface.rels,
-                                   'hvfs': self.get_hvfs(interface)
-        })
+                                   'hvfs': self.get_hvfs(interface)})
         interface.template = self.save_nodes_pos(interface.template,
                                                  interface)
 

@@ -1,5 +1,6 @@
 import json
 
+from kivy.clock import Clock
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
@@ -31,12 +32,29 @@ from utility.custom_input.custom_input import CustomTextInput
 from i_modules.interface_actionbar.interface_actionbar import TrainButton, _ProgressBar, \
     IndicatorLabel, CheckpointButton
 from nn_modules.code_names import *
-from graph.graph import Graphs
 from hyper_variables_forms.hvfs import *
 
 Config.set('input', 'mouse', 'mouse,disable_multitouch')
 
-# CREATE A NEW DYNAMIC AND CUSTOMIZABLE TRAINING AND EVALUTING FUNCTIONS (3)
+
+class InterfaceTabManager(TabManager):
+    def __init__(self, **kwargs):
+        super(InterfaceTabManager, self).__init__(**kwargs)
+        self.previous_tab = None
+
+        Clock.schedule_interval(self.on_switch_tab, 0)
+
+    def on_switch_tab(self, *args):
+        if self.previous_tab != self.current_tab:
+            try:
+                interface = self.current_tab.content.children[0]
+                custom_action_bar = get_obj(interface, 'CustomActionBar')
+                custom_action_bar.load_hvfs({'hvfs': interface.hvfs},
+                                            interface)
+            except Exception as e:
+                pass
+
+            self.previous_tab = self.current_tab
 
 
 class InvisObj(Widget):
@@ -125,6 +143,7 @@ class Interface(StencilView, GridLayout):
         self.mn_list = []
         self.node_names = []
         self.str_mapped_path = []
+        self.hvfs = None
 
         self.current_bezier_pos = []
         self.bezier_points = []
@@ -619,9 +638,9 @@ class SubContainer1(BoxLayout):
         # self.model_graph_view.model_view.add_widget(self.interface_tab_manager)
         # self.model_graph_view.graph_view.add_widget(self.graph_tab_manager)
 
-        self.tab_manager = TabManager(func=ILayout,
-                                      default_name='New Model',
-                                      _fkwargs={})
+        self.tab_manager = InterfaceTabManager(func=ILayout,
+                                               default_name='New Model',
+                                               _fkwargs={})
         self.add_widget(self.tab_manager)
 
         # `ui`: unimportant

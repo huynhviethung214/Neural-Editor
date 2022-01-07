@@ -37,4 +37,4 @@ class BinaryProcessor(object):
                 os.makedirs(f'nn_processors\\datasets\\{fname}')
                 np.save(f'nn_processors\\datasets\\{fname}\\{fname}.npy', dataset)
 
-        return dataset
+            return dataset

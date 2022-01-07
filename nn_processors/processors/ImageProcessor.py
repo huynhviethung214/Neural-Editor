@@ -33,13 +33,6 @@ class ImageProcessor:
         for i, label in enumerate(sorted(labels)):
             self.l2i.update({label: i})
 
-    @staticmethod
-    def preprocessing(size, im):
-        transform = torchvision.transforms.Compose([
-            torchvision.transforms.Resize(size)
-        ])
-        return transform(im)
-
     def dataset(self):
         dataset = []
         fpath = self.properties['output_file']
@@ -49,36 +42,6 @@ class ImageProcessor:
 
         except FileNotFoundError:
             folders = os.listdir(self.path_labels)
-
-            # for i in range(len(folders)):
-            #     for label in folders:
-            #         path = os.path.join(self.path_labels, label)
-            #
-            #         for im in os.listdir(path):
-            #             im = Image.open(os.path.join(path, im))
-            #
-            #             im = self.preprocessing((
-            #                 self.properties['width'],
-            #                 self.properties['height']),
-            #                 im
-            #             )
-            #
-            #             try:
-            #                 im = np.reshape(im, (1,
-            #                                      self.properties['channels'],
-            #                                      self.properties['width'],
-            #                                      self.properties['height']))
-            #
-            #                 y = np.array([i])
-            #                 # y = np.eye(len(os.listdir(self.path_labels)))[self.l2i[label]]
-            #                 # print(y.shape)
-            #                 # y = np.reshape(y, (1, 6))
-            #                 # print(y)
-            #
-            #                 dataset.append([im, y])
-            #
-            #             except Exception as e:
-            #                 continue
 
             for i, name in enumerate(folders):
                 path = f'{self.path_labels}\\{name}'
@@ -108,11 +71,5 @@ class ImageProcessor:
             if not exists(path):
                 os.makedirs(f'nn_processors\\datasets\\{fpath}')
             np.save(f'nn_processors\\datasets\\{fpath}\\{fpath}.npy', dataset)
-
-            # try:
-            #     np.save(f'nn_processors\\datasets\\{fpath}\\{fpath}.npy', dataset)
-            #
-            # except FileNotFoundError:
-            #     os.makedirs(f'nn_processors\\datasets\\{fpath}')
 
             return dataset

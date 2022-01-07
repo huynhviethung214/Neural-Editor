@@ -20,7 +20,7 @@ class Component(TreeViewLabel):
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
-            interface = get_obj(self, 'TabManager').current_tab.content.children[-1]
+            interface = get_obj(self, 'InterfaceTabManager').current_tab.content.children[-1]
 
             if touch.button == 'left':
                 interface._node = self.attachment

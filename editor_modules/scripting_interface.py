@@ -168,8 +168,10 @@ class SavePopup(Popup):
         self.file_name = kwargs.get('file_name')
         self.file_content = kwargs.get('file_content')
         self._type = kwargs.get('link_type')
+        self.current_tab = kwargs.get('obj')
+
         self.title = 'Save Form'
-        self.current_path = 'algorithms'
+        self.current_path = 'D:\\Python Projects\\Project Alpha\\Neural Editor\\algorithms'
 
         self.main_layout = BoxLayout(orientation='horizontal',
                                      spacing=5)
@@ -178,6 +180,10 @@ class SavePopup(Popup):
                                     spacing=5,
                                     size_hint=(0.4, 1))
 
+        self.save_button = Button(text='Confirm',
+                                  size_hint_y=0.05)
+        self.save_button.bind(on_press=self.save)
+
         self.file_chooser = FileChooserIconView(size_hint=(0.6, 1),
                                                 dirselect=True,
                                                 path=self.current_path)
@@ -185,6 +191,7 @@ class SavePopup(Popup):
 
         self.selected_path_label = Label(text=self.current_path,
                                          size_hint=(1, 0.05))
+
         self.file_name_input = CustomTextInput(size_hint=(1, 0.05),
                                                text=self.file_name,
                                                multiline=False,
@@ -195,6 +202,7 @@ class SavePopup(Popup):
 
         self.sub_layout.add_widget(self.selected_path_label)
         self.sub_layout.add_widget(self.file_name_input)
+        self.sub_layout.add_widget(self.save_button)
         self.sub_layout.add_widget(Widget(size_hint=(1, 0.9)))
 
         self.main_layout.add_widget(self.file_chooser)
@@ -209,11 +217,11 @@ class SavePopup(Popup):
             selected = self.file_chooser.selection[0]
             if self.file_chooser.file_system.is_dir(selected):
                 self.selected_path_label.text = self.current_path = selected
-                # print(self.current_path)
 
-    def save(self, file_name):
+    def save(self, obj):
         with open(self.current_path + f'\\{self.file_name}', 'w') as f:
             f.write(self.file_content)
+        self.current_tab.text = self.file_name
 
         self.dismiss()
 

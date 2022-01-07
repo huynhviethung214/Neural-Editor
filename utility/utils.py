@@ -94,7 +94,7 @@ def record_graph(fn):
 
         # model_graph_view = get_obj(interface, 'ModelGraphView')
         # model_graph_view.current = 'graph'
-
+        # print(interface)
         screen_manager = get_obj(interface, '_Container').request_obj('Manager')
         graph_tab_manager = screen_manager.get_screen('graph').children[-1].children[-1]
 

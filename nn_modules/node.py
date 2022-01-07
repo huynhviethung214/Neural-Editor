@@ -134,9 +134,10 @@ class CustomValueInput(BoxLayout):
                            max_lines=1,
                            shorten=True,
                            shorten_from='right')
-        self.input = CustomTextInput(font_size=13,
+        self.input = CustomTextInput(font_size=12,
                                      width=90,
-                                     size_hint=(0.6, 1))
+                                     size_hint=(0.6, 1),
+                                     max_length=30)
 
         self.add_widget(self.label)
         self.add_widget(self.input)
@@ -530,8 +531,7 @@ class Node(ScatterLayout):
                                                              node=node))
                         _layout.add_widget(spinner_form)
                     else:
-                        input_form = CustomValueInput(name=property_key,
-                                                      font_size=10)
+                        input_form = CustomValueInput(name=property_key)
                         input_form.input.text = value
                         input_form.input.bind(text=partial(self.set_stacked_val,
                                                            name=property_key,
@@ -631,8 +631,7 @@ class Node(ScatterLayout):
                                  size_hint=(1, None)))
 
     def add_val_input(self, name=None, _type=None, default_val=None):
-        input_form = CustomValueInput(name=name,
-                                      font_size=10)
+        input_form = CustomValueInput(name=name)
         input_form.input.text = str(self.node_template[name][1])
         input_form.input.bind(text=partial(self.set_val, name=name))
 

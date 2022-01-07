@@ -11,6 +11,7 @@ from kivy.app import App
 
 # from nn_modules.node import Node
 # from utility.base_form.baseform import BaseForm
+from message_box.message_box import MessageBox
 from training_manager.training_manager import TrainingManager
 from utility.utils import get_obj
 from settings.config import configs
@@ -94,5 +95,7 @@ class TrainButton(Button):
                 self.is_training = False
 
         except ValueError as e:
-            raise e
+
+            MessageBox(message_type='Failed To Queue Model',
+                       message=str(e)).open()
         return True

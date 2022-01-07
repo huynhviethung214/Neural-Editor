@@ -1,7 +1,6 @@
 import torch
 import numpy as np
-from Net.Net import Net
-from settings.config import configs
+from torch.nn import Sigmoid
 # IMPORT AS MANY MODULES AS YOU NEED
 
 
@@ -10,6 +9,4 @@ from settings.config import configs
 
 def algorithm(self):
     # YOUR CODE GOES HERE
-    self.load_nodes()
-    return Net(nodes=self.interface_template.nodes(),
-               interface=self.interface_template).to(configs['device']['id'])
+    return Sigmoid()

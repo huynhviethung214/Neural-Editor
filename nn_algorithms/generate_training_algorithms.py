@@ -13,6 +13,12 @@ kwargs = {
         'epochs': 20,
         'is_save': True,
         'output_file_name': 'test1'
+    },
+    'VAE': {
+        'file_path': 'hyper_variables_forms\\vae\\train\\training.py',
+        'epochs': 20,
+        'is_save': True,
+        'output_file_name': 'test2'
     }
 }
 
