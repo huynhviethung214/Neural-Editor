@@ -2,6 +2,15 @@ from kivy.uix.textinput import TextInput
 
 
 class CustomTextInput(TextInput):
+	# @staticmethod
+	# def update_padding(obj, *args):
+	# 	text_width = obj._get_text_width(
+	# 		obj.text,
+	# 		obj.tab_width,
+	# 		obj._label_cached
+	# 	)
+	# 	obj.padding_x = (obj.width - text_width) / 2
+
 	def __init__(self, max_length=9, hint_text='', filter='str', **kwargs):
 		super(CustomTextInput, self).__init__(**kwargs)
 		self.max_length = max_length

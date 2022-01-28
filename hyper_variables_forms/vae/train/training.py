@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from utility.utils import record_graph, checkpoint, breaker, update_progress_bar
+from utility.utils import record_graph, checkpoint, breaker
 
 
 @checkpoint
@@ -27,7 +27,6 @@ def training_alg(self, properties):
             loss.backward()
             properties['optimizer'].step()
             losses.append(epoch_loss)
-        update_progress_bar(properties['interface'], epoch, properties['epochs'])
 
     if properties['is_save']:
         torch.save(properties['model'].state_dict(), 'weights/{0}.prmt'.format(properties['output_file_name']))
