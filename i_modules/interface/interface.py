@@ -18,19 +18,13 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 
 from kivy.config import Config
 
-from math import sin
-from kivy_garden.graph import Graph, MeshLinePlot
-
-# import datasets_processors.generate_processors
-
 from nn_modules.node import NodeLink
 from node_editor.node_editor import NodeEditor
 from utility.custom_action_bar import CustomActionBar
 from utility.utils import get_obj
 from utility.custom_tabbedpanel import TabManager
 from utility.custom_input.custom_input import CustomTextInput
-from i_modules.interface_actionbar.interface_actionbar import TrainButton, _ProgressBar, \
-    IndicatorLabel, CheckpointButton
+from i_modules.interface_actionbar.interface_actionbar import TrainButton, CheckpointButton
 from nn_modules.code_names import *
 from hyper_variables_forms.hvfs import *
 
@@ -80,7 +74,6 @@ class ComponentPanel(ScrollView):
         self.tree_view = TreeView(size_hint=(1, None),
                                   hide_root=True)
         self.tree_view.bind(minimum_height=self.tree_view.setter('height'))
-        # self.tree_view.root_options = {'text': 'Component Panel'}
 
         nodes_file_path = []
 
@@ -189,21 +182,10 @@ class Interface(StencilView, GridLayout):
         self.add_widget(Widget())
         self.add_scatter_plane()
 
-        # self.add_progress_bar()
-        # self.add_widget(_ProgressBar(size_hint_x=0.6))
-        # self.add_widget(Widget())
-
-        # self.add_widget(Widget(size_hint=(0.3, 0.05)))
-        # self.add_widget(Widget(size_hint=(0.3, 0.05)))
-        # self.add_widget(_ProgressBar(size_hint=(0.3, 0.05)))
-
         self.bind(on_touch_up=self.add_node)
         self.bind(on_touch_move=self.unbind)
 
-        # self.bind(on_touch_move=self._is_move_validate)
         Window.bind(mouse_pos=self._is_in_bbox)
-        # self.bind(on_touch_up=self._is_up_validate)
-        # self.bind(on_touch_down=self._is_down_validate)
 
         self.bind(on_touch_move=self._draw_link)
         self.bind(on_touch_move=self._update_canvas)
@@ -221,9 +203,6 @@ class Interface(StencilView, GridLayout):
         self.action_bar.add_widget(self.model_name_input)
         self.action_bar.add_widget(CheckpointButton(interface=self))
         self.action_bar.add_widget(TrainButton())
-        # self.action_bar.add_widget(Terminate())
-        # self.action_bar.add_widget(_ProgressBar(size_hint_x=0.1))
-        # self.action_bar.add_widget(IndicatorLabel())
 
         self.add_widget(self.action_bar)
 
@@ -260,10 +239,7 @@ class Interface(StencilView, GridLayout):
                     if self.is_drawing and self.selected_node_link.target:
                         for info in self.links:
                             if self.selected_node_link in info and self.selected_node_link.target in info:
-                                # print(self.selected_node)
-                                # print('deselect')
                                 self.instructions.remove(info[-1])
-                                # print(bezier.points)
 
                                 # Disconnecting node_link and node_link.target
                                 self.selected_node_link.target.connected = 0
@@ -274,24 +250,6 @@ class Interface(StencilView, GridLayout):
                                                                     self.selected_node_link.link_type)
                                 self.links.remove(info)
                                 self.clear_canvas()
-                                # print('unbind')
-                                # try:
-                                #     self.instructions.remove(info[-1])
-                                #     self.scatter_plane.canvas.remove(info[-1])
-                                #     self.bezier_points.remove(info[-1].points)
-                                #     # self.clear_canvas()
-                                #
-                                #     # Custom Event
-                                #     node_link.target.connected = 0
-                                #     node_link.connected = 0
-                                #
-                                #     node.unbind(node_link, node_link.link_type)
-                                #     self.links.remove(info)
-                                #     self.is_drawing = 0
-                                #     print('unbind')
-                                #
-                                # except ValueError:
-                                #     pass
                     return True
 
             except TypeError:
@@ -306,42 +264,28 @@ class Interface(StencilView, GridLayout):
                     if node_link.link_type == 1 and not node_link.connected:
                         node._bind(state=2,
                                    nav=node_link.link_type)
-                        # pos = self.get_pos(node_link, node_link.pos)
                         pos = self.scatter_plane.to_local(*touch.pos)
 
                         node_link.c_pos = pos
                         node_link.target = self.connected_node_link
                         node_link.t_pos = self.connected_node_link.c_pos  # WILL BE DEPRECATED IN FUTURE VERSION
 
-                        # TODO: IMPORTANT!!!!!!!!!!
                         self.connected_node_link.t_pos = pos
                         self.connected_node_link.target = node_link
 
                         nl_index = self.connected_node_link.index()
                         node_name = self.connected_node_link.node.name
 
-                        # # TODO: ADDED FEATURE (26/9/2021)
-                        # self.connected_node_link.connecting_nodes.insert(node, nl_index)
-
                         self.connected_node_link.target.node.connected_nodes.append(
                             f'{node_name} {nl_index}'
                         )
 
-                        # _pos = (pos[0] + 5, pos[1] + 5)
                         bezier = self.draw(self.ori, pos)
 
                         # NEW ATTRIBUTE
                         rel = [self.current_node_down,
                                f'{node.name} {node_link.name}']
                         self.rels.append(rel)
-                        # self.current_bezier_pos.append(pos)
-                        # self.bezier_points.append([[self.ori[0] - 5, self.ori[1] - 5], pos])
-                        # print(self.current_bezier_pos)
-                        # self.bezier_points.append([self.ori, pos])
-                        # self.current_bezier_pos = []
-                        # print(self.rels)
-
-                        # node.beziers['input'] = self.output_node.beziers['output'] = bezier
 
                         node_link.connected = 1
                         node_link.target.connected = 1
@@ -352,9 +296,6 @@ class Interface(StencilView, GridLayout):
                         self.instructions.append(bezier)
 
                         self.is_drawing = 0
-
-                        # print(node.connected_nodes)
-                        # print(node.name)
 
                     return True
 
@@ -369,7 +310,6 @@ class Interface(StencilView, GridLayout):
                 pass
 
     def node_link_down(self, obj, touch):
-        # print(self.collide_point(*touch.pos) and not self.action_bar.collide_point(*self.to_widget(*touch.pos)))
         if touch.button == 'left':
             try:
                 valid, node, node_link = self.check_nl_collision(touch=touch)
@@ -378,34 +318,20 @@ class Interface(StencilView, GridLayout):
                     if node_link.link_type == 0 and not node_link.connected:
                         node._bind(nav=node_link.link_type)
 
-                        # pos = self.get_pos(node_link, node_link.pos)
                         pos = self.scatter_plane.to_local(*touch.pos)
                         node_link.c_pos = (pos[0] + 5, pos[1] + 5)
 
                         self.connected_node_link = node_link
                         self.output_node = node
 
-                        # self.ori = (pos[0] + 5, pos[1] + 5)
                         self.ori = pos
-                        # self.current_bezier_pos.append(pos)
                         self.current_node_down = f'{node.name} {node_link.name}'
 
                         self.is_drawing = 1
 
                     elif node_link.link_type == 1 and node_link.connected:
-                        # bezier = node.beziers['input']
-                        # self.instructions.remove(bezier)
-                        # print('node link connected')
                         self.ori = node_link.t_pos
                         self.selected_node_link = node_link
-
-                        # self.connected_node_link = node_link.target
-                        # self.output_node = node_link.target.node
-
-                        # node_link.target.connected = 0
-                        # node_link.connected = 0
-                        #
-                        # node.unbind(node_link, node_link.link_type)
                         self.is_drawing = 1
 
                     return True
@@ -470,7 +396,6 @@ class Interface(StencilView, GridLayout):
         node_name = node_name.split('.')[-1]
         node_name = node_name[0:-4]
         self.node_names.append(node_name)
-        # print(self.node_names)
 
     def node_links(self):
         _node_links = []
@@ -495,7 +420,6 @@ class Interface(StencilView, GridLayout):
         spl = get_obj(self, 'ScatterPlaneLayout')
         node_obj = self._node(spawn_position=spawn_position,
                               interface=self)
-        # print(node_obj.properties)
         self.add_node_names(node=node_obj)
         spl.add_widget(node_obj)
         self._state = 0
@@ -504,18 +428,13 @@ class Interface(StencilView, GridLayout):
         return node_obj
 
     def add_node(self, obj, touch):
-        # print(_self.collide_point(*touch.pos) and not _self.action_bar.collide_point(*_self.to_widget(*touch.pos)))
         if self.collide_point(*touch.pos):
             if self._state == 1:
                 spl = get_obj(self, 'ScatterPlaneLayout')
                 pos = spl.to_local(*touch.pos)
 
                 node_obj = self.add_node2interface(spawn_position=pos)
-                # print(node_obj.properties)
-
-                # Interface.model = Node.m_list
                 self.create_template(node_obj)
-            # print(self.template)
 
         return True
 
@@ -549,8 +468,6 @@ class Interface(StencilView, GridLayout):
 
     def create_template(self, node=None):
         node_properties = {}
-        # obj_name = None
-        # print(node.properties)
         node_properties.update(node.properties)
 
         for obj in node.sub_layout.children:
@@ -561,18 +478,7 @@ class Interface(StencilView, GridLayout):
                     # print(obj_name)
                     node_properties.update({'Layer': [LAYER_CODE, obj.text]})
 
-        # self.template.update({
-        #     node.name: {'properties': node_properties,
-        #                 'pos': node.pos
-        #                 }
-        # })
         self.template['model'].update({node.name: {'properties': node_properties}})
-
-
-# class SubContainer(BoxLayout):
-# 	def __init__(self, **kwargs):
-# 		super(SubContainer, self).__init__()
-# 		self.orientation = 'vertical'
 
 
 class ILayout(BoxLayout):
@@ -603,69 +509,11 @@ class SubContainer1(BoxLayout):
         self.size_hint = (0.8, 1)
         self.state = 0
 
-        # self.interface_tab_manager = InterfaceTabManager(func=ILayout,
-        #                                                  default_name='New Model',
-        #                                                  _fkwargs={})
-        #
-        # self.graph_tab_manager = GraphTabManager(func=Graphs,
-        #                                          default_name='New Graphs',
-        #                                          _fkwargs={},
-        #                                          add_default_tab=False)
-
-        # self.graph1 = Graph(xlabel='X', ylabel='Y', x_ticks_minor=5,
-        #                     x_ticks_major=25, y_ticks_major=1,
-        #                     y_grid_label=True, x_grid_label=True, padding=5,
-        #                     x_grid=True, y_grid=True, xmin=-0, xmax=100, ymin=-1, ymax=1,
-        #                     size_hint=(0.4, 1))
-        # plot = MeshLinePlot(color=[1, 0, 0, 1])
-        # plot.points = [(x, sin(x / 10.)) for x in range(0, 101)]
-        # self.graph1.add_plot(plot)
-        #
-        # self.graph2 = Graph(xlabel='X', ylabel='Y', x_ticks_minor=5,
-        #                     x_ticks_major=25, y_ticks_major=1,
-        #                     y_grid_label=True, x_grid_label=True, padding=5,
-        #                     x_grid=True, y_grid=True, xmin=-0, xmax=100, ymin=-1, ymax=1,
-        #                     size_hint=(0.4, 1))
-        # plot = MeshLinePlot(color=[1, 0, 0, 1])
-        # plot.points = [(x, sin(x / 10.)) for x in range(0, 101)]
-        # self.graph2.add_plot(plot)
-
-        # self.graphs = BoxLayout()
-        # self.graphs.add_widget(self.graph1)
-        # self.graphs.add_widget(self.graph2)
-
-        # self.model_graph_view = ModelGraphView()
-        # self.model_graph_view.model_view.add_widget(self.interface_tab_manager)
-        # self.model_graph_view.graph_view.add_widget(self.graph_tab_manager)
-
         self.tab_manager = InterfaceTabManager(func=ILayout,
                                                default_name='New Model',
                                                _fkwargs={})
         self.add_widget(self.tab_manager)
 
-        # `ui`: unimportant
-        # self._ui_layout = BoxLayout(size_hint_y=0.06)
-        # self._add_window_button = Button(size_hint_x=0.04,
-        #                                  text='+')
-        # self._add_window_button.bind(on_press=self._open_dropdown)
-
-        # self._ui_layout.add_widget(Label(size_hint_x=0.96))
-        # self._ui_layout.add_widget(self._add_window_button)
-
-        # self.add_widget(MainBar())
-        # self.add_widget(self.model_graph_view)
-
-        # layout = BoxLayout(size_hint_y=0.03)
-        # change_view_button = Button(text='View Graph', size_hint_x=0.1)
-        # change_view_button.bind(on_press=self.change_view)
-        #
-        # layout.add_widget(change_view_button)
-        # layout.add_widget(Label(size_hint_x=0.9))
-
-        # self.add_widget(layout)
-        # self.add_widget(self._ui_layout)
-
-    # self.add_widget(SIToolBar(size_hint_y=0.1))
     def change_view(self, obj):
         if self.model_graph_view.current == 'model':
             self.model_graph_view.current = 'graph'
@@ -726,16 +574,11 @@ class SubContainer2(BoxLayout):
         self.sub_layout.add_widget(ComponentPanel())
 
 
-# self.sub_layout.add_widget(CreateBlock())
-
-
 class Container(BoxLayout, Widget):
     def __init__(self, **kwargs):
         super(Container, self).__init__()
         self.orientation = 'vertical'
         self.spacing = 10
-
-        # self.overlay = FloatLayout()
 
         self.main_sub_layout = BoxLayout(orientation='vertical',
                                          spacing=10)
@@ -749,21 +592,8 @@ class Container(BoxLayout, Widget):
 
         component_panel = get_obj(get_obj(self.sub_layout, 'SubContainer2').children[1], 'ComponentPanel')
         self.tool_bar = CustomActionBar(component_panel=component_panel)
-        # self.tool_bar = ActionBar()
-        # self.action_view = ActionView()
-        # self.action_view.add_widget(ActionPrevious())
-        # self.action_view.add_widget(ActionButton())
-        # self.action_view.add_widget(ActionButton())
-        # self.action_view.add_widget(ActionButton())
-        # self.tool_bar.add_widget(self.action_view)
 
         self.main_sub_layout.add_widget(self.tool_bar)
         self.main_sub_layout.add_widget(self.sub_layout)
 
         self.add_widget(self.main_sub_layout)
-
-    #     self.bind(on_touch_up=self.open_right_click_menu)
-    #
-    # def open_right_click_menu(self, obj, touch):
-    #     if touch.button == 'right':
-    #         pass
