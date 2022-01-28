@@ -15,8 +15,15 @@ from kivy.graphics import Bezier
 from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.progressbar import ProgressBar
+from kivy.graphics import *
 
 from kivy.config import Config
+
+from math import sin
+from kivy_garden.graph import Graph, MeshLinePlot
+
+# import datasets_processors.generate_processors
 
 from nn_modules.node import NodeLink
 from node_editor.node_editor import NodeEditor
@@ -24,7 +31,8 @@ from utility.custom_action_bar import CustomActionBar
 from utility.utils import get_obj
 from utility.custom_tabbedpanel import TabManager
 from utility.custom_input.custom_input import CustomTextInput
-from i_modules.interface_actionbar.interface_actionbar import TrainButton, CheckpointButton
+from i_modules.interface_actionbar.interface_actionbar import TrainButton, \
+    ProgressIndicator, CheckpointButton, TrainedModelLabel, ModeLabel
 from nn_modules.code_names import *
 from hyper_variables_forms.hvfs import *
 
@@ -51,6 +59,11 @@ class InterfaceTabManager(TabManager):
             self.previous_tab = self.current_tab
 
 
+class SubLayout(BoxLayout):
+    def __init__(self, **kwargs):
+        super(SubLayout, self).__init__(**kwargs)
+
+
 class InvisObj(Widget):
     def __init__(self, **kwargs):
         super(InvisObj, self).__init__()
@@ -74,6 +87,7 @@ class ComponentPanel(ScrollView):
         self.tree_view = TreeView(size_hint=(1, None),
                                   hide_root=True)
         self.tree_view.bind(minimum_height=self.tree_view.setter('height'))
+        # self.tree_view.root_options = {'text': 'Component Panel'}
 
         nodes_file_path = []
 
@@ -155,10 +169,14 @@ class Interface(StencilView, GridLayout):
         self.ori = (0, 0)
         self.end = (0, 0)
 
+        self.box_ori = (0, 0)
+        self.box_end = (0, 0)
+
         self.is_trained = False
         self.selected_node_link = None
         self.connected_node_link = None
-        self.is_drawing = 0
+        self.is_drawing = False
+        self.is_drawing_box = False
         self.current_bezier = None
 
         self.links = []
@@ -187,17 +205,12 @@ class Interface(StencilView, GridLayout):
 
         Window.bind(mouse_pos=self._is_in_bbox)
 
-        self.bind(on_touch_move=self._draw_link)
+        self.bind(on_touch_move=self.draw_link)
+        self.bind(on_touch_move=self.draw_selected_box)
         self.bind(on_touch_move=self._update_canvas)
 
-        self.bind(on_touch_down=self.node_link_down)
-        self.bind(on_touch_up=self.node_link_up)
-
-    def add_progress_bar(self):
-        layout = BoxLayout(orientation='vertical')
-        layout.add_widget(Label(size_hint_y=0.95))
-        layout.add_widget(_ProgressBar(size_hint_y=0.05))
-        self.add_widget(layout)
+        self.bind(on_touch_down=self.touch_down)
+        self.bind(on_touch_up=self.touch_up)
 
     def add_action_bar(self):
         self.action_bar.add_widget(self.model_name_input)
@@ -255,7 +268,7 @@ class Interface(StencilView, GridLayout):
             except TypeError:
                 pass
 
-    def node_link_up(self, obj, touch):
+    def touch_up(self, obj, touch):
         if touch.button == 'left':
             try:
                 valid, node, node_link = self.check_nl_collision(touch=touch)
@@ -295,21 +308,26 @@ class Interface(StencilView, GridLayout):
                                            bezier])
                         self.instructions.append(bezier)
 
-                        self.is_drawing = 0
+                        self.is_drawing = False
 
                     return True
 
-                elif not valid and self.is_drawing:
-                    self.selected_node_link = None
-                    self.is_drawing = 0
-                    self.clear_canvas()
+                elif not valid:
+                    if self.is_drawing:
+                        self.selected_node_link = None
+                        self.is_drawing = False
+                        self.clear_canvas()
+
+                    if self.is_drawing_box:
+                        self.is_drawing_box = False
+                        self.clear_canvas()
 
                 return False
 
             except TypeError:
                 pass
 
-    def node_link_down(self, obj, touch):
+    def touch_down(self, obj, touch):
         if touch.button == 'left':
             try:
                 valid, node, node_link = self.check_nl_collision(touch=touch)
@@ -332,7 +350,16 @@ class Interface(StencilView, GridLayout):
                     elif node_link.link_type == 1 and node_link.connected:
                         self.ori = node_link.t_pos
                         self.selected_node_link = node_link
+
                         self.is_drawing = 1
+
+                    return True
+
+                elif not valid and not self.is_drawing_box:
+                    # Touching the interface's canvas
+                    if self.collide_point(*touch.pos):
+                        self.box_ori = self.scatter_plane.to_local(*touch.pos)
+                        self.is_drawing_box = True
 
                     return True
 
@@ -340,6 +367,24 @@ class Interface(StencilView, GridLayout):
 
             except TypeError:
                 pass
+
+    def _draw_selected_box(self, ori=None, end=None):
+        self.clear_canvas()
+        self.scatter_plane.canvas.ask_update()
+
+        with self.scatter_plane.canvas:
+            box = Line(
+                points=(ori[0], ori[1],
+                        end[0], ori[1],
+                        end[0], end[1],
+                        ori[0], end[1],
+                        ori[0], ori[1])
+            )
+
+    def draw_selected_box(self, obj, touch):
+        if self.is_drawing_box:
+            self._draw_selected_box(self.box_ori,
+                                    self.scatter_plane.to_local(*touch.pos))
 
     def draw(self, ori=None, end=None):
         self.clear_canvas()
@@ -353,14 +398,14 @@ class Interface(StencilView, GridLayout):
                             segments=800)
             return bezier
 
-    def _draw_link(self, obj, touch):
+    def draw_link(self, obj, touch):
         if self.is_drawing:
             self.draw(self.ori, self.scatter_plane.to_local(*touch.pos))
 
     def clear_canvas(self):
         if len(self.scatter_plane.canvas.children) > 1:
             for ins in self.scatter_plane.canvas.children:
-                if type(ins) == Bezier and ins not in self.instructions:
+                if (type(ins) == Bezier or type(ins) == Line) and ins not in self.instructions:
                     self.scatter_plane.canvas.remove(ins)
 
     def get_pos(self, obj, pos):
@@ -509,10 +554,21 @@ class SubContainer1(BoxLayout):
         self.size_hint = (0.8, 1)
         self.state = 0
 
+        self.sub_layout = SubLayout(size_hint_y=0.035,
+                                    padding=[10, 0, 10, 0])
+
+        self.sub_layout.add_widget(Label(size_hint_x=0.3))
+        self.sub_layout.add_widget(TrainedModelLabel(size_hint_x=0.1))
+        self.sub_layout.add_widget(ProgressIndicator(size_hint_x=0.1))
+        self.sub_layout.add_widget(ModeLabel(size_hint_x=0.1))
+        self.sub_layout.add_widget(ProgressBar(size_hint_x=0.4,
+                                               max=100))
+
         self.tab_manager = InterfaceTabManager(func=ILayout,
                                                default_name='New Model',
                                                _fkwargs={})
         self.add_widget(self.tab_manager)
+        self.add_widget(self.sub_layout)
 
     def change_view(self, obj):
         if self.model_graph_view.current == 'model':
@@ -526,7 +582,6 @@ class SubContainer1(BoxLayout):
 
     def _open_dropdown(self, obj):
         overlay = get_obj(self, '_container').request_obj('Overlay')
-        # overlay = self.parent.parent.parent.parent
 
         if self.state == 0:
             for i, key in enumerate(sorted(self.button_dict.keys())):
