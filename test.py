@@ -776,5 +776,3 @@ from importlib import reload
 #
 #
 # a()
-
-a = '8 + 9 / 3'

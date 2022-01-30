@@ -1,6 +1,7 @@
 import json
 
 from kivy.clock import Clock
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
@@ -28,6 +29,7 @@ from kivy_garden.graph import Graph, MeshLinePlot
 from nn_modules.node import NodeLink
 from node_editor.node_editor import NodeEditor
 from utility.custom_action_bar import CustomActionBar
+from utility.rightclick_toolbar.rightclick_toolbar import RightClickMenu
 from utility.utils import get_obj
 from utility.custom_tabbedpanel import TabManager
 from utility.custom_input.custom_input import CustomTextInput
@@ -156,37 +158,47 @@ class Interface(StencilView, GridLayout):
         self.bezier_points = []
         self.rels = []
 
-        # self.current_bz_point = []
-
         self.current_node_down = None
         self._node = None
         self._state = 0
-        # self._spos = (0, 0)
 
         self.rows = 2
         self.cols = 3
 
         self.ori = (0, 0)
-        self.end = (0, 0)
-
         self.box_ori = (0, 0)
-        self.box_end = (0, 0)
+
+        # Selected Box Variables
+        self.is_drawing_box = False
+        self.enable_drawing_box = False
+        self.selected_box = []
+        self.selected_elements = []
+        self.selected_box_menu_button_height = 40
+        self.selected_box_menu_button_width = 150
+        self.selected_box_menu_spacing = 6
 
         self.is_trained = False
+        self.is_drawing = False
+
         self.selected_node_link = None
         self.connected_node_link = None
-        self.is_drawing = False
-        self.is_drawing_box = False
         self.current_bezier = None
 
         self.links = []
         self.instructions = []
         self.template = {'model': {}}
 
+        self.rightclick_menu_funcs = {
+            'Select Node(s)': lambda: setattr(self, 'enable_drawing_box', True)
+        }
+
+        self.selected_box_menu_funcs = {
+            'Stacking Node(s)': self.stacking_nodes
+        }
+
         self.output_node = None
 
         self.action_bar = SIToolBar()
-
         self.model_name_input = CustomTextInput(size_hint_x=0.3,
                                                 max_length=50)
         self.model_name_input.bind(text=lambda obj, text: setattr(self,
@@ -319,8 +331,12 @@ class Interface(StencilView, GridLayout):
                         self.clear_canvas()
 
                     if self.is_drawing_box:
+                        overlay = get_obj(self, 'Overlay')
+                        self.selected_box.append(self.scatter_plane.to_local(*touch.pos))
                         self.is_drawing_box = False
-                        self.clear_canvas()
+                        self.enable_drawing_box = False
+                        self.select_nodes(overlay.to_local(*touch.pos))
+                        # self.clear_canvas()
 
                 return False
 
@@ -328,7 +344,10 @@ class Interface(StencilView, GridLayout):
                 pass
 
     def touch_down(self, obj, touch):
+        overlay = get_obj(self, 'Overlay')
+
         if touch.button == 'left':
+            overlay.clear_menu()
             try:
                 valid, node, node_link = self.check_nl_collision(touch=touch)
 
@@ -355,11 +374,13 @@ class Interface(StencilView, GridLayout):
 
                     return True
 
-                elif not valid and not self.is_drawing_box:
+                elif not valid and self.enable_drawing_box:
                     # Touching the interface's canvas
                     if self.collide_point(*touch.pos):
+                        self.selected_box = []
                         self.box_ori = self.scatter_plane.to_local(*touch.pos)
                         self.is_drawing_box = True
+                        self.selected_box.append(self.box_ori)
 
                     return True
 
@@ -368,12 +389,65 @@ class Interface(StencilView, GridLayout):
             except TypeError:
                 pass
 
+        elif touch.button == 'right':
+            menu = RightClickMenu(pos=overlay.to_local(*(self.to_window(*touch.pos))),
+                                  funcs=self.rightclick_menu_funcs)
+            overlay.open_menu(menu)
+
+    def add_selected_box_menu(self, top_right_overlay):
+        # Default `Button`'s height is 30 unit and width is 120 unit
+        x = top_right_overlay[0]
+        y = top_right_overlay[1]
+        funcs = self.selected_box_menu_funcs
+
+        overlay = get_obj(self, 'Overlay')
+
+        menu_layout_height = self.selected_box_menu_button_height * \
+                             len(funcs.keys()) + \
+                             self.selected_box_menu_spacing * (len(funcs.keys()) - 1)
+
+        menu_layout = BoxLayout(size_hint=(None, None),
+                                size=(self.selected_box_menu_button_width,
+                                      menu_layout_height),
+                                pos=(x, y - menu_layout_height),
+                                orientation='vertical',
+                                spacing=self.selected_box_menu_spacing)
+
+        # overlay.add_widget(Button(text='Stacking',
+        #                           size_hint=(None, None),
+        #                           size=(100, 20)))
+
+        for func_name in funcs.keys():
+            button = Button(text=func_name,
+                            size_hint=(None, None),
+                            size=(self.selected_box_menu_button_width,
+                                  self.selected_box_menu_button_height))
+            button.bind(on_press=lambda obj: funcs[func_name]())
+            menu_layout.add_widget(button)
+        overlay.open_menu(menu_layout)
+
+    def stacking_nodes(self):
+        print(f'Stacking {len(self.selected_elements)} Node(s)')
+
+    def select_nodes(self, top_right_overlay):
+        self.selected_elements.clear()
+        bottom_left = self.selected_box[0]
+        top_right = self.selected_box[1]
+        c = 0
+
+        for node in self.nodes():
+            if (bottom_left[0] <= node.pos[0] <= top_right[0]) and (bottom_left[1] <= node.pos[1] <= top_right[1]):
+                c += 1
+                self.selected_elements.append(node)
+        self.add_selected_box_menu(top_right_overlay)
+        print(f'Number of nodes {c} in the box')
+
     def _draw_selected_box(self, ori=None, end=None):
         self.clear_canvas()
         self.scatter_plane.canvas.ask_update()
 
         with self.scatter_plane.canvas:
-            box = Line(
+            Line(
                 points=(ori[0], ori[1],
                         end[0], ori[1],
                         end[0], end[1],
@@ -382,7 +456,7 @@ class Interface(StencilView, GridLayout):
             )
 
     def draw_selected_box(self, obj, touch):
-        if self.is_drawing_box:
+        if self.is_drawing_box and self.box_ori != (0, 0):
             self._draw_selected_box(self.box_ori,
                                     self.scatter_plane.to_local(*touch.pos))
 
@@ -485,6 +559,7 @@ class Interface(StencilView, GridLayout):
 
     def _update_canvas(self, obj, touch):
         try:
+            self.clear_canvas()
             if self.collide_point(*self.to_widget(*obj.pos)) and len(
                     self.scatter_plane.children) >= 2 and not self.is_drawing and touch.button == 'left':
                 for node in self.scatter_plane.children:
@@ -520,7 +595,6 @@ class Interface(StencilView, GridLayout):
                 obj_name = obj.text
 
                 if 'Layer' in obj_name:
-                    # print(obj_name)
                     node_properties.update({'Layer': [LAYER_CODE, obj.text]})
 
         self.template['model'].update({node.name: {'properties': node_properties}})
@@ -531,19 +605,29 @@ class ILayout(BoxLayout):
         super(ILayout, self).__init__()
         self.orientation = 'vertical'
 
+        # Zoom Variables
+        self.zoom_step = 0.02
+        self.offset = 2
+        self.scale = None
+
         self.add_widget(Interface())
+        self.scatter_plane = self.children[-1].scatter_plane
 
+        self.bind(on_touch_down=self.mouse_scrolled)
 
-class ModelGraphView(ScreenManager):
-    def __init__(self):
-        super(ModelGraphView, self).__init__()
-        self.model_view = Screen(name='model')
-        self.graph_view = Screen(name='graph')
+    def mouse_scrolled(self, obj, touch):
+        if self.collide_point(*touch.pos):
+            if touch.is_mouse_scrolling:
+                if touch.button == 'scrolldown':
+                    if self.scatter_plane.scale <= 1.0:
+                        self.scatter_plane.scale *= 1.1
+                        # print('zoom out')
 
-        self.add_widget(self.model_view)
-        self.add_widget(self.graph_view)
-
-        self.current = 'model'
+                elif touch.button == 'scrollup':
+                    if self.scatter_plane.scale > 0.3:
+                        # print('zoom in')
+                        self.scatter_plane.scale *= 0.8
+                # print(self.scatter_plane.scale)
 
 
 class SubContainer1(BoxLayout):
@@ -569,16 +653,6 @@ class SubContainer1(BoxLayout):
                                                _fkwargs={})
         self.add_widget(self.tab_manager)
         self.add_widget(self.sub_layout)
-
-    def change_view(self, obj):
-        if self.model_graph_view.current == 'model':
-            self.model_graph_view.current = 'graph'
-            obj.text = 'View Model'
-        else:
-            self.model_graph_view.current = 'model'
-            obj.text = 'View Graph'
-
-        return True
 
     def _open_dropdown(self, obj):
         overlay = get_obj(self, '_container').request_obj('Overlay')

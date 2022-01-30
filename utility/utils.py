@@ -29,6 +29,17 @@ def get_obj(hierarchy=None, widget_name='', condition=None):
                         return w
 
 
+def update_progress_bar(interface, epoch, epochs):
+    current_percentage = int(((epoch + 1) / epochs) * 100)
+    get_obj(interface, 'ProgressBar').value = current_percentage
+    get_obj(interface, 'ProgressIndicator').text = f'{current_percentage}% / 100%'
+
+
+def breaker(obj):
+    if obj.end_task:
+        raise BreakException
+
+
 def map_properties(fn):
     from functools import wraps
     @wraps(fn)
@@ -38,7 +49,6 @@ def map_properties(fn):
         new_properties = {}
 
         for key in obj.properties.keys():
-            # print(_property)
             property_type = obj.properties[key][0]
             value = obj.properties[key][1]
 
@@ -54,15 +64,9 @@ def map_properties(fn):
             elif property_type == STR_CODE:
                 new_properties.update({key: str(value)})
 
-        # print(new_properties, obj)
         return algorithm(**new_properties)
 
     return _map_properties
-
-
-def breaker(obj):
-    if obj.end_task:
-        raise BreakException
 
 
 def checkpoint(fn):
@@ -92,9 +96,6 @@ def record_graph(fn):
         self = args[0]
         properties = args[1]
 
-        # model_graph_view = get_obj(interface, 'ModelGraphView')
-        # model_graph_view.current = 'graph'
-        # print(interface)
         screen_manager = get_obj(interface, '_Container').request_obj('Manager')
         graph_tab_manager = screen_manager.get_screen('graph').children[-1].children[-1]
 
@@ -110,23 +111,4 @@ def record_graph(fn):
                                   }})
         return 1
 
-        # graph_tab_manager = get_obj(interface, 'ModelGraphView')
-        # print(get_obj(interface, 'ModelGraphView'))
-        # graph_tab_manager.add_tab(func_name=interface.model_name,
-        #                           _fkwargs={'xmax': n_iter,
-        #                                     'ymax': int(max(losses)) + 1})
-
     return _record_graph
-
-# class LinksManager():
-# 	def __init__(self):
-# 		self.objs_list = {}
-
-# 	def register_obj(self, name, obj):
-# 		self.objs_list.update({name: obj})
-
-# 	def remove_obj(self, name):
-# 		self.objs_list.remove(name)
-
-# 	def get_obj(self, name):
-# 		return self.objs_list[name]

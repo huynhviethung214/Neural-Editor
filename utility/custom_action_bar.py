@@ -372,7 +372,7 @@ class CustomActionBar(ActionBar):
 
     def save_model(self, obj):
         model_name = None
-        tab_manager = get_obj(self, 'TabManager')
+        tab_manager = get_obj(self, 'InterfaceTabManager')
         interface = get_obj(self, 'Interface')
 
         try:

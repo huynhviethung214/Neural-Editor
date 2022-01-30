@@ -179,6 +179,7 @@ class Node(ScatterLayout):
         self.layout = AnchorLayout(anchor_x='center',
                                    anchor_y='center')
         self.layout.padding = (4, 4, 4, 4)
+        # self.rgba = (1, 1, 1, 1)
 
         self.sub_layout = GridLayout()
         self.sub_layout.cols = 1
@@ -693,6 +694,7 @@ class Node(ScatterLayout):
 
     def draw_border(self):
         with self.canvas:
+            # Color(*self.rgba)
             Line(rounded_rectangle=(self.layout.x, self.layout.y,
                                     self.layout.width, self.layout.height,
                                     6))

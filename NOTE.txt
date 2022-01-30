@@ -34,3 +34,4 @@ THE ALGORITHM IN 'generate_evaluating_algorithms.py' AND 'generate_training_algo
 30. Fix TAB NAME IN `TabManager`
 31. FIX `Scripting Screen` ✅
 32. Switch HVFS after changing tab in Interface's TabManager ✅
+33. FIX WHERE SELECTING NODE CHANGE COLOR OF THE `ProgressBar` AND THE `Bezier` BETWEEN NODES
