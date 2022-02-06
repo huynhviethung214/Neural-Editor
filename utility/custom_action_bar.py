@@ -289,6 +289,7 @@ class CustomActionBar(ActionBar):
 
                     interface._node = node
                     node = interface.add_node2interface(
+                        node_name=key,
                         spawn_position=datas['model'][key]['pos']
                     )
 
@@ -344,13 +345,13 @@ class CustomActionBar(ActionBar):
         rels = self.formatting_rels(datas['rels'], interface.node_links())
 
         for coord, rel in zip(datas['beziers_coord'], rels):
-            # Touch Down
-            rel[0].node._bind(nav=rel[0].link_type)
-            rel[0].c_pos = coord[0]
-
-            # Touch Up
-            rel[1].node._bind(state=2,
-                              nav=rel[1].link_type)
+            # # Touch Down
+            # rel[0].node._bind(nav=rel[0].link_type)
+            # rel[0].c_pos = coord[0]
+            #
+            # # Touch Up
+            # rel[1].node._bind(state=2,
+            #                   nav=rel[1].link_type)
             rel[1].c_pos = coord[1]
             rel[1].target = rel[0]
             rel[1].t_pos = rel[0].c_pos

@@ -222,9 +222,6 @@ class Node(ScatterLayout):
         self.outputs = []
         # self.name = 'Default Layer'
 
-        # `rfo` = `ready for output`
-        self.rfo = 0
-
         self.code_names = [INT_CODE, STR_CODE, FLOAT_CODE, OBJ_CODE]
 
         self.interface = kwargs.get('interface')
@@ -233,9 +230,6 @@ class Node(ScatterLayout):
         self.add_ib()
 
         self.combine()
-
-        self.add_info(self.name)
-        self._import_algorithm_file()
 
         self.overlay = get_obj(self.interface, 'OverLay')
 
@@ -284,52 +278,18 @@ class Node(ScatterLayout):
                 except ValueError:
                     pass
 
-    # print(self.algorithm())
-    # def on_touch_down(self, touch):
-    #     if self.collide_point(*self.to_widget(*touch.pos)):
-    #         self.do_translation = True
-    #     else:
-    #         self.do_translation = False
-    #     return True
-
     def algorithm(self):
         pass
-
-    # Make this function compatible with the library
-    # This is where the properties are being imported to the model
-    def _import_algorithm_file(self):
-        for f in os.listdir('algorithms'):
-            if f == self.name + '.py':
-                # print(f)
-                _class_name = self.node_name.lower()
-                module = __import__('algorithms.' + self.name,
-                                    fromlist=[_class_name])
-                _class = getattr(module, _class_name)
-                _node = type(self.name,
-                             (_class,),
-                             {})()
-
-                # Add `self` to properties for more controllability
-                # self.properties.update({'obj': [OBJ_CODE, self.output_node]})
-
-                setattr(_node, 'properties', self.properties)
-
-                algorithm = getattr(_node, 'algorithm')
-                setattr(self, 'algorithm', algorithm)
 
     def set_id(self, node_name=None):
         if node_name:
             num = self.interface.node_names.count(node_name)
             self.name = f'{node_name} {num}'
-            # self.node_names.append(node_name)
-            # print(self.interface.node_names)
         else:
             self.name = 'Layer {0}'.format(self.n_layer)
             self.n_layer += 1
 
     def add_components(self):
-        self.set_id(node_name=self.name)
-        # print(self.name)
         self.add_id()
         self.add_drop_down_list()
 
@@ -357,11 +317,6 @@ class Node(ScatterLayout):
                                               default_size=(2, 2),
                                               _type=MATRIX_CODE)
 
-    # def add_custom_properties(self):
-    # 	pass
-    # import torch
-
-    # CAN BE OPTIMIZED
     def _add_node_links(self, n_links, position, key):
         pos = self.code2pos[position]
 
@@ -432,14 +387,11 @@ class Node(ScatterLayout):
                 node = self.get_functions(node_type)
 
                 self.interface_template._node = node
-                node = self.interface_template.add_node2interface()
+                node = self.interface_template.add_node2interface(node_name=key)
 
                 for widget in node.sub_layout.children:
                     if type(widget) == Spinner:
-                        # print(self.properties.keys())
-                        # print(self.properties['Layer'][1], node.name)
                         node.c_type = self.properties[node.name]['properties']['Layer'][1]
-                        # print(node.c_type, node.name, '\n')
 
                 self.set_nodes_properties(node_obj=node,
                                           properties=self.properties[key]['properties'])
@@ -489,12 +441,6 @@ class Node(ScatterLayout):
         rels = self.formatting_rels(datas['rels'], self.interface_template.node_links())
 
         for rel in rels:
-            # Touch Down
-            rel[0].node._bind(nav=rel[0].link_type)
-
-            # Touch Up
-            rel[1].node._bind(state=2,
-                              nav=rel[1].link_type)
             rel[1].target = rel[0]
 
             rel[0].target = rel[1]
@@ -611,13 +557,11 @@ class Node(ScatterLayout):
         self.add_component(_layout)
 
     def add_drop_down_list(self):
-        # print('\n', self.types[self.index])
         drop_butt = Spinner(text=self.c_type,
                             values=self.types,
                             size_hint=(1, None),
                             height=self.c_height,
                             sync_height=True)
-        # drop_butt.bind(text=lambda obj, text: setattr(self, 'type', self.types.index(text)))
         drop_butt.bind(text=self.set_type)
 
         self.add_component(drop_butt)
@@ -712,106 +656,12 @@ class Node(ScatterLayout):
         try:
             if val:
                 self.interface.template['model'][self.name]['properties'][node]['properties'][name][1] = val
-                # print(val)
-                # print(self.interface.template['model'][self.name]['properties'][node]['properties'][name])
         except Exception as e:
             obj.text = ''
-            raise e
 
     def set_val(self, obj, val, name):
         try:
             if val:
                 self.properties[name][1] = val
-                # print(self.interface.template)
         except Exception as e:
             obj.text = ''
-
-    def _is_exist(self, _list):
-        if _list in self.interface.m_list:
-            return True
-        return False
-
-    def _bind(self, state=1, nav=None):
-        if state == 1:
-            Node.b_node = self
-            Node.b_node.c_nav = nav
-
-        elif state == 2:
-            temp_list = []
-            _existed = False
-
-            if Node.b_node is not None and self != Node.b_node:
-                if self.name != Node.b_node.name and nav != Node.b_node.c_nav:
-                    if not Node.in_list[Node.b_node.name][nav] and not Node.in_list[self.name][Node.b_node.c_nav]:
-                        if Node.b_node.name != self.name:
-                            temp_list.append(Node.b_node)
-                            temp_list.insert(nav, self)
-                            _existed = self._is_exist(temp_list)
-
-                            if not _existed:
-                                self.interface.m_list.append(temp_list)
-
-                            Node.in_list[Node.b_node.name][nav] = self.name
-                            Node.in_list[self.name][Node.b_node.c_nav] = Node.b_node.name
-
-                    else:
-                        temp_list.append(Node.b_node)
-                        temp_list.insert(nav, self)
-
-                        if Node.in_list[Node.b_node.name][nav] is not None:
-                            for layer in self.interface.m_list:
-                                if Node.in_list[Node.b_node.name][nav] in layer and Node.b_node.name in layer:
-                                    self.interface.m_list.remove(layer)
-                            Node.in_list[Node.in_list[Node.b_node.name][nav]][Node.b_node.c_nav] = None
-
-                        if Node.in_list[self.name][Node.b_node.c_nav] is not None:
-                            for layer in self.interface.m_list:
-                                if Node.in_list[self.name][Node.b_node.c_nav] in layer and self.name in layer:
-                                    self.interface.m_list.remove(layer)
-                            Node.in_list[Node.in_list[self.name][Node.b_node.c_nav]][nav] = None
-
-                        Node.in_list[Node.b_node.name][nav] = self.name
-                        Node.in_list[self.name][Node.b_node.c_nav] = Node.b_node.name
-                        _existed = self._is_exist(temp_list)
-
-                        if not _existed:
-                            self.interface.m_list.append(temp_list)
-
-                    # self.interface.mn_list.append([self.name, Node.b_node.name])
-                    # print(self.name, Node.b_node.name)
-                    Node.b_node = None
-
-    # OPTIMIZE THIS FUNCTION
-    def unbind(self, obj=None, nav=None):
-        try:
-            for layer in self.interface.mn_list:
-                if obj.target.node != layer[nav]:
-                    self.interface.mn_list.remove(layer)
-
-            for layer in self.interface.m_list:
-                # print(obj.target.node != layer[nav])
-                if obj.target.node != layer[nav]:
-                    # print('unbind')
-                    self.interface.m_list.remove(layer)
-                    # print(obj.target.node.name)
-                    self.connected_nodes.remove(
-                        f'{obj.target.node.name} {obj.target.link_type}'
-                    )
-                    # print(self.connected_nodes)
-
-                    obj.target.t_pos = None
-                    obj.target.target = None
-
-                    obj.target = None
-                    obj.t_pos = None
-
-        except Exception as e:
-            # print(e)
-            pass
-
-    @staticmethod
-    def add_info(_alg):
-        Node.in_list.update({_alg: [None, None]})
-
-# if __name__ == '__main__':
-#     runTouchApp(Node(spawn_position=(0, 0)))

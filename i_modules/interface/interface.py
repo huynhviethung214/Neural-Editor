@@ -150,7 +150,7 @@ class Interface(StencilView, GridLayout):
     def __init__(self, **kwargs):
         super(Interface, self).__init__()
         self.size_hint = (1, 1)
-        self.m_list = []
+        # self.m_list = []
         self.mn_list = []
         self.node_names = []
         self.str_mapped_path = []
@@ -259,7 +259,15 @@ class Interface(StencilView, GridLayout):
         except IndexError:
             pass
 
-    # FIX UNBINDING METHOD
+    def remove_rel(self):
+        target_node_link = self.selected_node_link.target
+
+        _rel = [f'{target_node_link.node.name} {target_node_link.name}',
+                f'{self.selected_node_link.node.name} {self.selected_node_link.name}']
+
+        if _rel in self.rels:
+            self.rels.remove(_rel)
+
     def unbind(self, obj, touch):
         if touch.button == 'left':
             try:
@@ -273,9 +281,10 @@ class Interface(StencilView, GridLayout):
                                 self.selected_node_link.target.connected = 0
                                 self.selected_node_link.connected = 0
 
+                                # Remove old `node link`'s relationship
+                                self.remove_rel()
+
                                 # Unbinding nodes base on connected node_links
-                                self.selected_node_link.node.unbind(self.selected_node_link,
-                                                                    self.selected_node_link.link_type)
                                 self.links.remove(info)
                                 self.clear_canvas()
                     return True
@@ -290,8 +299,6 @@ class Interface(StencilView, GridLayout):
 
                 if valid:
                     if node_link.link_type == 1 and not node_link.connected:
-                        node._bind(state=2,
-                                   nav=node_link.link_type)
                         pos = self.scatter_plane.to_local(*touch.pos)
 
                         node_link.c_pos = pos
@@ -358,8 +365,6 @@ class Interface(StencilView, GridLayout):
 
                 if valid:
                     if node_link.link_type == 0 and not node_link.connected:
-                        node._bind(nav=node_link.link_type)
-
                         pos = self.scatter_plane.to_local(*touch.pos)
                         node_link.c_pos = (pos[0] + 5, pos[1] + 5)
 
@@ -400,7 +405,7 @@ class Interface(StencilView, GridLayout):
             overlay.open_menu(menu)
 
     def add_selected_box_menu(self, top_right_overlay):
-        # Default `Button`'s height is 30 unit and width is 120 unit
+        # Default `selected_box_menu`'s Button height is 30 unit and width is 120 unit
         x = top_right_overlay[0]
         y = top_right_overlay[1]
         funcs = self.selected_box_menu_funcs
@@ -472,7 +477,8 @@ class Interface(StencilView, GridLayout):
 
         if input_nodes and output_nodes and self.is_independent_group(input_nodes, output_nodes):
             # Re-formatting node's relationships for selected elements
-            grouped_rels_copy = copy.copy(self.rels)  # A copy of `self.rels` so that changing the `rels` won't affect `self.rels`
+            grouped_rels_copy = copy.copy(
+                self.rels)  # A copy of `self.rels` so that changing the `rels` won't affect `self.rels`
             new_rels = copy.copy(self.rels)
 
             group_remove_list = []
@@ -517,17 +523,17 @@ class Interface(StencilView, GridLayout):
                 template['model'].update({node.name: {'properties': node.properties}})
 
             stacked_node = Node
-            stacked_node.name = 'Group'
             stacked_node.node_template = template
             stacked_node.type = STACKED
             setattr(stacked_node, 'algorithm', stacked_algorithm)
 
             self._node = stacked_node
 
-            node_obj = self.add_node2interface(self.selected_nodes[0].pos)
+            node = self.add_node2interface(node_name='Group 0',
+                                           spawn_position=self.selected_nodes[0].pos)
 
             # Node's template format for interface
-            self.template['model'][node_obj.name] = {
+            self.template['model'][node.name] = {
                 'properties': {
                     'Layer': template['Layer']
                 },
@@ -546,20 +552,20 @@ class Interface(StencilView, GridLayout):
             }
 
             for node_name in template['model'].keys():
-                self.template['model'][node_obj.name]['properties'].update({
+                self.template['model'][node.name]['properties'].update({
                     node_name: template['model'][node_name]
                 })
 
             # Let's prefer Node Link as Gate from this point forward
             # Add Input Gates
-            node_obj._add_node_links(
+            node._add_node_links(
                 n_links=len(input_nodes),
                 position=LEFT_CODE,
                 key='input'
             )
 
             # Add Output Gates
-            node_obj._add_node_links(
+            node._add_node_links(
                 n_links=len(output_nodes),
                 position=RIGHT_CODE,
                 key='output'
@@ -605,7 +611,7 @@ class Interface(StencilView, GridLayout):
                 bezier_pos_top_right = ins.points[-2:]
 
                 if self.is_in_range(bezier_pos_bottom_left, bottom_left, top_right) and \
-                    self.is_in_range(bezier_pos_top_right, bottom_left, top_right):
+                        self.is_in_range(bezier_pos_top_right, bottom_left, top_right):
                     self.selected_beziers.append(ins)
 
         self.add_selected_box_menu(top_right_overlay)
@@ -678,12 +684,15 @@ class Interface(StencilView, GridLayout):
         for pair in remove_list:
             self.m_list.remove(pair)
 
-    def add_node_names(self, node=None):
-        node_name = str(node)
-        node_name = node_name.split(' ')[0]
-        node_name = node_name.split('.')[-1]
-        node_name = node_name[0:-4]
-        self.node_names.append(node_name)
+    def add_node_names(self, node_name=None, node=None):
+        if not node_name:
+            node_name = str(node)
+            node_name = node_name.split(' ')[0]
+            node_name = node_name.split('.')[-1]
+            node_name = node_name[0:-4]
+            self.node_names.append(node_name)
+        else:
+            self.node_names.append(node_name)
 
     def node_links(self):
         _node_links = []
@@ -704,16 +713,20 @@ class Interface(StencilView, GridLayout):
 
         return _nodes
 
-    def add_node2interface(self, spawn_position=(0, 0)):
+    def add_node2interface(self, node_name=None, spawn_position=(0, 0)):
         spl = get_obj(self, 'ScatterPlaneLayout')
-        node_obj = self._node(spawn_position=spawn_position,
-                              interface=self)
-        self.add_node_names(node=node_obj)
-        spl.add_widget(node_obj)
+
+        node = self._node(spawn_position=spawn_position,
+                          interface=self)
+        node.name = node_name
+
+        self.add_node_names(node_name=node_name,
+                            node=node)
+        spl.add_widget(node)
         self._state = 0
         self._node = None
 
-        return node_obj
+        return node
 
     def add_node(self, obj, touch):
         if self.collide_point(*touch.pos):
