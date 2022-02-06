@@ -89,7 +89,7 @@ class FileChooser(FileChooserIconView):
             RightClickMenu(pos_hint={'x': self.touch.spos[0], 'top': self.touch.spos[1]},
                            size_hint=(None, None),
                            size=(300, 500),
-                           func_list={'Export as Stacked': self.model_to_stacked}).open()
+                           funcs={'Export as Stacked': self.model_to_stacked})
         return True
 
     def open_menu(self, obj, touch):

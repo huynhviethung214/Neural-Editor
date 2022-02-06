@@ -46,6 +46,11 @@ class StateEvent(EventDispatcher):
         self._state = new_state
 
 
+class NodeName(Label):
+    def __init__(self, **kwargs):
+        super(NodeName, self).__init__(**kwargs)
+
+
 class NodeLink(Widget):
     ctd_state = {}
 
@@ -280,14 +285,6 @@ class Node(ScatterLayout):
 
     def algorithm(self):
         pass
-
-    def set_id(self, node_name=None):
-        if node_name:
-            num = self.interface.node_names.count(node_name)
-            self.name = f'{node_name} {num}'
-        else:
-            self.name = 'Layer {0}'.format(self.n_layer)
-            self.n_layer += 1
 
     def add_components(self):
         self.add_id()
@@ -576,9 +573,9 @@ class Node(ScatterLayout):
         self.objs.append(obj)
 
     def add_id(self):
-        self.add_component(Label(text=self.name,
-                                 size_hint=(1, None),
-                                 height=self.c_height))
+        self.add_component(NodeName(text=self.name,
+                                    size_hint=(1, None),
+                                    height=self.c_height))
 
     def add_ib(self):
         self.add_component(Label(height=1,

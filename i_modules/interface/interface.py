@@ -346,7 +346,6 @@ class Interface(StencilView, GridLayout):
                         self.is_drawing_box = False
                         self.enable_drawing_box = False
                         self.select_nodes(overlay.to_local(*touch.pos))
-                        # self.clear_canvas()
 
                 return False
 
@@ -581,14 +580,16 @@ class Interface(StencilView, GridLayout):
 
             # Clean canvas after rendering new grouped node
             overlay.clear_menu()
-            # Somehow you have to invoke `self.clear_canvas` twice to get rid
-            # of the selection box
+
+            # Somehow you have to invoke `self.clear_canvas`
+            # twice to get rid of the selection box
             self.clear_canvas()
             self.clear_canvas()
         else:
             print('[DEBUG]: Warning: There is no Output / Input Layer')
 
     # Check if object's position is in referenced range
+    # `rpos0` and `rpos1` are the references of first position and second position
     def is_in_range(self, pos, rpos0, rpos1):
         if (rpos0[0] <= pos[0] <= rpos1[0]) and (rpos0[1] <= pos[1] <= rpos1[1]):
             return True
@@ -615,7 +616,6 @@ class Interface(StencilView, GridLayout):
                     self.selected_beziers.append(ins)
 
         self.add_selected_box_menu(top_right_overlay)
-        # print(f'There are {len(self.selected_beziers)} bezier(s) in the box')
 
     def _draw_selected_box(self, ori=None, end=None):
         self.clear_canvas()
@@ -684,15 +684,29 @@ class Interface(StencilView, GridLayout):
         for pair in remove_list:
             self.m_list.remove(pair)
 
+    def num_nodes(self, node_class):
+        c = 0
+
+        for node in self.nodes():
+            if node_class in str(type(node)):
+                c += 1
+
+        return c
+
     def add_node_names(self, node_name=None, node=None):
         if not node_name:
-            node_name = str(node)
-            node_name = node_name.split(' ')[0]
-            node_name = node_name.split('.')[-1]
-            node_name = node_name[0:-4]
+            node_class = str(node)
+            node_class = node_class.split(' ')[0]
+            node_class = node_class.split('.')[-1]
+            node_class = node_class[0:-4]
+            node_name = f'{node_class} {self.num_nodes(node_class)}'
+
             self.node_names.append(node_name)
         else:
             self.node_names.append(node_name)
+
+        node_name_obj = get_obj(node, 'NodeName')
+        node_name_obj.text = node.name = node_name
 
     def node_links(self):
         _node_links = []
@@ -718,7 +732,6 @@ class Interface(StencilView, GridLayout):
 
         node = self._node(spawn_position=spawn_position,
                           interface=self)
-        node.name = node_name
 
         self.add_node_names(node_name=node_name,
                             node=node)
@@ -734,14 +747,15 @@ class Interface(StencilView, GridLayout):
                 spl = get_obj(self, 'ScatterPlaneLayout')
                 pos = spl.to_local(*touch.pos)
 
-                node_obj = self.add_node2interface(spawn_position=pos)
-                self.create_template(node_obj)
+                node = self.add_node2interface(spawn_position=pos)
+                self.create_template(node)
 
             return True
 
     def _update_canvas(self, obj, touch):
         try:
             self.clear_canvas()
+
             if self.collide_point(*self.to_widget(*obj.pos)) and len(
                     self.scatter_plane.children) >= 2 and not self.is_drawing and touch.button == 'left':
                 for node in self.scatter_plane.children:

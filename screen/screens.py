@@ -37,7 +37,6 @@ class SettingScreen(Screen):
 class MainScreen(Screen):
     def __init__(self, **kwargs):
         super(MainScreen, self).__init__()
-    # client.assign_obj('main_screen', self)
 
 
 class ScriptingScreen(Screen):
@@ -68,7 +67,6 @@ class ToolPanel(BoxLayout):
 class Overlay(FloatLayout):
     def __init__(self, **kwargs):
         super(Overlay, self).__init__()
-        # Clock.schedule_interval(self.rightclick_event, 1)
 
     def open_menu(self, menu_obj):
         self.clear_menu()
@@ -79,16 +77,6 @@ class Overlay(FloatLayout):
             for children in self.children:
                 if type(children) != Container:
                     self.remove_widget(children)
-
-    #     self.bind(on_touch_down=self.clear)
-    #
-    # def clear(self, obj, touch):
-    #     self.remove_toolbar()
-    #
-    # def remove_toolbar(self):
-    #     for children in get_obj(self, 'Overlay').children:
-    #         if type(children) == RightClickMenu:
-    #             get_obj(self, 'Overlay').remove_widget(children)
 
 
 class _Container(BoxLayout):
