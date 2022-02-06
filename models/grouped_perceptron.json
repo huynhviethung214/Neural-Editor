@@ -1,0 +1,151 @@
+{
+    "beziers_coord": [
+        [
+            [
+                447.3999999999999,
+                634.5374677002583
+            ],
+            [
+                687.3999999999999,
+                573.5374677002582
+            ]
+        ]
+    ],
+    "hvfs": {
+        "Criterion": {
+            "BCEWithLogitsLoss": {
+                "reduce": "True",
+                "reduction": "mean",
+                "size_average": "True"
+            }
+        },
+        "Evaluating": {
+            "PerceptronExample": {
+                "epochs": "10",
+                "file_path": "hyper_variables_forms\\perceptron_example\\eval\\evaluating.py"
+            }
+        },
+        "Optimizer": {
+            "AdamW": {
+                "amsgrad": "False",
+                "eps": "1e-08",
+                "lr": "0.001",
+                "weight_decay": "0.01"
+            }
+        },
+        "Processor": {
+            "BinaryProcessor": {
+                "fpath": "test_set\\binary_dataset.txt"
+            }
+        },
+        "Training": {
+            "PerceptronExample": {
+                "epochs": "10",
+                "file_path": "hyper_variables_forms\\perceptron_example\\train\\training.py",
+                "is_save": "True",
+                "output_file_name": "test"
+            }
+        }
+    },
+    "model": {
+        "Group 0": {
+            "nl_input": {
+                "n_links": 1,
+                "position": 12,
+                "type": "input"
+            },
+            "nl_output": {
+                "n_links": 1,
+                "position": 13,
+                "type": "output"
+            },
+            "node_type": 9,
+            "pos": [
+                208.39999999999992,
+                459.5374677002583
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Input Layer"
+                ],
+                "Linear 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Input Layer"
+                        ],
+                        "bias": [
+                            3,
+                            true
+                        ],
+                        "in_features": [
+                            1,
+                            "5"
+                        ],
+                        "out_features": [
+                            1,
+                            "10"
+                        ]
+                    }
+                },
+                "Linear 1": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Output Layer"
+                        ],
+                        "bias": [
+                            3,
+                            true
+                        ],
+                        "in_features": [
+                            1,
+                            "10"
+                        ],
+                        "out_features": [
+                            1,
+                            "20"
+                        ]
+                    }
+                }
+            },
+            "rels": [
+                [
+                    "Linear 0 Output 0",
+                    "Linear 1 Input 0"
+                ]
+            ]
+        },
+        "Linear 2": {
+            "pos": [
+                688.3999999999999,
+                473.53746770025816
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Output Layer"
+                ],
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "20"
+                ],
+                "out_features": [
+                    1,
+                    "10"
+                ]
+            }
+        }
+    },
+    "rels": [
+        [
+            "Group 0 Output 0",
+            "Linear 2 Input 0"
+        ]
+    ]
+}
