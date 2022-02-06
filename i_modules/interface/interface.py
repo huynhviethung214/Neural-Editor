@@ -278,11 +278,13 @@ class Interface(StencilView, GridLayout):
                                 self.instructions.remove(info[-1])
 
                                 # Disconnecting node_link and node_link.target
-                                self.selected_node_link.target.connected = 0
-                                self.selected_node_link.connected = 0
+                                self.selected_node_link.target.connected = False
+                                self.selected_node_link.connected = False
 
                                 # Remove old `node link`'s relationship
                                 self.remove_rel()
+                                self.selected_node_link.target.target = None
+                                self.selected_node_link.target = None
 
                                 # Unbinding nodes base on connected node_links
                                 self.links.remove(info)
@@ -447,24 +449,26 @@ class Interface(StencilView, GridLayout):
         return input_nodes, output_nodes
 
     # Checking if all the selected nodes is an independent group
-    def is_independent_group(self, input_nodes, output_nodes):
-        c = 0
+    @staticmethod
+    def is_independent_group(input_nodes, output_nodes):
+        n_inputs = 0
+        n_outputs = 0
 
         for input_node in input_nodes:
             for children in input_node.children[0].children:
                 if type(children) == NodeLink and children.link_type == 1:
                     if not children.target:
-                        c += 1
+                        n_inputs += 1
                         break
 
         for output_node in output_nodes:
             for children in output_node.children[0].children:
                 if type(children) == NodeLink and children.link_type == 0:
                     if not children.target:
-                        c += 1
+                        n_outputs += 1
                         break
 
-        if c == len(input_nodes) + len(output_nodes):
+        if n_inputs + n_outputs == len(input_nodes) + len(output_nodes):
             return True
         return False
 
@@ -473,6 +477,8 @@ class Interface(StencilView, GridLayout):
         # print(f'Stacking {len(self.selected_nodes)} Node(s)')
         overlay = get_obj(self, 'Overlay')
         input_nodes, output_nodes = self.group_infos()
+        # print(f'No input gates: {len(input_nodes)}, No output gates: {len(output_nodes)}')
+        # print(self.is_independent_group(input_nodes, output_nodes))
 
         if input_nodes and output_nodes and self.is_independent_group(input_nodes, output_nodes):
             # Re-formatting node's relationships for selected elements
@@ -674,15 +680,6 @@ class Interface(StencilView, GridLayout):
     def remove_node(self, node):
         self.children[0].remove_widget(node)
         self.template['model'].pop(node.name)
-
-        remove_list = []
-
-        for pair in self.m_list:
-            if node in pair:
-                remove_list.append(pair)
-
-        for pair in remove_list:
-            self.m_list.remove(pair)
 
     def num_nodes(self, node_class):
         c = 0

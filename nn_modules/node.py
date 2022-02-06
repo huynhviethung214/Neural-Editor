@@ -573,8 +573,7 @@ class Node(ScatterLayout):
         self.objs.append(obj)
 
     def add_id(self):
-        self.add_component(NodeName(text=self.name,
-                                    size_hint=(1, None),
+        self.add_component(NodeName(size_hint=(1, None),
                                     height=self.c_height))
 
     def add_ib(self):
