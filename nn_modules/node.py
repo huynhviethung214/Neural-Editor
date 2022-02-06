@@ -265,8 +265,6 @@ class Node(ScatterLayout):
 
     def add_node_links(self):
         for key in sorted(self.node_template.keys()):
-            # TODO: ADD NODE_LINKS ACCORDING TO THE NUMBER OF INPUTS/OUTPUTS
-            # TODO: ADD BUTTON TO SPECIFY WHERE THE INPUTS/OUTPUTS WILL LOCATE (EX: TOP, BOTTOM, LEFT, RIGHT)
             if key == 'nl_input' or key == 'nl_output':
                 self._add_node_links(self.node_template[key]['n_links'],
                                      self.node_template[key]['position'],
@@ -320,7 +318,7 @@ class Node(ScatterLayout):
                 setattr(self, 'algorithm', algorithm)
 
     def set_id(self, node_name=None):
-        if node_name is not None:
+        if node_name:
             num = self.interface.node_names.count(node_name)
             self.name = f'{node_name} {num}'
             # self.node_names.append(node_name)
@@ -335,7 +333,6 @@ class Node(ScatterLayout):
         self.add_id()
         self.add_drop_down_list()
 
-        # print(self.node_template)
         if self.node_template['node_type'] == STACKED:
             self.add_stacked_nodes()
             self.type = STACKED
@@ -371,7 +368,7 @@ class Node(ScatterLayout):
         if n_links == 1:
             if 'output' in key:
                 out1 = self.add_output_node(pos + '-middle')
-                self.inputs.append(out1)
+                self.outputs.append(out1)
             else:
                 in1 = self.add_input_node(pos + '-middle')
                 self.inputs.append(in1)
@@ -381,8 +378,8 @@ class Node(ScatterLayout):
                 out1 = self.add_output_node(pos=pos + '-top')
                 out2 = self.add_output_node(pos + '-bottom',
                                             name='Output 1')
-                self.inputs.append(out1)
-                self.inputs.append(out2)
+                self.outputs.append(out1)
+                self.outputs.append(out2)
 
             else:
                 in1 = self.add_input_node(pos + '-top')
@@ -398,9 +395,9 @@ class Node(ScatterLayout):
                                             name='Output 1')
                 out3 = self.add_output_node(pos + '-bottom',
                                             name='Output 2')
-                self.inputs.append(out1)
-                self.inputs.append(out2)
-                self.inputs.append(out3)
+                self.outputs.append(out1)
+                self.outputs.append(out2)
+                self.outputs.append(out3)
             else:
                 in1 = self.add_input_node(pos + '-top')
                 in2 = self.add_input_node(pos + '-middle',
@@ -428,36 +425,48 @@ class Node(ScatterLayout):
                 node_obj.properties[widget.label.text][1] = str(variable[1])
                 node_obj.properties[widget.label.text][0] = variable[0]
 
+    def set_model_properties(self, model):
+        for key in model.keys():
+            try:
+                node_type = key.split(' ')[0]
+                node = self.get_functions(node_type)
+
+                self.interface_template._node = node
+                node = self.interface_template.add_node2interface()
+
+                for widget in node.sub_layout.children:
+                    if type(widget) == Spinner:
+                        # print(self.properties.keys())
+                        # print(self.properties['Layer'][1], node.name)
+                        node.c_type = self.properties[node.name]['properties']['Layer'][1]
+                        # print(node.c_type, node.name, '\n')
+
+                self.set_nodes_properties(node_obj=node,
+                                          properties=self.properties[key]['properties'])
+
+            except AttributeError as e:
+                pass
+
     def load_nodes(self):
         if not self.is_loaded:
-            with open(abspath('models/' + self.name.split(' ')[0] + '.json'), 'r') as f:
-                datas = json.load(f)
-                model = datas['model']
+            model = None
+            datas = None
 
-                for key in model.keys():
-                    try:
-                        node_type = key.split(' ')[0]
-                        node = self.get_functions(node_type)
+            try:
+                with open(abspath('models/' + self.name.split(' ')[0] + '.json'), 'r') as f:
+                    datas = json.load(f)
+                    model = datas['model']
+            except FileNotFoundError:
+                pass
 
-                        self.interface_template._node = node
-                        node = self.interface_template.add_node2interface()
-
-                        for widget in node.sub_layout.children:
-                            if type(widget) == Spinner:
-                                # print(self.properties.keys())
-                                # print(self.properties['Layer'][1], node.name)
-                                node.c_type = self.properties[node.name]['properties']['Layer'][1]
-                                # print(node.c_type, node.name, '\n')
-
-                        self.set_nodes_properties(node_obj=node,
-                                                  properties=self.properties[key]['properties'])
-
-                    except AttributeError as e:
-                        pass
-
+            if model and datas:
+                self.set_model_properties(model)
                 self.binding(datas=datas)
-                self.is_loaded = True
-                # print(self.properties)
+            else:
+                self.set_model_properties(self.node_template['model'])
+                self.binding(datas=self.node_template)
+
+            self.is_loaded = True
 
     @staticmethod
     def formatting_rels(rels, node_links):
@@ -733,7 +742,6 @@ class Node(ScatterLayout):
 
             if Node.b_node is not None and self != Node.b_node:
                 if self.name != Node.b_node.name and nav != Node.b_node.c_nav:
-                    # print(Node.b_node.name, self.name)
                     if not Node.in_list[Node.b_node.name][nav] and not Node.in_list[self.name][Node.b_node.c_nav]:
                         if Node.b_node.name != self.name:
                             temp_list.append(Node.b_node)

@@ -4,6 +4,7 @@ from utility.utils import record_graph, checkpoint, update_progress_bar, get_obj
 
 def evaluating_alg(self, properties):
     get_obj(properties['interface'], 'ModeLabel').text = 'Mode: Evaluate'
+    get_obj(properties['interface'], 'ProgressBar').max = properties['epochs']
 
     target = None
     pred = None

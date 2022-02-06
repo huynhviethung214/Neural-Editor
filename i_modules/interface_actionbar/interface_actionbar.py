@@ -92,7 +92,12 @@ class TrainButton(Button):
                 self.training_manager.add_job(self.model,
                                               obj=self,
                                               interface=interface)
-                self.training_manager.model_name = interface.model_name
+                if interface.model_name:
+                    self.training_manager.model_name = interface.model_name
+
+                elif not interface.model_name:
+                    self.training_manager.model_name = 'Unknown'
+
                 self.text = 'X'
                 self.is_training = True
             else:

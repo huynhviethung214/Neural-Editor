@@ -1,3 +1,4 @@
+import copy
 import json
 
 from kivy.clock import Clock
@@ -26,7 +27,7 @@ from kivy_garden.graph import Graph, MeshLinePlot
 
 # import datasets_processors.generate_processors
 
-from nn_modules.node import NodeLink
+from nn_modules.node import NodeLink, Node
 from node_editor.node_editor import NodeEditor
 from utility.custom_action_bar import CustomActionBar
 from utility.rightclick_toolbar.rightclick_toolbar import RightClickMenu
@@ -36,6 +37,7 @@ from utility.custom_input.custom_input import CustomTextInput
 from i_modules.interface_actionbar.interface_actionbar import TrainButton, \
     ProgressIndicator, CheckpointButton, TrainedModelLabel, ModeLabel
 from nn_modules.code_names import *
+from i_modules.stacked_code_template import stacked_algorithm
 from hyper_variables_forms.hvfs import *
 
 Config.set('input', 'mouse', 'mouse,disable_multitouch')
@@ -153,9 +155,9 @@ class Interface(StencilView, GridLayout):
         self.node_names = []
         self.str_mapped_path = []
         self.hvfs = None
+        self.model_name = 'Unknown'
 
         self.current_bezier_pos = []
-        self.bezier_points = []
         self.rels = []
 
         self.current_node_down = None
@@ -172,7 +174,8 @@ class Interface(StencilView, GridLayout):
         self.is_drawing_box = False
         self.enable_drawing_box = False
         self.selected_box = []
-        self.selected_elements = []
+        self.selected_nodes = []
+        self.selected_beziers = []
         self.selected_box_menu_button_height = 40
         self.selected_box_menu_button_width = 150
         self.selected_box_menu_spacing = 6
@@ -193,7 +196,7 @@ class Interface(StencilView, GridLayout):
         }
 
         self.selected_box_menu_funcs = {
-            'Stacking Node(s)': self.stacking_nodes
+            'Stacking Node(s)': self.grouping_nodes
         }
 
         self.output_node = None
@@ -348,6 +351,8 @@ class Interface(StencilView, GridLayout):
 
         if touch.button == 'left':
             overlay.clear_menu()
+            self.clear_canvas()
+
             try:
                 valid, node, node_link = self.check_nl_collision(touch=touch)
 
@@ -413,10 +418,6 @@ class Interface(StencilView, GridLayout):
                                 orientation='vertical',
                                 spacing=self.selected_box_menu_spacing)
 
-        # overlay.add_widget(Button(text='Stacking',
-        #                           size_hint=(None, None),
-        #                           size=(100, 20)))
-
         for func_name in funcs.keys():
             button = Button(text=func_name,
                             size_hint=(None, None),
@@ -426,21 +427,189 @@ class Interface(StencilView, GridLayout):
             menu_layout.add_widget(button)
         overlay.open_menu(menu_layout)
 
-    def stacking_nodes(self):
-        print(f'Stacking {len(self.selected_elements)} Node(s)')
+    # Manually set Input and Output Node for selected nodes
+    # Throw warning when there are an unconnected nodes
+    def group_infos(self):
+        input_nodes = []
+        output_nodes = []
 
-    def select_nodes(self, top_right_overlay):
-        self.selected_elements.clear()
-        bottom_left = self.selected_box[0]
-        top_right = self.selected_box[1]
+        for node in self.selected_nodes:
+            if 'Input' in node.c_type:
+                input_nodes.append(node)
+
+            elif 'Output' in node.c_type:
+                output_nodes.append(node)
+
+        return input_nodes, output_nodes
+
+    # Checking if all the selected nodes is an independent group
+    def is_independent_group(self, input_nodes, output_nodes):
         c = 0
 
+        for input_node in input_nodes:
+            for children in input_node.children[0].children:
+                if type(children) == NodeLink and children.link_type == 1:
+                    if not children.target:
+                        c += 1
+                        break
+
+        for output_node in output_nodes:
+            for children in output_node.children[0].children:
+                if type(children) == NodeLink and children.link_type == 0:
+                    if not children.target:
+                        c += 1
+                        break
+
+        if c == len(input_nodes) + len(output_nodes):
+            return True
+        return False
+
+    # Group all `selected_nodes` into one stacked node
+    def grouping_nodes(self):
+        # print(f'Stacking {len(self.selected_nodes)} Node(s)')
+        overlay = get_obj(self, 'Overlay')
+        input_nodes, output_nodes = self.group_infos()
+
+        if input_nodes and output_nodes and self.is_independent_group(input_nodes, output_nodes):
+            # Re-formatting node's relationships for selected elements
+            grouped_rels_copy = copy.copy(self.rels)  # A copy of `self.rels` so that changing the `rels` won't affect `self.rels`
+            new_rels = copy.copy(self.rels)
+
+            group_remove_list = []
+            group_remove_rels = []
+            old_rels_nodes = []
+
+            # Get grouped nodes relationship
+            for node in self.nodes():
+                if node not in self.selected_nodes:
+                    group_remove_list.append(node)
+                else:
+                    old_rels_nodes.append(node)
+
+            for rel in grouped_rels_copy:
+                for link in rel:
+                    for remove_node in group_remove_list:
+                        if remove_node.name in link and rel not in group_remove_rels:
+                            group_remove_rels.append(rel)
+
+            # Remove already grouped relationships
+            for rel in self.rels:
+                for link in rel:
+                    for old_rels_node in old_rels_nodes:
+                        if old_rels_node.name in link and rel in new_rels:
+                            new_rels.remove(rel)
+            self.rels = new_rels
+
+            # Get new node's relationships
+            for rel in group_remove_rels:
+                grouped_rels_copy.remove(rel)
+
+            # Node's template format
+            template = {
+                'Layer': [5, 'Hidden Layer'],
+                'model': {},
+                'rels': grouped_rels_copy,
+                'node_type': STACKED
+            }
+
+            for node in self.selected_nodes:
+                node.properties.update({'Layer': [5, node.c_type]})
+                template['model'].update({node.name: {'properties': node.properties}})
+
+            stacked_node = Node
+            stacked_node.name = 'Group'
+            stacked_node.node_template = template
+            stacked_node.type = STACKED
+            setattr(stacked_node, 'algorithm', stacked_algorithm)
+
+            self._node = stacked_node
+
+            node_obj = self.add_node2interface(self.selected_nodes[0].pos)
+
+            # Node's template format for interface
+            self.template['model'][node_obj.name] = {
+                'properties': {
+                    'Layer': template['Layer']
+                },
+                'rels': template['rels'],
+                'node_type': template['node_type'],
+                'nl_output': {
+                    'n_links': len(output_nodes),
+                    'position': RIGHT_CODE,
+                    'type': 'output'
+                },
+                'nl_input': {
+                    'n_links': len(input_nodes),
+                    'position': LEFT_CODE,
+                    'type': 'input'
+                }
+            }
+
+            for node_name in template['model'].keys():
+                self.template['model'][node_obj.name]['properties'].update({
+                    node_name: template['model'][node_name]
+                })
+
+            # Let's prefer Node Link as Gate from this point forward
+            # Add Input Gates
+            node_obj._add_node_links(
+                n_links=len(input_nodes),
+                position=LEFT_CODE,
+                key='input'
+            )
+
+            # Add Output Gates
+            node_obj._add_node_links(
+                n_links=len(output_nodes),
+                position=RIGHT_CODE,
+                key='output'
+            )
+
+            # Clear grouped nodes
+            for node in self.selected_nodes:
+                self.remove_node(node)
+
+            # Clear grouped node's bezier
+            for bezier in self.selected_beziers:
+                self.instructions.remove(bezier)
+
+            # Clean canvas after rendering new grouped node
+            overlay.clear_menu()
+            # Somehow you have to invoke `self.clear_canvas` twice to get rid
+            # of the selection box
+            self.clear_canvas()
+            self.clear_canvas()
+        else:
+            print('[DEBUG]: Warning: There is no Output / Input Layer')
+
+    # Check if object's position is in referenced range
+    def is_in_range(self, pos, rpos0, rpos1):
+        if (rpos0[0] <= pos[0] <= rpos1[0]) and (rpos0[1] <= pos[1] <= rpos1[1]):
+            return True
+
+    def select_nodes(self, top_right_overlay):
+        # Clear selected elements before invoke any actions
+        self.selected_nodes.clear()
+        self.selected_beziers.clear()
+
+        bottom_left = self.selected_box[0]
+        top_right = self.selected_box[1]
+
         for node in self.nodes():
-            if (bottom_left[0] <= node.pos[0] <= top_right[0]) and (bottom_left[1] <= node.pos[1] <= top_right[1]):
-                c += 1
-                self.selected_elements.append(node)
+            if self.is_in_range(node.pos, bottom_left, top_right):
+                self.selected_nodes.append(node)
+
+        for ins in self.scatter_plane.canvas.children:
+            if type(ins) == Bezier:
+                bezier_pos_bottom_left = ins.points[:2]
+                bezier_pos_top_right = ins.points[-2:]
+
+                if self.is_in_range(bezier_pos_bottom_left, bottom_left, top_right) and \
+                    self.is_in_range(bezier_pos_top_right, bottom_left, top_right):
+                    self.selected_beziers.append(ins)
+
         self.add_selected_box_menu(top_right_overlay)
-        print(f'Number of nodes {c} in the box')
+        # print(f'There are {len(self.selected_beziers)} bezier(s) in the box')
 
     def _draw_selected_box(self, ori=None, end=None):
         self.clear_canvas()
@@ -498,7 +667,7 @@ class Interface(StencilView, GridLayout):
 
     def remove_node(self, node):
         self.children[0].remove_widget(node)
-        self.template.pop(node.name)
+        self.template['model'].pop(node.name)
 
         remove_list = []
 
@@ -555,7 +724,7 @@ class Interface(StencilView, GridLayout):
                 node_obj = self.add_node2interface(spawn_position=pos)
                 self.create_template(node_obj)
 
-        return True
+            return True
 
     def _update_canvas(self, obj, touch):
         try:
@@ -605,16 +774,12 @@ class ILayout(BoxLayout):
         super(ILayout, self).__init__()
         self.orientation = 'vertical'
 
-        # Zoom Variables
-        self.zoom_step = 0.02
-        self.offset = 2
-        self.scale = None
-
         self.add_widget(Interface())
         self.scatter_plane = self.children[-1].scatter_plane
 
         self.bind(on_touch_down=self.mouse_scrolled)
 
+    # For zooming in and out of the Interface
     def mouse_scrolled(self, obj, touch):
         if self.collide_point(*touch.pos):
             if touch.is_mouse_scrolling:

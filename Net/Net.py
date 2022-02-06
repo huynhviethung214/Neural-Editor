@@ -26,7 +26,6 @@ class Net(Module):
         for node in self.nodes:
             # Format: `Node's name`: `Node's Algorithm`
             self.layers.update({node.name: node.algorithm()})
-        # print(self.layers)
 
     # Add all needed nodes into a queue with the Input at index 0 and
     # Output at index len(self.queue)
@@ -99,9 +98,12 @@ class Net(Module):
         # print('Initialize Model\n')
         self.initialize()
 
+        if [] in self.queue:
+            self.queue.remove([])
+
         # Processing Input Node's output
         input_node = self.queue[0]
-
+        # print(self.layers, input_node.name)
         x = self.layers[input_node.name](x)
         # Set Input Node's RFO (Ready For Output) = 1
 
@@ -171,7 +173,7 @@ class Net(Module):
         #     self.use_mapped = 1
         #     # print([node.name for node in self.queue])
 
-        self.use_mapped = 1
+        self.use_mapped = True
         self.outputs.clear()
 
         if self.interface:

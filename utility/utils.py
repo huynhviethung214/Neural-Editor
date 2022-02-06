@@ -22,7 +22,6 @@ def get_obj(hierarchy=None, widget_name='', condition=None):
         if widget_name.lower() == str(w).split(' ')[0].split('.')[-1].lower():
             if not condition:
                 return w
-
             else:
                 for key in condition.keys():
                     if key in dir(w) and getattr(w, key) == condition[key]:
@@ -30,9 +29,9 @@ def get_obj(hierarchy=None, widget_name='', condition=None):
 
 
 def update_progress_bar(interface, epoch, epochs):
-    current_percentage = int(((epoch + 1) / epochs) * 100)
-    get_obj(interface, 'ProgressBar').value = current_percentage
-    get_obj(interface, 'ProgressIndicator').text = f'{current_percentage}% / 100%'
+    progress_bar = get_obj(interface, 'ProgressBar')
+    progress_bar.value = epoch
+    get_obj(interface, 'ProgressIndicator').text = f'{int(progress_bar.value_normalized * 100)}% / 100%'
 
 
 def breaker(obj):

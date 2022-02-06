@@ -776,3 +776,9 @@ from importlib import reload
 #
 #
 # a()
+
+
+exec('from torch.nn import Linear')
+print(locals()['Linear'])
+a = locals()['Linear']
+print(a)

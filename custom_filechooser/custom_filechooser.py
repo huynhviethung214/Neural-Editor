@@ -29,10 +29,10 @@ class FileChooser(FileChooserIconView):
         nl_input = None
         nl_output = None
 
-        with open('nn_modules\\nn_nodes.json', 'r') as fn:
+        with open('nn_modules/nn_nodes.json', 'r') as fn:
             nodes = json.load(fn)
 
-            with open(f'models\\{self.selected}', 'r') as fm:
+            with open(f'models/{self.selected}', 'r') as fm:
                 model_json = json.load(fm)
                 model = model_json['model']
 
@@ -58,7 +58,7 @@ class FileChooser(FileChooserIconView):
             code_template = self.get_code_template(node_name)
             self.add_alg_file(node_name, code_template)
 
-            with open('nn_modules\\nn_nodes.json', 'w') as f:
+            with open('nn_modules/nn_nodes.json', 'w') as f:
                 json.dump(nodes, f, sort_keys=True, indent=4)
 
             importlib.reload(nn_modules.nn_components)
@@ -68,12 +68,12 @@ class FileChooser(FileChooserIconView):
 
     @staticmethod
     def add_alg_file(node_name, code_template):
-        with open('algorithms\\{0}.py'.format(node_name), 'w') as f:
+        with open('algorithms/{0}.py'.format(node_name), 'w') as f:
             f.write(code_template)
 
     @staticmethod
     def get_code_template(node_name):
-        with open('i_modules\\stacked_code_template.txt', 'r') as f:
+        with open('i_modules/stacked_code_template.py', 'r') as f:
             lines = f.readlines()
             code_template = ''
             lines[0] = lines[0].format(node_name.lower())

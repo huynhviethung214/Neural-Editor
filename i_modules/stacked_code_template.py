@@ -8,7 +8,7 @@ from settings.config import configs
 # `self` has `properties` attribute which contain `inputs` that you have been
 # added in the `Node Editor`
 
-def algorithm(self):
+def stacked_algorithm(self):
     # YOUR CODE GOES HERE
     self.load_nodes()
     return Net(nodes=self.interface_template.nodes(),

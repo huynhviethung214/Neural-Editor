@@ -1,3 +1,4 @@
+import copy
 import json
 from functools import partial
 
@@ -15,8 +16,9 @@ from kivy.uix.popup import Popup
 from kivy.uix.spinner import Spinner
 
 from custom_filechooser.custom_filechooser import FileChooser
+from i_modules.stacked_code_template import stacked_algorithm
 from nn_modules.code_names import NORM, STACKED
-from nn_modules.node import CustomValueInput, NodeLink
+from nn_modules.node import CustomValueInput, NodeLink, Node
 from node_editor.node_editor import NodeEditor
 from utility.utils import get_obj
 from settings.config import configs
@@ -128,12 +130,12 @@ class CustomActionBar(ActionBar):
         fpath = None
 
         if _type == 0:
-            fpath = f'{source}\\training_function_template.txt'
+            fpath = f'{source}/training_function_template.txt'
 
         elif _type == 1:
-            fpath = f'{source}\\evaluating_function_template.txt'
+            fpath = f'{source}/evaluating_function_template.txt'
 
-        with open(f'hyper_variables_forms\\{fpath}', 'r') as f:
+        with open(f'hyper_variables_forms/{fpath}', 'r') as f:
             code_template = f.read()
 
         screen_manager.current = 'scripting'
@@ -173,12 +175,30 @@ class CustomActionBar(ActionBar):
         return coordinates
 
     @staticmethod
-    def get_nodes(node_name):
-        module = __import__('nn_modules.nn_nodes',
-                            fromlist=[node_name + 'Node'])
-        _class = getattr(module, node_name + 'Node')
+    def get_grouped_node(template):
+        _template = copy.deepcopy(template)
+        stacked_node = Node
+        stacked_node.name = 'Group'
 
-        return _class
+        # Since template is in Node's interface template format
+        # (not Node's template format). Therefore, we have to re
+        # -format it to Node's template format
+        _template['properties'].pop('Layer')
+        _template['model'] = _template.pop('properties')
+        stacked_node.node_template = _template
+
+        stacked_node.type = STACKED
+        setattr(stacked_node, 'algorithm', stacked_algorithm)
+
+        return stacked_node
+
+    @staticmethod
+    def get_nodes(node_class):
+        module = __import__('nn_modules.nn_nodes',
+                            fromlist=[node_class + 'Node'])
+        node_class_module = getattr(module, node_class + 'Node', None)
+
+        return node_class_module
 
     def load_hvfs(self, datas, interface):
         itoolbar = get_obj(interface, 'IToolBar')
@@ -226,9 +246,7 @@ class CustomActionBar(ActionBar):
                 for widget in leaf.children:
                     if type(widget) != Spinner:
                         value = str(properties[parent_node.text]['properties'][widget.label.text][1])
-
                         widget.input.text = value
-                        # node_obj.properties[parent_node.text]['properties'][widget.label.text] = value
 
     @staticmethod
     def set_nodes_properties(node_obj, properties, *args):
@@ -263,8 +281,11 @@ class CustomActionBar(ActionBar):
 
             for key in datas['model'].keys():
                 try:
-                    node_type = key.split(' ')[0]
-                    node = self.get_nodes(node_type)
+                    node_class = key.split(' ')[0]
+                    node = self.get_nodes(node_class)
+
+                    if not node:
+                        node = self.get_grouped_node(datas['model'][key])
 
                     interface._node = node
                     node = interface.add_node2interface(
@@ -322,18 +343,12 @@ class CustomActionBar(ActionBar):
     def draw_beziers(self, datas, interface):
         rels = self.formatting_rels(datas['rels'], interface.node_links())
 
-        # for coord, rel in zip(datas['beziers_coord'], rels):
         for coord, rel in zip(datas['beziers_coord'], rels):
-            # coord = self.get_rels_pos(rel, interface)
-            # spl = get_obj(interface, 'ScatterPlaneLayout')
-
             # Touch Down
-            # coord.append(spl.to_parent(*rel[0].pos))
             rel[0].node._bind(nav=rel[0].link_type)
             rel[0].c_pos = coord[0]
 
             # Touch Up
-            # coord.append(spl.to_widget(*rel[1].pos))
             rel[1].node._bind(state=2,
                               nav=rel[1].link_type)
             rel[1].c_pos = coord[1]
@@ -354,14 +369,10 @@ class CustomActionBar(ActionBar):
             rel[1].connected = 1
 
             # Draw Bezier
-            # print(coord)
             bezier = interface.draw(*coord)
-
-            # rel[0].node.beziers['output'] = rel[1].node.beziers['input'] = bezier
 
             interface.links.append([rel[1], rel[0], bezier])
             interface.instructions.append(bezier)
-            # interface.bezier_points = datas['beziers_coord']
             interface.rels = datas['rels']
 
     def save_nodes_pos(self, template, interface):
@@ -394,6 +405,7 @@ class CustomActionBar(ActionBar):
         #                            'links_pos': [bezier.points for bezier in interface.beziers]})
         # interface.template.update({'relationship': interface.mn_list})
         # self.get_nodes_pos()
+
         interface.template.update({'beziers_coord': self.get_beziers_points(interface=interface),
                                    'rels': interface.rels,
                                    'hvfs': self.get_hvfs(interface)})
