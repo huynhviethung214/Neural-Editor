@@ -1,0 +1,386 @@
+{
+    "beziers_coord": [
+        [
+            [
+                405.3999999999999,
+                633.5374677002583
+            ],
+            [
+                596.3999999999999,
+                633.5374677002583
+            ]
+        ]
+    ],
+    "hvfs": {
+        "Criterion": {
+            "BCEWithLogitsLoss": {
+                "reduce": "True",
+                "reduction": "mean",
+                "size_average": "True"
+            }
+        },
+        "Evaluating": {
+            "PerceptronExample": {
+                "epochs": "10",
+                "file_path": "hyper_variables_forms\\perceptron_example\\eval\\evaluating.py"
+            }
+        },
+        "Optimizer": {
+            "Adam": {
+                "amsgrad": "False",
+                "eps": "1e-08",
+                "lr": "0.001",
+                "weight_decay": "0"
+            }
+        },
+        "Processor": {
+            "BinaryProcessor": {
+                "fpath": "test_set\\binary_dataset.txt"
+            }
+        },
+        "Training": {
+            "PerceptronExample": {
+                "epochs": "10",
+                "file_path": "hyper_variables_forms\\perceptron_example\\train\\training.py",
+                "is_save": "True",
+                "output_file_name": "test"
+            }
+        }
+    },
+    "model": {
+        "Decoder 0": {
+            "pos": [
+                167.39999999999992,
+                452.5374677002582
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "Linear 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Input Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "in_features": [
+                            1,
+                            "9"
+                        ],
+                        "out_features": [
+                            1,
+                            "18"
+                        ]
+                    }
+                },
+                "Linear 1": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "in_features": [
+                            1,
+                            "18"
+                        ],
+                        "out_features": [
+                            1,
+                            "36"
+                        ]
+                    }
+                },
+                "Linear 2": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "in_features": [
+                            1,
+                            "36"
+                        ],
+                        "out_features": [
+                            1,
+                            "64"
+                        ]
+                    }
+                },
+                "Linear 3": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "in_features": [
+                            1,
+                            "64"
+                        ],
+                        "out_features": [
+                            1,
+                            "128"
+                        ]
+                    }
+                },
+                "Linear 4": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "in_features": [
+                            1,
+                            "128"
+                        ],
+                        "out_features": [
+                            1,
+                            "784"
+                        ]
+                    }
+                },
+                "ReLU 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "inplace": [
+                            3,
+                            "False"
+                        ]
+                    }
+                },
+                "ReLU 1": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "inplace": [
+                            3,
+                            "False"
+                        ]
+                    }
+                },
+                "ReLU 2": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "inplace": [
+                            3,
+                            "False"
+                        ]
+                    }
+                },
+                "ReLU 3": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "inplace": [
+                            3,
+                            "False"
+                        ]
+                    }
+                },
+                "Sigmoid 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Output Layer"
+                        ]
+                    }
+                }
+            }
+        },
+        "Encoder 0": {
+            "pos": [
+                599.3999999999999,
+                454.5374677002582
+            ],
+            "properties": {
+                "Layer": [
+                    5,
+                    "Hidden Layer"
+                ],
+                "Linear 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Input Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "in_features": [
+                            1,
+                            "784"
+                        ],
+                        "out_features": [
+                            1,
+                            "128"
+                        ]
+                    }
+                },
+                "Linear 1": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "in_features": [
+                            1,
+                            "128"
+                        ],
+                        "out_features": [
+                            1,
+                            "64"
+                        ]
+                    }
+                },
+                "Linear 2": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "in_features": [
+                            1,
+                            "64"
+                        ],
+                        "out_features": [
+                            1,
+                            "36"
+                        ]
+                    }
+                },
+                "Linear 3": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "in_features": [
+                            1,
+                            "36"
+                        ],
+                        "out_features": [
+                            1,
+                            "18"
+                        ]
+                    }
+                },
+                "Linear 4": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Output Layer"
+                        ],
+                        "bias": [
+                            3,
+                            "True"
+                        ],
+                        "in_features": [
+                            1,
+                            "18"
+                        ],
+                        "out_features": [
+                            1,
+                            "9"
+                        ]
+                    }
+                },
+                "ReLU 0": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "inplace": [
+                            3,
+                            "False"
+                        ]
+                    }
+                },
+                "ReLU 1": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "inplace": [
+                            3,
+                            "False"
+                        ]
+                    }
+                },
+                "ReLU 2": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "inplace": [
+                            3,
+                            "False"
+                        ]
+                    }
+                },
+                "ReLU 3": {
+                    "properties": {
+                        "Layer": [
+                            5,
+                            "Hidden Layer"
+                        ],
+                        "inplace": [
+                            3,
+                            "False"
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "rels": [
+        [
+            "Decoder 0 Output 0",
+            "Encoder 0 Input 0"
+        ]
+    ]
+}

@@ -17,13 +17,18 @@ class BreakException(Exception):
     pass
 
 
+# Dynamically retrieve a widget from it's hierarchy
 def get_obj(hierarchy=None, widget_name='', condition=None):
     for w in hierarchy.walk_reverse(loopback=True):
         if widget_name.lower() == str(w).split(' ')[0].split('.')[-1].lower():
+            # If there aren't any condition then return widget `w`
             if not condition:
                 return w
+            # Else then the widget's variables must satisfied the given condition
             else:
                 for key in condition.keys():
+                    # Compare the variables of widget `w` in the hierarchy
+                    # with our condition (Ex: {'name': 'Linear 1'})
                     if key in dir(w) and getattr(w, key) == condition[key]:
                         return w
 
