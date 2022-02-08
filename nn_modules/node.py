@@ -1,3 +1,4 @@
+import copy
 import json
 import os
 import kivy
@@ -64,7 +65,7 @@ class NodeLink(Widget):
         self.link_type = _type  # Input is 1 and Output is 0
 
         # self.callback = self._callback
-        self.connected = 0
+        self.connected = False
         self.node = node
         # self.b_node = None
         # self.u_node = None
@@ -215,17 +216,16 @@ class Node(ScatterLayout):
                       'Hidden Layer',
                       'Output Layer',)
         self.c_type = self.types[1]
+
         self.type = NORM
         self.is_loaded = False
 
-        # self.flag = -1  # -1 = Normal, 0 = Move, 1 = Down, 2 = Up
         self.properties = {}
         self.objs = []
         self.connected_nodes = []
 
         self.inputs = []
         self.outputs = []
-        # self.name = 'Default Layer'
 
         self.code_names = [INT_CODE, STR_CODE, FLOAT_CODE, OBJ_CODE]
 
@@ -234,9 +234,13 @@ class Node(ScatterLayout):
         self.add_components()
         self.add_ib()
 
-        self.combine()
+        self.funcs = {
+            'De-grouping Node(s)': self.degrouping_nodes
+        }
 
-        self.overlay = get_obj(self.interface, 'OverLay')
+        # Combinding components and add event listener/handler
+        self.combine()
+        self.bind(on_touch_down=self.open_rightclick_menu)
 
         # EXTENDABLE `func_list`
         # self.right_click_toolbar = RightClickMenu(func_list={'delete': self.delete_node},
@@ -249,9 +253,97 @@ class Node(ScatterLayout):
         # self.bind(on_touch_down=self.right_click_toolbar.open_toolbar)
         # self.bind(on_touch_down=self.update_pos)
 
-    # def pass_outputs(self):
-    #     for node, x in zip(self.connecting_nodes, self.outputs):
-    #         node.inputs.append(x)
+    # In the future version `node_link` will be changed to `node_gate`
+    def node_links(self, link_type: str):
+        node_links = []
+
+        for children in self.children[0].children:
+            if type(children) == NodeLink and link_type in children.name:
+                node_links.append(children)
+
+        return node_links
+
+    # @staticmethod
+    # def unbind_connection(node_links):
+    #     for node_link in node_links:
+    #         if node_link.target:
+    #             node_link.target.target = None
+    #             node_link.target = None
+    #             node_link.connected = False
+
+    @staticmethod
+    def get_algorithm(node_class):
+        module = __import__(f'algorithms.{node_class}',
+                            fromlist=['algorithm'])
+        algo = getattr(module, 'algorithm')
+
+        return algo
+
+    def is_connected(self):
+        c = 0
+        node_links = copy.copy(self.outputs)
+        node_links.extend(self.inputs)
+
+        for node_link in node_links:
+            if not node_link.target:
+                c += 1
+
+        if c == len(self.outputs) + len(self.inputs):
+            return True
+        return False
+
+    def degrouping_nodes(self):
+        if self.type == STACKED and self.is_connected():
+            with open('./nn_modules/nn_nodes.json', 'r') as f:
+                node_templates = json.load(f)
+
+                for node_name in self.properties.keys():
+                    if node_name != 'Layer':
+                        node_class = self.properties[node_name]['node_class']
+
+                        # Node's template format
+                        template = {
+                            'pos': self.properties[node_name]['pos'],
+                            'properties': {
+                                'nl_input': node_templates[node_class]['nl_input'],
+                                'nl_output': node_templates[node_class]['nl_output']}
+                        }
+
+                        for property_name in self.properties[node_name]['properties']:
+                            template['properties'].update({
+                                property_name: self.properties[node_name]['properties'][property_name]
+                            })
+                        template['properties'].update({'node_type': NORM})
+
+                        # Initialize Node's properties
+                        node = Node
+                        print(template)
+                        node.node_template = template['properties']
+                        node.type = NORM
+                        node.node_class = node_class
+                        node.algorithm = self.get_algorithm(node_class)
+                        node.name = node_name
+
+                        self.interface._node = node
+                        node = self.interface.add_node2interface(
+                            node_name=node_name,
+                            spawn_position=self.properties[node_name]['pos']
+                        )
+
+                        self.interface.template['model'].update({node_name: template})
+                self.interface.remove_node(self)
+        else:
+            print('[DEBUG]: Node is being connected to other Node(s). '
+                  'Please disconnected them before de-grouping')
+
+    def open_rightclick_menu(self, obj, touch):
+        overlay = get_obj(self.interface, 'Overlay')
+
+        if touch.button == 'right' and self.collide_point(*touch.pos):
+            overlay.clear_menu()
+            overlay.open_menu(menu_obj=RightClickMenu(funcs=self.funcs,
+                                                      button_width=140,
+                                                      pos=overlay.to_overlay_coord(touch, self)))
 
     def num_nl(self, nl_type=1):
         count = 0
@@ -263,11 +355,13 @@ class Node(ScatterLayout):
         return count
 
     def add_node_links(self):
-        for key in sorted(self.node_template.keys()):
-            if key == 'nl_input' or key == 'nl_output':
-                self._add_node_links(self.node_template[key]['n_links'],
-                                     self.node_template[key]['position'],
-                                     key)
+        self._add_node_links(self.node_template['nl_input']['n_links'],
+                             self.node_template['nl_input']['position'],
+                             'nl_input')
+
+        self._add_node_links(self.node_template['nl_output']['n_links'],
+                             self.node_template['nl_output']['position'],
+                             'nl_output')
 
     def delete_node(self, obj):
         self.interface.remove_node(self)
@@ -276,7 +370,6 @@ class Node(ScatterLayout):
         for key in self.beziers.keys():
             if self.beziers[key]:
                 try:
-                    # self.interface.ind.remove(self.beziers[key])
                     self.interface.clear_canvas()
                     Node.n_layer -= 1
 
@@ -297,7 +390,7 @@ class Node(ScatterLayout):
             self.sub_layout.row_force_default = True
             self.sub_layout.row_default_height = 25
 
-            for key in sorted(self.node_template.keys()):
+            for key in self.node_template.keys():
                 if key != 'node_type' and 'nl' not in key:
                     if self.node_template[key][0] in self.code_names:
                         self.add_val_input(name=key,

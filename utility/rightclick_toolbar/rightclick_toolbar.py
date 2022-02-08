@@ -7,16 +7,23 @@ from utility.utils import get_obj
 
 
 class RightClickMenu(BoxLayout):
-    def __init__(self, funcs=None, **kwargs):
+    def __init__(self, funcs=None, button_width=120, button_height=40,
+                 menu_height=50, **kwargs):
         super(RightClickMenu, self).__init__(**kwargs)
         self.size_hint = (None, None)
-        self.size = (120, 50)
+        self.size = (button_width, menu_height)
+
+        self.button_width = button_width
+        self.button_height = button_height
         self.funcs = funcs
         self.map_funcs_to_butt()
 
     def map_funcs_to_butt(self):
         for func_name in self.funcs.keys():
-            button = Button(text=func_name)
+            button = Button(text=func_name,
+                            size_hint=(None, None),
+                            size=(self.button_width,
+                                  self.button_height))
             button.bind(on_press=lambda obj: self.funcs[func_name]())
             self.add_widget(button)
 

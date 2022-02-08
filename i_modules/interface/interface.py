@@ -401,7 +401,8 @@ class Interface(StencilView, GridLayout):
                 pass
 
         elif touch.button == 'right':
-            menu = RightClickMenu(pos=overlay.to_local(*(self.to_window(*touch.pos))),
+            menu = RightClickMenu(pos=overlay.to_overlay_coord(touch, self),
+                                  button_width=140,
                                   funcs=self.rightclick_menu_funcs)
             overlay.open_menu(menu)
 
@@ -474,16 +475,14 @@ class Interface(StencilView, GridLayout):
 
     # Group all `selected_nodes` into one stacked node
     def grouping_nodes(self):
-        # print(f'Stacking {len(self.selected_nodes)} Node(s)')
         overlay = get_obj(self, 'Overlay')
         input_nodes, output_nodes = self.group_infos()
-        # print(f'No input gates: {len(input_nodes)}, No output gates: {len(output_nodes)}')
-        # print(self.is_independent_group(input_nodes, output_nodes))
 
         if input_nodes and output_nodes and self.is_independent_group(input_nodes, output_nodes):
             # Re-formatting node's relationships for selected elements
             grouped_rels_copy = copy.copy(
-                self.rels)  # A copy of `self.rels` so that changing the `rels` won't affect `self.rels`
+                self.rels
+            )  # A copy of `self.rels` so that changing the `rels` won't affect `self.rels`
             new_rels = copy.copy(self.rels)
 
             group_remove_list = []
@@ -525,7 +524,11 @@ class Interface(StencilView, GridLayout):
 
             for node in self.selected_nodes:
                 node.properties.update({'Layer': [5, node.c_type]})
-                template['model'].update({node.name: {'properties': node.properties}})
+                template['model'].update({node.name: {
+                    'pos': node.pos,
+                    'properties': node.properties,
+                    'node_class': node.node_class
+                }})
 
             stacked_node = Node
             stacked_node.node_template = template
@@ -533,7 +536,6 @@ class Interface(StencilView, GridLayout):
             setattr(stacked_node, 'algorithm', stacked_algorithm)
 
             self._node = stacked_node
-
             node = self.add_node2interface(node_name='Group 0',
                                            spawn_position=self.selected_nodes[0].pos)
 
@@ -791,6 +793,9 @@ class Interface(StencilView, GridLayout):
                     node_properties.update({'Layer': [LAYER_CODE, obj.text]})
 
         self.template['model'].update({node.name: {'properties': node_properties}})
+
+        if node.type != STACKED:
+            self.template['model'][node.name].update({'node_class': node.node_class})
 
 
 class ILayout(BoxLayout):

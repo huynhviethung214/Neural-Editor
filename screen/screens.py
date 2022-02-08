@@ -68,6 +68,9 @@ class Overlay(FloatLayout):
     def __init__(self, **kwargs):
         super(Overlay, self).__init__()
 
+    def to_overlay_coord(self, touch, obj_coord):
+        return self.to_local(*(obj_coord.to_window(*touch.pos)))
+
     def open_menu(self, menu_obj):
         self.clear_menu()
         self.add_widget(menu_obj)

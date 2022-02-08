@@ -23,11 +23,11 @@ def generate_nn_nodes():
                 globals()[_name] = type(_name,
                                         (Node,),
                                         {})
-
                 globals()[_name].node_template = nodes[node_name]
                 globals()[_name].name = node_name
                 globals()[_name].node_type = nodes[node_name]['node_type']
                 globals()[_name].algorithm = algo
+                globals()[_name].node_class = node_name
 
 
 generate_nn_nodes()

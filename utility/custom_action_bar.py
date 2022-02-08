@@ -279,18 +279,18 @@ class CustomActionBar(ActionBar):
         with open(selection[0], 'r') as f:
             datas = json.load(f)
 
-            for key in datas['model'].keys():
+            for node_name in datas['model'].keys():
                 try:
-                    node_class = key.split(' ')[0]
+                    node_class = node_name.split(' ')[0]
                     node = self.get_nodes(node_class)
 
                     if not node:
-                        node = self.get_grouped_node(datas['model'][key])
+                        node = self.get_grouped_node(datas['model'][node_name])
 
                     interface._node = node
                     node = interface.add_node2interface(
-                        node_name=key,
-                        spawn_position=datas['model'][key]['pos']
+                        node_name=node_name,
+                        spawn_position=datas['model'][node_name]['pos']
                     )
 
                     interface.create_template(node)
@@ -298,19 +298,15 @@ class CustomActionBar(ActionBar):
                     if node.type == NORM:
                         Clock.schedule_once(partial(self.set_nodes_properties,
                                                     node,
-                                                    datas['model'][key]['properties']), 1)
+                                                    datas['model'][node_name]['properties']), 1)
                     elif node.type == STACKED:
-                        node.properties = datas['model'][key]['properties']
+                        node.properties = datas['model'][node_name]['properties']
                         Clock.schedule_once(partial(self.set_stacked_node_properties,
                                                     node,
-                                                    datas['model'][key]['properties']), 1)
-
-                    # self.set_nodes_properties(node_obj=node_obj,
-                    #                           properties=datas[key]['properties'],
-                    #                           interface=interface)
+                                                    datas['model'][node_name]['properties']), 1)
 
                 except AttributeError as e:
-                    pass
+                    raise e
 
             # interface.draw()
             if 'mapped_path' in datas.keys():
@@ -345,13 +341,10 @@ class CustomActionBar(ActionBar):
         rels = self.formatting_rels(datas['rels'], interface.node_links())
 
         for coord, rel in zip(datas['beziers_coord'], rels):
-            # # Touch Down
-            # rel[0].node._bind(nav=rel[0].link_type)
-            # rel[0].c_pos = coord[0]
-            #
-            # # Touch Up
-            # rel[1].node._bind(state=2,
-            #                   nav=rel[1].link_type)
+            # Touch Down
+            rel[0].c_pos = coord[0]
+
+            # Touch Up
             rel[1].c_pos = coord[1]
             rel[1].target = rel[0]
             rel[1].t_pos = rel[0].c_pos
@@ -418,8 +411,8 @@ class CustomActionBar(ActionBar):
                 'mapped_path': interface.str_mapped_path
             })
 
-        with open('{0}\\{1}.json'.format(configs['models_path'],
-                                         model_name), 'w') as f:
+        with open('{0}/{1}.json'.format(configs['models_path'],
+                                        model_name), 'w') as f:
             json.dump(interface.template,
                       f,
                       sort_keys=True,
