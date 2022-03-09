@@ -20,17 +20,13 @@ from Net.Net import Net
 
 
 class CheckpointButton(BoxLayout):
-    def __init__(self, interface=None, **kwargs):
-        super(CheckpointButton, self).__init__()
+    def __init__(self, **kwargs):
+        super(CheckpointButton, self).__init__(**kwargs)
         self.app = App.get_running_app()
         self.training_manager = self.app.training_manager
 
         self.checkbox = self.children[0]
         self.checkbox.bind(active=lambda obj, val: setattr(self.training_manager, 'save_checkpoint', val))
-        # self.checkbox.bind(active=self.set_checkpoint)
-
-    # def set_checkpoint(self, obj, val):
-    #     self.training_manager.save_checkpoint = val
 
 
 class ModeLabel(Label):
@@ -89,9 +85,9 @@ class TrainButton(Button):
                                  interface=interface,
                                  mapped_path=self.to_mapped_path(interface)).to(configs['device']['id'])
                 # print(self.model)
-                self.training_manager.add_job(self.model,
-                                              obj=self,
-                                              interface=interface)
+                self.training_manager.setup_train(self.model,
+                                                  obj=self,
+                                                  interface=interface)
                 if interface.model_name:
                     self.training_manager.model_name = interface.model_name
 

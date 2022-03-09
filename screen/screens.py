@@ -1,5 +1,8 @@
+import sys
+
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.app import App
+from kivy.base import stopTouchApp
 from kivy.lang.builder import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
@@ -7,7 +10,7 @@ from kivy.core.window import Window
 
 from graph.graph import Graphs
 from training_manager.training_manager import TrainingManager
-from utility.notification_popup import NotificationPopup
+from utility.application_close_popup import ApplicationClosePopup
 from i_modules.interface.interface import Container
 from settings.settings import *
 from editor_modules.scripting_interface import *
@@ -125,8 +128,8 @@ class _app(App):
         self.title = 'Neural Editor'
 
     def on_app_close(self, *args):
-        popup = NotificationPopup(obj=self,
-                                  container=self.main_container)
+        popup = ApplicationClosePopup(app=self,
+                                      container=self.main_container)
         popup.open()
 
         return True

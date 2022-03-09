@@ -339,6 +339,7 @@ class CustomActionBar(ActionBar):
     # TODO: FIX BEZIERS LINE
     def draw_beziers(self, datas, interface):
         rels = self.formatting_rels(datas['rels'], interface.node_links())
+        interface.template['beziers_coord'] = []
 
         for coord, rel in zip(datas['beziers_coord'], rels):
             # Touch Down
@@ -368,6 +369,7 @@ class CustomActionBar(ActionBar):
             interface.links.append([rel[1], rel[0], bezier])
             interface.instructions.append(bezier)
             interface.rels = datas['rels']
+            interface.template['beziers_coord'].append(coord)
 
     def save_nodes_pos(self, template, interface):
         for node in get_obj(self, 'Interface').nodes():

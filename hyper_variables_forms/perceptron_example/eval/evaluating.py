@@ -4,13 +4,10 @@ from utility.utils import record_graph, checkpoint, update_progress_bar, get_obj
 
 def evaluating_alg(self, properties):
     get_obj(properties['interface'], 'ModeLabel').text = 'Mode: Evaluate'
-    get_obj(properties['interface'], 'ProgressBar').max = properties['epochs']
-
-    target = None
-    pred = None
+    accuracies = []
 
     with torch.no_grad():
-        score = 0
+        epoch_accuracy = 0
 
         for epoch in range(properties['epochs']):
             for X, y in properties['dataset']:
@@ -26,10 +23,15 @@ def evaluating_alg(self, properties):
 
                 target = y.tolist()[0]
                 pred = pred.item()
+                # epoch_accuracy = properties['criterion'](pred, target)
 
-            if target == pred:
-                score += 1
+                update_progress_bar(properties['obj'],
+                                    epoch + 1,
+                                    properties['epochs'])
 
-        update_progress_bar(properties['interface'],
+        # accuracies.append(epoch_accuracy)
+        update_progress_bar(properties['obj'],
                             epoch + 1,
                             properties['epochs'])
+
+    # return accuracies, properties['epochs']

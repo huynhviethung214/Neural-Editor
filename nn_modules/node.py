@@ -3,7 +3,6 @@ import json
 import os
 import kivy
 
-
 from os.path import abspath
 from kivy.base import runTouchApp
 from kivy.event import EventDispatcher
@@ -214,7 +213,7 @@ class Node(ScatterLayout):
 
         self.types = ('Input Layer',
                       'Hidden Layer',
-                      'Output Layer',)
+                      'Output Layer')
         self.c_type = self.types[1]
 
         self.type = NORM
@@ -242,17 +241,6 @@ class Node(ScatterLayout):
         self.combine()
         self.bind(on_touch_down=self.open_rightclick_menu)
 
-        # EXTENDABLE `func_list`
-        # self.right_click_toolbar = RightClickMenu(func_list={'delete': self.delete_node},
-        #                                              obj=self,
-        #                                              interface=self.interface)
-        # self.bind(on_touch_up=self.right_click_toolbar.open_toolbar)
-        # self.bind(on_touch_move=self.right_click_toolbar.remove_toolbar)
-        # self.right_click_toolbar.add_buttons()
-
-        # self.bind(on_touch_down=self.right_click_toolbar.open_toolbar)
-        # self.bind(on_touch_down=self.update_pos)
-
     # In the future version `node_link` will be changed to `node_gate`
     def node_links(self, link_type: str):
         node_links = []
@@ -262,14 +250,6 @@ class Node(ScatterLayout):
                 node_links.append(children)
 
         return node_links
-
-    # @staticmethod
-    # def unbind_connection(node_links):
-    #     for node_link in node_links:
-    #         if node_link.target:
-    #             node_link.target.target = None
-    #             node_link.target = None
-    #             node_link.connected = False
 
     @staticmethod
     def get_algorithm(node_class):
@@ -298,43 +278,81 @@ class Node(ScatterLayout):
                 node_templates = json.load(f)
 
                 for node_name in self.properties.keys():
-                    if node_name != 'Layer':
-                        node_class = self.properties[node_name]['node_class']
+                    node_class = self.properties[node_name]['node_class']
 
-                        # Node's template format
-                        template = {
-                            'pos': self.properties[node_name]['pos'],
-                            'properties': {
-                                'nl_input': node_templates[node_class]['nl_input'],
-                                'nl_output': node_templates[node_class]['nl_output']}
+                    # Node's template format
+                    template = {
+                        'pos': self.properties[node_name]['pos'],
+                        'properties': {
+                            'nl_input': node_templates[node_class]['nl_input'],
+                            'nl_output': node_templates[node_class]['nl_output']
                         }
+                    }
 
-                        for property_name in self.properties[node_name]['properties']:
-                            template['properties'].update({
-                                property_name: self.properties[node_name]['properties'][property_name]
-                            })
-                        template['properties'].update({'node_type': NORM})
+                    for property_name in self.properties[node_name]['properties']:
+                        template['properties'].update({
+                            property_name: self.properties[node_name]['properties'][property_name]
+                        })
+                    template['properties'].update({'node_type': NORM,
+                                                   'Layer': self.properties[node_name]['properties']['Layer']})
 
-                        # Initialize Node's properties
-                        node = Node
-                        print(template)
-                        node.node_template = template['properties']
-                        node.type = NORM
-                        node.node_class = node_class
-                        node.algorithm = self.get_algorithm(node_class)
-                        node.name = node_name
+                    # Initialize Node's properties
+                    node = Node
+                    node.node_template = template['properties']
+                    node.type = NORM
+                    node.node_class = node_class
+                    node.algorithm = self.get_algorithm(node_class)
+                    node.name = node_name
 
-                        self.interface._node = node
-                        node = self.interface.add_node2interface(
-                            node_name=node_name,
-                            spawn_position=self.properties[node_name]['pos']
-                        )
+                    self.interface._node = node
+                    self.interface.template['model'].update({node_name: template})
 
-                        self.interface.template['model'].update({node_name: template})
+                    node = self.interface.add_node2interface(
+                        node_name=node_name,
+                        spawn_position=self.properties[node_name]['pos']
+                    )
+                    node.drop_butt.text = self.properties[node_name]['properties']['Layer'][1]
+
+                self.draw_beziers(self.interface.template['model'][self.name],
+                                  self.interface)
                 self.interface.remove_node(self)
         else:
             print('[DEBUG]: Node is being connected to other Node(s). '
                   'Please disconnected them before de-grouping')
+
+    def draw_beziers(self, datas, interface):
+        rels = self.formatting_rels(datas['rels'], interface.node_links())
+
+        for coord, rel in zip(datas['beziers_coord'], rels):
+            # Touch Down
+            rel[0].c_pos = coord[0]
+
+            # Touch Up
+            rel[1].c_pos = coord[1]
+            rel[1].target = rel[0]
+            rel[1].t_pos = rel[0].c_pos
+
+            rel[0].t_pos = coord[0]
+            rel[0].target = rel[1]
+
+            nl_index = rel[0].index()
+            node_name = rel[0].node.name
+
+            rel[0].target.node.connected_nodes.append(
+                f'{node_name} {nl_index}'
+            )
+
+            rel[0].connected = 1
+            rel[1].connected = 1
+
+            # Draw Bezier
+            bezier = interface.draw(*coord)
+
+            interface.links.append([rel[1], rel[0], bezier])
+            interface.instructions.append(bezier)
+
+        interface.template['beziers_coord'] = datas['beziers_coord']
+        interface.rels = datas['rels']
 
     def open_rightclick_menu(self, obj, touch):
         overlay = get_obj(self.interface, 'Overlay')
@@ -554,16 +572,18 @@ class Node(ScatterLayout):
         tree_view.bind(minimum_height=tree_view.setter('height'))
         scroll_view.add_widget(tree_view)
 
-        for node in model.keys():
-            tree_node = tree_view.add_node(TreeViewLabel(text=node))
-            self.properties.update({node: {'properties': {}}})
+        for node_name in model.keys():
+            tree_node = tree_view.add_node(TreeViewLabel(text=node_name))
+            self.properties.update({node_name: {'properties': {},
+                                                'node_class': model[node_name]['node_class'],
+                                                'pos': model[node_name]['pos']}})
 
-            for property_key in model[node]['properties'].keys():
+            for property_key in model[node_name]['properties'].keys():
                 if property_key != 'Layer':
-                    value = str(model[node]['properties'][property_key][1])
-                    variable_type = model[node]['properties'][property_key][0]
+                    value = str(model[node_name]['properties'][property_key][1])
+                    variable_type = model[node_name]['properties'][property_key][0]
 
-                    self.properties[node]['properties'].update({property_key: [variable_type, value]})
+                    self.properties[node_name]['properties'].update({property_key: [variable_type, value]})
 
                     _layout = TreeViewLayout(height=25,
                                              spacing=20)
@@ -574,21 +594,21 @@ class Node(ScatterLayout):
                         spinner_form.input.text = value
                         spinner_form.input.bind(text=partial(self.set_stacked_val,
                                                              name=property_key,
-                                                             node=node))
+                                                             node=node_name))
                         _layout.add_widget(spinner_form)
                     else:
                         input_form = CustomValueInput(name=property_key)
                         input_form.input.text = value
                         input_form.input.bind(text=partial(self.set_stacked_val,
                                                            name=property_key,
-                                                           node=node))
+                                                           node=node_name))
                         _layout.add_widget(input_form)
 
                     tree_view.add_node(_layout, tree_node)
                 else:
-                    self.properties[node]['properties'].update({property_key: [
+                    self.properties[node_name]['properties'].update({property_key: [
                         LAYER_CODE,
-                        model[node]['properties'][property_key][1]]
+                        model[node_name]['properties'][property_key][1]]
                     })
 
         self.sub_layout.rows = 10
@@ -647,14 +667,14 @@ class Node(ScatterLayout):
         self.add_component(_layout)
 
     def add_drop_down_list(self):
-        drop_butt = Spinner(text=self.c_type,
-                            values=self.types,
-                            size_hint=(1, None),
-                            height=self.c_height,
-                            sync_height=True)
-        drop_butt.bind(text=self.set_type)
+        self.drop_butt = Spinner(text=self.c_type,
+                                 values=self.types,
+                                 size_hint=(1, None),
+                                 height=self.c_height,
+                                 sync_height=True)
+        self.drop_butt.bind(text=self.set_type)
 
-        self.add_component(drop_butt)
+        self.add_component(self.drop_butt)
 
     def set_type(self, obj, text):
         template = self.interface.template['model'][self.name]
