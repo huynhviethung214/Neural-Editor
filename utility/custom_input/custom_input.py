@@ -1,3 +1,4 @@
+from kivy.uix.stencilview import StencilView
 from kivy.uix.textinput import TextInput
 
 

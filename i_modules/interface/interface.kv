@@ -7,12 +7,11 @@
 <SIToolBar>:
 	spacing: 5
 	padding: 5
-	size_hint: (1, 0.05)
-	width: 100
 
 	canvas:
 		Line:
-			rectangle: (self.x, self.y, self.width, self.height)
+			points: (self.x, self.y, self.x + self.width, self.y)
+			#rectangle: (self.x, self.y, self.width, self.height)
 			width: 1
 
 

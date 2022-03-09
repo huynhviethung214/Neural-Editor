@@ -1,14 +1,13 @@
+from time import sleep
+
 import torch
 import queue
 import numpy
 import gc
 
-from torch.autograd import Variable
-
-from threading import Thread
-from multiprocessing import Process
-from math import floor
 from queue import Queue
+from threading import Thread, Lock
+from multiprocessing import JoinableQueue, Process
 
 from utility.utils import get_obj
 from utility.base_form.baseform import BaseForm
@@ -19,25 +18,21 @@ from message_box.message_box import MessageBox
 class TrainingManager:
     def __init__(self, **kwargs):
         super(TrainingManager, self).__init__(**kwargs)
-        self.std_val = 0
         self.end_task = False
         self.save_checkpoint = True
-        self.model_name = None
-        self.queue = Queue(4)
+        self.training = False
+        self.terminate_threads = False
 
-        self.thread = Thread(target=self._queue_training, daemon=True)
-        self.thread.start()
+        self.jobs = Queue()
+        self._jobs = []
 
-    # def kill_process(self):
-    #     try:
-    #         self._break = True
-    #         self.thread.join()
-    #         self.thread.is_alive()
-    #
-    #     except AttributeError as e:
-    #         pass
+        self.queue_job_thread = Thread(target=self._queue_job, daemon=True)
+        self.queue_job_thread.start()
 
-    def add_job(self, model=None, obj=None, interface=None):
+        self.progress_bar = None
+        self.progress_indicator = None
+
+    def setup_train(self, model=None, obj=None, interface=None):
         # print('Add Job')
         train_properties, train_code = BaseForm._children[3].get_alg(_type=2)
         eval_properties, eval_code = BaseForm._children[4].get_alg(_type=3)
@@ -48,23 +43,11 @@ class TrainingManager:
         properties = {'training': train_properties,
                       'evaluating': eval_properties}
 
-        # Dynamic threading for training
-        self.setup_train(model, properties, code, obj, interface)
-
-    @staticmethod
-    def get_functions(model=None):
-        try:
-            criterion = BaseForm._children[0].get_alg()
-            optimizer = BaseForm._children[1].get_alg(params=model.parameters())
-            dataset = BaseForm._children[2].get_alg(_type=1)
-
-            return criterion, optimizer, dataset
-
-        except Exception as e:
-            raise e
-
-    def setup_train(self, model, properties, code, obj, interface):
         criterion, optimizer, dataset = self.get_functions(model=model)
+
+        if not self.progress_bar:
+            self.progress_bar = get_obj(interface, 'ProgressBar')
+            self.progress_indicator = get_obj(interface, 'ProgressIndicator')
 
         properties['evaluating'].update({'obj': self,
                                          'eval_code': code['evaluating'],
@@ -83,46 +66,73 @@ class TrainingManager:
                                        'eval_properties': properties['evaluating'],
                                        'interface': interface})
 
-        self.queue.put([properties, code, obj])
+        self._jobs.append([properties, code, obj])
+
+        # Dynamic threading for training
+        # self.setup_train(model, properties, code, obj, interface)
+
+    @staticmethod
+    def get_functions(model=None):
+        try:
+            criterion = BaseForm._children[0].get_alg()
+            optimizer = BaseForm._children[1].get_alg(params=model.parameters())
+            dataset = BaseForm._children[2].get_alg(_type=1)
+
+            return criterion, optimizer, dataset
+
+        except Exception as e:
+            raise e
+
+    def _queue_job(self):
+        while not self.terminate_threads:
+            sleep(1)
+
+            if self.terminate_threads:
+                break
+
+            if len(self._jobs) > 0:
+                job = self._jobs[0]
+                self._jobs.pop(0)
+                self.jobs.put(job)
+
+                self._queue_training()
+
+                self.jobs.join()
 
     # TODO: FREE MEMORY AFTER BREAKING TRAINING/EVALUATING PROCESS
     def _queue_training(self):
-        while True:
-            if self.queue.not_empty:
-                properties, code, obj = self.queue.get()
+        properties, code, obj = self.jobs.get()
 
-                interface = properties['training']['interface']
-                progress_bar = get_obj(interface, 'ProgressBar')
-                model_name = get_obj(interface, 'TrainedModelLabel')
+        interface = properties['training']['interface']
+        model_name = get_obj(interface, 'TrainedModelLabel')
+        progress_indicator = get_obj(interface, 'ProgressIndicator')
 
-                # Set Progress Bar maximum value
-                progress_bar.max = properties['training']['epochs']
+        # Reset Progress Bar to 0
+        self.progress_bar.value = 0
 
-                # Reset Progress Bar to 0
-                progress_bar.value = 0
+        # Set Model's name
+        model_name.text = f'Model: {interface.model_name}'
 
-                # Set Model's name
-                model_name.text = f'Model: {self.model_name}'
+        # Reset ProgressIndicator text
+        progress_indicator.text = f'0%/100%'
 
-                ret = self._train(properties, code)
+        ret = self._train(properties, code)
 
-                if ret:
-                    obj.text = '>'
-                    obj.is_training = False
+        if ret:
+            obj.text = '>'
+            obj.is_training = False
 
-                    torch.cuda.empty_cache()
-                    training_properties = properties['training']
+            torch.cuda.empty_cache()
+            training_properties = properties['training']
 
-                    if 'interface' in training_properties.keys():
-                        if training_properties['interface'].is_trained:
-                            MessageBox(message_type='Training Succeed',
-                                       message='').open()
-                    # print('Close Job')
+            if 'interface' in training_properties.keys():
+                if training_properties['interface'].is_trained:
+                    MessageBox(message_type='Training Succeed',
+                               message='').open()
+            # print('Close Job')
 
-                # print(gc.get_count())
-                # gc.collect()
-                # print(gc.get_count())
-                self.queue.task_done()
+            gc.collect()
+            self.jobs.task_done()
 
     # Dynamic evaluating algorithm
     def _evaluate(self, properties=None, code=None):
@@ -130,10 +140,8 @@ class TrainingManager:
             exec(code, locals())
             locals()['evaluating_alg'](self, properties)
 
-            return 1
-
         except Exception as e:
-            raise e
+            pass
             # MessageBox(message=str(e),
             #            message_type='Error Message').open()
             #
@@ -146,13 +154,13 @@ class TrainingManager:
             exec(code['training'], locals())
             locals()['training_alg'](self, properties['training'])
 
-            return 1
-
         except Exception as e:
-            raise e
+            pass
             # MessageBox(message=str(e),
             #            message_type='Error Message').open()
             # return 0
+
+        return 1
 
     # def _update(self, val, _type):
     #     self.progress_bar.value = int(floor(val))

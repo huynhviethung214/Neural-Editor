@@ -1,16 +1,21 @@
 import json
+import sys
+from functools import partial
 
+from kivy.base import stopTouchApp
+from kivy.core.window import Window
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
+from kivy.app import App
 
 from utility.utils import get_obj
 
 
-class NotificationPopup(Popup):
+class ApplicationClosePopup(Popup):
     def __init__(self, **kwargs):
-        super(NotificationPopup, self).__init__()
+        super(ApplicationClosePopup, self).__init__()
         self.size_hint = (0.4, 0.2)
         self.title = 'Notification'
 
@@ -18,7 +23,7 @@ class NotificationPopup(Popup):
                                 spacing=2)
         self.sub_layout = BoxLayout(size_hint=(1, 0.4))
 
-        self.obj = kwargs.get('obj')
+        self.app = kwargs.get('app')
         self.container = kwargs.get('container')
 
         accept_button = Button(text='Save', size_hint=(0.33, 1))
@@ -35,7 +40,7 @@ class NotificationPopup(Popup):
         self.add_widget(self.layout)
 
         accept_button.bind(on_release=self.save_model)
-        deny_button.bind(on_release=self.obj.stop)
+        deny_button.bind(on_release=self.close_app)
         cancel_button.bind(on_release=self.cancel)
 
     # TODO: FIX `saved_model` function
@@ -57,7 +62,11 @@ class NotificationPopup(Popup):
         #               f,
         #               sort_keys=True,
         #               indent=4)
-        self.obj.stop()
+        self.app.stop()
+
+    def close_app(self, obj):
+        Window.close()
+        sys.exit(0)
 
     def cancel(self, obj):
         self.dismiss()

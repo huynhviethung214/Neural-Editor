@@ -20,7 +20,7 @@ from i_modules.stacked_code_template import stacked_algorithm
 from nn_modules.code_names import NORM, STACKED
 from nn_modules.node import CustomValueInput, NodeLink, Node
 from node_editor.node_editor import NodeEditor
-from utility.utils import get_obj
+from utility.utils import get_obj, draw_beziers
 from settings.config import configs
 
 
@@ -313,8 +313,8 @@ class CustomActionBar(ActionBar):
                 interface.str_mapped_path = datas['mapped_path']
                 interface.is_trained = True
 
-            self.draw_beziers(datas=datas,
-                              interface=interface)
+            draw_beziers(datas=datas,
+                         interface=interface)
             self.load_hvfs(datas=datas,
                            interface=interface)
 
@@ -339,6 +339,7 @@ class CustomActionBar(ActionBar):
     # TODO: FIX BEZIERS LINE
     def draw_beziers(self, datas, interface):
         rels = self.formatting_rels(datas['rels'], interface.node_links())
+        interface.template['beziers_coord'] = []
 
         for coord, rel in zip(datas['beziers_coord'], rels):
             # Touch Down
@@ -368,6 +369,7 @@ class CustomActionBar(ActionBar):
             interface.links.append([rel[1], rel[0], bezier])
             interface.instructions.append(bezier)
             interface.rels = datas['rels']
+            interface.template['beziers_coord'].append(coord)
 
     def save_nodes_pos(self, template, interface):
         for node in get_obj(self, 'Interface').nodes():

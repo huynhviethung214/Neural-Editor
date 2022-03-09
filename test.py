@@ -778,7 +778,62 @@ from importlib import reload
 # a()
 
 
-exec('from torch.nn import Linear')
-print(locals()['Linear'])
-a = locals()['Linear']
-print(a)
+# exec('from torch.nn import Linear')
+# print(locals()['Linear'])
+# a = locals()['Linear']
+# print(a)
+
+# from threading import Thread
+# import os
+# import time
+# from queue import Queue
+# from time import sleep
+#
+#
+# def worker(q):
+#     while True:
+#         print(q.get())
+#         sleep(1)
+#         q.task_done()
+#
+#
+# q = Queue()
+# thread = Thread(target=worker, args=(q,), daemon=True)
+# thread.start()
+#
+# q.put(['p1', 'c1'])
+# q.join()
+# q.put(['p2', 'c2'])
+# q.join()
+# q.put(['p3', 'c3'])
+
+
+import threading, queue
+from time import sleep
+
+q = queue.Queue()
+
+
+def worker():
+    while True:
+        if q.not_empty:
+            item = q.get()
+            sleep(10)
+            print(f'Working on {item}')
+            print(f'Finished {item}')
+            q.task_done()
+
+
+# turn-on the worker thread
+threading.Thread(target=worker, daemon=True).start()
+
+# send thirty task requests to the worker
+for item in range(30):
+    q.put(item)
+print('All task requests sent\n', end='')
+
+# block until all tasks are done
+q.join()
+print('All work completed')
+q.put(str(input('Entering: ')))
+

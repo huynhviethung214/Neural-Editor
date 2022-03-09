@@ -31,7 +31,7 @@ def training_alg(self, properties):
             properties['optimizer'].step()
 
         losses.append(epoch_loss)
-        update_progress_bar(properties['interface'],
+        update_progress_bar(properties['obj'],
                             epoch + 1,
                             properties['epochs'])
 

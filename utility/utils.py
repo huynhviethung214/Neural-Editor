@@ -1,13 +1,8 @@
 import torch
-from kivy.uix.popup import Popup
-from kivy_garden.graph import Graph
-from torch.nn import Module, ModuleDict
 
-from queue import Queue, PriorityQueue
 from functools import wraps
+from threading import Thread
 
-from Net.Net import Net
-from graph.graph import Graphs
 from nn_modules.code_names import INT_CODE, FLOAT_CODE, STR_CODE, BOOL_CODE
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -28,15 +23,15 @@ def get_obj(hierarchy=None, widget_name='', condition=None):
             else:
                 for key in condition.keys():
                     # Compare the variables of widget `w` in the hierarchy
-                    # with our condition (Ex: {'name': 'Linear 1'})
+                    # with custom condition (Ex: {'name': 'Linear 1'})
                     if key in dir(w) and getattr(w, key) == condition[key]:
                         return w
 
 
-def update_progress_bar(interface, epoch, epochs):
-    progress_bar = get_obj(interface, 'ProgressBar')
-    progress_bar.value = epoch
-    get_obj(interface, 'ProgressIndicator').text = f'{int(progress_bar.value_normalized * 100)}% / 100%'
+def update_progress_bar(obj, epoch, epochs):
+    obj.progress_bar.max = epochs
+    obj.progress_bar.value = epoch
+    obj.progress_indicator.text = f'{int(obj.progress_bar.value_normalized * 100)}% / 100%'
 
 
 def breaker(obj):
@@ -45,7 +40,6 @@ def breaker(obj):
 
 
 def map_properties(fn):
-    from functools import wraps
     @wraps(fn)
     def _map_properties(*args, **kwargs):
         obj = args[0]
@@ -81,6 +75,7 @@ def checkpoint(fn):
 
         try:
             fn(self, properties)
+            return 1
 
         except BreakException:
             if self.save_checkpoint:
@@ -89,10 +84,12 @@ def checkpoint(fn):
                            f'checkpoints/{name}.state')
             properties['interface'].is_trained = False
             self.end_task = False
-            return 0
+            return 1
+
     return _checkpoint
 
 
+# For now it can only plot loss / epoch
 def record_graph(fn):
     @wraps(fn)
     def _record_graph(*args, **kwargs):
@@ -116,3 +113,57 @@ def record_graph(fn):
         return 1
 
     return _record_graph
+
+
+# Formatting relationships according to the `node_links`
+def formatting_rels(rels, node_links):
+    formatted_rels = []
+    current_rel = []
+
+    for rel in rels:
+        for rel_name in rel:
+            for node_link in node_links:
+                if f'{node_link.node.name} {node_link.name}' == rel_name:
+                    current_rel.append(node_link)
+
+                if len(current_rel) == 2:
+                    formatted_rels.append(current_rel)
+                    current_rel = []
+
+    return formatted_rels
+
+
+# Draw beziers from the formatted relationships to the interface
+def draw_beziers(datas, interface):
+    rels = formatting_rels(datas['rels'], interface.node_links())
+
+    for coord, rel in zip(datas['beziers_coord'], rels):
+        # Touch Down
+        rel[0].c_pos = coord[0]
+
+        # Touch Up
+        rel[1].c_pos = coord[1]
+        rel[1].target = rel[0]
+        rel[1].t_pos = rel[0].c_pos
+
+        rel[0].t_pos = coord[0]
+        rel[0].target = rel[1]
+
+        nl_index = rel[0].index()
+        node_name = rel[0].node.name
+
+        rel[0].target.node.connected_nodes.append(
+            f'{node_name} {nl_index}'
+        )
+
+        rel[0].connected = 1
+        rel[1].connected = 1
+
+        # Draw Bezier
+        bezier = interface.draw(*coord)
+
+        interface.links.append([rel[1], rel[0], bezier])
+        interface.instructions.append(bezier)
+
+    interface.template['beziers_coord'] = datas['beziers_coord']
+    interface.rels = datas['rels']
