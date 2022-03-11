@@ -45,7 +45,6 @@ class TabManager(TabbedPanel):
     def add_tab(self, **fkwargs):
         func_name = fkwargs.get('func_name')
         _fkwargs = fkwargs.get('_fkwargs')
-        # print(fkwargs)
         ntabs = 0
 
         for fname in self.tab_name_list:
@@ -53,10 +52,10 @@ class TabManager(TabbedPanel):
                 ntabs += 1
         func_name = f'{func_name} {str(ntabs)}'
 
-        # print(func_name)
         header = CustomHeader(func_name=func_name,
                               tabbed_panel=self,
                               _fkwargs=_fkwargs)
+        # print(func_name, _fkwargs)
         header.content = self.func(**_fkwargs)
 
         self.add_widget(header, len(self.children) - 1)
@@ -111,13 +110,14 @@ class CloseButton(Button):
             else:
                 self.tabbed_panel.remove_widget(self.parent)
 
-        return True
+        # return True
 
 
 class CustomHeader(BoxLayout, TabbedPanelHeader):
     def __init__(self, **kwargs):
         super(CustomHeader, self).__init__()
         self.text = kwargs.get('func_name')
+        # print(self.text)
         self.padding = 2
         self.spacing_obj = Label(size_hint_x=0.7)
         self.close_button = CloseButton(tabbed_panel=kwargs.get('tabbed_panel'),

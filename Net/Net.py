@@ -33,13 +33,16 @@ class Net(Module):
         for node in self.nodes:
             if not self.use_mapped:
                 if 'Input' in node.c_type:
+                    # print('Input ', node.name)
                     self.queue.insert(0, node)
 
                 elif 'Output' in node.c_type:
+                    # print('Output ', node.name)
                     self.queue.insert(len(self.queue), node)
 
                 else:
-                    self.queue.insert(len(self.queue) - 1, node)
+                    # print(node.name)
+                    self.queue.insert(1, node)
             else:
                 self.queue = self.mapped_path
 
@@ -104,7 +107,6 @@ class Net(Module):
             for node in self.queue:
                 try:
                     cted_nodes = node.connected_nodes
-                    # print(cted_nodes)
 
                     if self.is_existed_inputs(cted_nodes):
                         if len(cted_nodes) == 1:

@@ -3,7 +3,6 @@ import json
 import os
 import kivy
 
-
 from os.path import abspath
 from kivy.base import runTouchApp
 from kivy.event import EventDispatcher
@@ -21,7 +20,7 @@ from kivy.uix.label import Label
 from functools import partial
 
 from utility.rightclick_toolbar.rightclick_toolbar import RightClickMenu
-from utility.utils import get_obj
+from utility.utils import get_obj, draw_beziers, formatting_rels
 from utility.custom_input.custom_input import CustomTextInput
 from nn_modules.code_names import *
 
@@ -214,7 +213,7 @@ class Node(ScatterLayout):
 
         self.types = ('Input Layer',
                       'Hidden Layer',
-                      'Output Layer',)
+                      'Output Layer')
         self.c_type = self.types[1]
 
         self.type = NORM
@@ -242,17 +241,6 @@ class Node(ScatterLayout):
         self.combine()
         self.bind(on_touch_down=self.open_rightclick_menu)
 
-        # EXTENDABLE `func_list`
-        # self.right_click_toolbar = RightClickMenu(func_list={'delete': self.delete_node},
-        #                                              obj=self,
-        #                                              interface=self.interface)
-        # self.bind(on_touch_up=self.right_click_toolbar.open_toolbar)
-        # self.bind(on_touch_move=self.right_click_toolbar.remove_toolbar)
-        # self.right_click_toolbar.add_buttons()
-
-        # self.bind(on_touch_down=self.right_click_toolbar.open_toolbar)
-        # self.bind(on_touch_down=self.update_pos)
-
     # In the future version `node_link` will be changed to `node_gate`
     def node_links(self, link_type: str):
         node_links = []
@@ -262,14 +250,6 @@ class Node(ScatterLayout):
                 node_links.append(children)
 
         return node_links
-
-    # @staticmethod
-    # def unbind_connection(node_links):
-    #     for node_link in node_links:
-    #         if node_link.target:
-    #             node_link.target.target = None
-    #             node_link.target = None
-    #             node_link.connected = False
 
     @staticmethod
     def get_algorithm(node_class):
@@ -297,40 +277,56 @@ class Node(ScatterLayout):
             with open('./nn_modules/nn_nodes.json', 'r') as f:
                 node_templates = json.load(f)
 
+                hierarchy = get_obj(self.interface, 'Hierarchy')
+                for hierarchy_node in hierarchy.iterate_all_nodes():
+                    if hierarchy_node.text == self.name:
+                        hierarchy.remove_node(hierarchy_node)
+                        break
+
                 for node_name in self.properties.keys():
-                    if node_name != 'Layer':
-                        node_class = self.properties[node_name]['node_class']
+                    node_class = self.properties[node_name]['node_class']
 
-                        # Node's template format
-                        template = {
-                            'pos': self.properties[node_name]['pos'],
-                            'properties': {
-                                'nl_input': node_templates[node_class]['nl_input'],
-                                'nl_output': node_templates[node_class]['nl_output']}
+                    # Node's template format
+                    template = {
+                        'pos': self.properties[node_name]['pos'],
+                        'properties': {
+                            'nl_input': node_templates[node_class]['nl_input'],
+                            'nl_output': node_templates[node_class]['nl_output'],
+                            'node_type': NORM,
+                            'Layer': self.properties[node_name]['properties']['Layer']
                         }
+                    }
 
-                        for property_name in self.properties[node_name]['properties']:
-                            template['properties'].update({
-                                property_name: self.properties[node_name]['properties'][property_name]
-                            })
-                        template['properties'].update({'node_type': NORM})
+                    # print(template)
 
-                        # Initialize Node's properties
-                        node = Node
-                        print(template)
-                        node.node_template = template['properties']
-                        node.type = NORM
-                        node.node_class = node_class
-                        node.algorithm = self.get_algorithm(node_class)
-                        node.name = node_name
+                    for property_name in self.properties[node_name]['properties']:
+                        template['properties'].update({
+                            property_name: self.properties[node_name]['properties'][property_name]
+                        })
+                    # template['properties'].update({
+                    #                                'Layer': self.properties[node_name]['properties']['Layer']})
 
-                        self.interface._node = node
-                        node = self.interface.add_node2interface(
-                            node_name=node_name,
-                            spawn_position=self.properties[node_name]['pos']
-                        )
+                    # Initialize Node's properties
+                    node = Node
+                    node.node_template = template['properties']
+                    node.type = NORM
+                    node.node_class = node_class
+                    node.algorithm = self.get_algorithm(node_class)
+                    node.name = node_name
 
-                        self.interface.template['model'].update({node_name: template})
+                    self.interface._node = node
+                    self.interface.template['model'].update({node_name: template})
+
+                    node = self.interface.add_node2interface(
+                        node_name=node_name,
+                        spawn_position=self.properties[node_name]['pos']
+                    )
+                    node.c_type = \
+                        node.drop_butt.text = \
+                        self.properties[node_name]['properties']['Layer'][1]
+
+                draw_beziers(self.interface.template['model'][self.name],
+                             self.interface)
                 self.interface.remove_node(self)
         else:
             print('[DEBUG]: Node is being connected to other Node(s). '
@@ -477,7 +473,9 @@ class Node(ScatterLayout):
                 node = self.get_functions(node_type)
 
                 self.interface_template._node = node
-                node = self.interface_template.add_node2interface(node_name=key)
+                node = self.interface_template.add_node2interface(node_name=key,
+                                                                  node_type=NORM,
+                                                                  has_parent=True)
 
                 for widget in node.sub_layout.children:
                     if type(widget) == Spinner:
@@ -487,7 +485,7 @@ class Node(ScatterLayout):
                                           properties=self.properties[key]['properties'])
 
             except AttributeError as e:
-                pass
+                raise e
 
     def load_nodes(self):
         if not self.is_loaded:
@@ -510,25 +508,8 @@ class Node(ScatterLayout):
 
             self.is_loaded = True
 
-    @staticmethod
-    def formatting_rels(rels, node_links):
-        formatted_rels = []
-        current_rel = []
-
-        for rel in rels:
-            for rel_name in rel:
-                for node_link in node_links:
-                    if f'{node_link.node.name} {node_link.name}' == rel_name:
-                        current_rel.append(node_link)
-
-                    if len(current_rel) == 2:
-                        formatted_rels.append(current_rel)
-                        current_rel = []
-
-        return formatted_rels
-
     def binding(self, datas=None):
-        rels = self.formatting_rels(datas['rels'], self.interface_template.node_links())
+        rels = formatting_rels(datas['rels'], self.interface_template.node_links())
 
         for rel in rels:
             rel[1].target = rel[0]
@@ -554,16 +535,18 @@ class Node(ScatterLayout):
         tree_view.bind(minimum_height=tree_view.setter('height'))
         scroll_view.add_widget(tree_view)
 
-        for node in model.keys():
-            tree_node = tree_view.add_node(TreeViewLabel(text=node))
-            self.properties.update({node: {'properties': {}}})
+        for node_name in model.keys():
+            tree_node = tree_view.add_node(TreeViewLabel(text=node_name))
+            self.properties.update({node_name: {'properties': {},
+                                                'node_class': model[node_name]['node_class'],
+                                                'pos': model[node_name]['pos']}})
 
-            for property_key in model[node]['properties'].keys():
+            for property_key in model[node_name]['properties'].keys():
                 if property_key != 'Layer':
-                    value = str(model[node]['properties'][property_key][1])
-                    variable_type = model[node]['properties'][property_key][0]
+                    value = str(model[node_name]['properties'][property_key][1])
+                    variable_type = model[node_name]['properties'][property_key][0]
 
-                    self.properties[node]['properties'].update({property_key: [variable_type, value]})
+                    self.properties[node_name]['properties'].update({property_key: [variable_type, value]})
 
                     _layout = TreeViewLayout(height=25,
                                              spacing=20)
@@ -574,21 +557,21 @@ class Node(ScatterLayout):
                         spinner_form.input.text = value
                         spinner_form.input.bind(text=partial(self.set_stacked_val,
                                                              name=property_key,
-                                                             node=node))
+                                                             node=node_name))
                         _layout.add_widget(spinner_form)
                     else:
                         input_form = CustomValueInput(name=property_key)
                         input_form.input.text = value
                         input_form.input.bind(text=partial(self.set_stacked_val,
                                                            name=property_key,
-                                                           node=node))
+                                                           node=node_name))
                         _layout.add_widget(input_form)
 
                     tree_view.add_node(_layout, tree_node)
                 else:
-                    self.properties[node]['properties'].update({property_key: [
+                    self.properties[node_name]['properties'].update({property_key: [
                         LAYER_CODE,
-                        model[node]['properties'][property_key][1]]
+                        model[node_name]['properties'][property_key][1]]
                     })
 
         self.sub_layout.rows = 10
@@ -647,14 +630,14 @@ class Node(ScatterLayout):
         self.add_component(_layout)
 
     def add_drop_down_list(self):
-        drop_butt = Spinner(text=self.c_type,
-                            values=self.types,
-                            size_hint=(1, None),
-                            height=self.c_height,
-                            sync_height=True)
-        drop_butt.bind(text=self.set_type)
+        self.drop_butt = Spinner(text=self.c_type,
+                                 values=self.types,
+                                 size_hint=(1, None),
+                                 height=self.c_height,
+                                 sync_height=True)
+        self.drop_butt.bind(text=self.set_type)
 
-        self.add_component(drop_butt)
+        self.add_component(self.drop_butt)
 
     def set_type(self, obj, text):
         template = self.interface.template['model'][self.name]
@@ -666,8 +649,9 @@ class Node(ScatterLayout):
         self.objs.append(obj)
 
     def add_id(self):
-        self.add_component(NodeName(size_hint=(1, None),
-                                    height=self.c_height))
+        self.label = NodeName(size_hint=(1, None),
+                              height=self.c_height)
+        self.add_component(self.label)
 
     def add_ib(self):
         self.add_component(Label(height=1,

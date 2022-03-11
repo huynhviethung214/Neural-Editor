@@ -16,6 +16,7 @@ from utility.utils import get_obj
 from settings.config import configs
 from Net.Net import Net
 
+
 # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
@@ -55,7 +56,6 @@ class TrainButton(Button):
         super(TrainButton, self).__init__()
         self.bind(on_press=self.train)
         self.is_training = False
-        self.model = None
 
         self.app = App.get_running_app()
         self.training_manager = self.app.training_manager
@@ -81,11 +81,11 @@ class TrainButton(Button):
         try:
             if not self.is_training:
                 # print('Training')
-                self.model = Net(nodes=interface.nodes(),
-                                 interface=interface,
-                                 mapped_path=self.to_mapped_path(interface)).to(configs['device']['id'])
+                model = Net(nodes=interface.nodes(),
+                            interface=interface,
+                            mapped_path=self.to_mapped_path(interface)).to(configs['device']['id'])
                 # print(self.model)
-                self.training_manager.setup_train(self.model,
+                self.training_manager.setup_train(model,
                                                   obj=self,
                                                   interface=interface)
                 if interface.model_name:
@@ -103,7 +103,6 @@ class TrainButton(Button):
                 self.is_training = False
 
         except ValueError as e:
-
             MessageBox(message_type='Failed To Queue Model',
                        message=str(e)).open()
         return True

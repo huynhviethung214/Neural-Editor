@@ -9,4 +9,4 @@ from torch.nn import Sigmoid
 
 def algorithm(self):
     # YOUR CODE GOES HERE
-    return Sigmoid()
+    return Sigmoid

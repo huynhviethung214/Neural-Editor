@@ -4,6 +4,7 @@ import json
 from kivy.clock import Clock
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -84,10 +85,54 @@ class CreateBlock(BoxLayout):
         node_editor.open()
 
 
+class GroupNamePopup(Popup):
+    def __init__(self, parent_node, node, func, obj, template, currentNodeName, **kwargs):
+        super(GroupNamePopup, self).__init__(**kwargs)
+        self.title = 'Nodes\' Name'
+
+        self.parent_node = parent_node
+        self.node = node
+        self.func = func
+        self.obj = obj
+        self.template = template
+        self.currentNodeName = currentNodeName
+
+        self.auto_dismiss = False
+        self.size_hint = (0.2, 0.15)
+
+        self.confirmButton = Button(text='Confirm')
+        self.confirmButton.bind(on_press=self.confirm)
+
+        self.nameInput = CustomTextInput()
+
+        self.layout = BoxLayout(orientation='vertical')
+        self.layout.add_widget(self.nameInput)
+        self.layout.add_widget(self.confirmButton)
+
+        self.add_widget(self.layout)
+
+    def confirm(self, obj):
+        text = None
+
+        if self.nameInput.text:
+            text = self.nameInput.text
+        else:
+            text = self.node.name
+
+        self.parent_node.text = self.node.label.text = self.node.name = text
+        self.func(self.obj, self.node, self.template, self.currentNodeName)
+        self.dismiss()
+
+
+class Hierarchy(TreeView):
+    def __init__(self):
+        super(Hierarchy, self).__init__()
+
+
 class ComponentPanel(ScrollView):
     def __init__(self, **kwargs):
         super(ComponentPanel, self).__init__()
-        self.size_hint = (1, 1)
+        self.size_hint = (0.2, 1)
         self.tree_view = TreeView(size_hint=(1, None),
                                   hide_root=True)
         self.tree_view.bind(minimum_height=self.tree_view.setter('height'))
@@ -139,7 +184,12 @@ class ComponentPanel(ScrollView):
 
 
 class SIToolBar(BoxLayout):
-    pass
+    def __init__(self, **kwargs):
+        self.size_hint_y = 0.05
+        self.size_hint_x = None
+        # self.width = 400
+
+        super(SIToolBar, self).__init__(**kwargs)
 
 
 class IToolBar(TabbedPanel):
@@ -201,16 +251,19 @@ class Interface(StencilView, GridLayout):
 
         self.output_node = None
 
-        self.action_bar = SIToolBar()
+        self.action_bar_0 = SIToolBar(width=500)
         self.model_name_input = CustomTextInput(size_hint_x=0.3,
                                                 max_length=50)
         self.model_name_input.bind(text=lambda obj, text: setattr(self,
                                                                   'model_name',
                                                                   text))
 
-        self.add_widget(Widget(size_hint=(0.3, 0.05)))
-        self.add_widget(Widget(size_hint=(0.3, 0.05)))
-        self.add_action_bar()
+        self.action_bar_1 = SIToolBar(width=350)
+        self.action_bar_2 = SIToolBar(width=350)
+
+        self.add_action_bar_2()
+        self.add_action_bar_1()
+        self.add_action_bar_0()
 
         self.add_widget(Widget())
         self.add_scatter_plane()
@@ -227,12 +280,21 @@ class Interface(StencilView, GridLayout):
         self.bind(on_touch_down=self.touch_down)
         self.bind(on_touch_up=self.touch_up)
 
-    def add_action_bar(self):
-        self.action_bar.add_widget(self.model_name_input)
-        self.action_bar.add_widget(CheckpointButton(interface=self))
-        self.action_bar.add_widget(TrainButton())
+    # Last section of the action bar (index: 2)
+    def add_action_bar_0(self):
+        self.action_bar_0.add_widget(self.model_name_input)
+        self.action_bar_0.add_widget(CheckpointButton(size_hint_x=0.2))
+        self.action_bar_0.add_widget(TrainButton())
 
-        self.add_widget(self.action_bar)
+        self.add_widget(self.action_bar_0)
+
+    # Second section of the action bar (index: 1)
+    def add_action_bar_1(self):
+        self.add_widget(self.action_bar_1)
+
+    # First section of the action bar (index: 0)
+    def add_action_bar_2(self):
+        self.add_widget(self.action_bar_2)
 
     def add_scatter_plane(self):
         self.scatter_plane = ScatterPlaneLayout()
@@ -259,6 +321,7 @@ class Interface(StencilView, GridLayout):
         except IndexError:
             pass
 
+    # CAN BE OPTIMIZED
     def remove_rel(self):
         target_node_link = self.selected_node_link.target
 
@@ -267,6 +330,10 @@ class Interface(StencilView, GridLayout):
 
         if _rel in self.rels:
             self.rels.remove(_rel)
+
+        # Remove connected node from the selected node
+        formattedTargetNodeLinkName = target_node_link.node.name + ' 0'
+        self.selected_node_link.node.connected_nodes.remove(formattedTargetNodeLinkName)
 
     def unbind(self, obj, touch):
         if touch.button == 'left':
@@ -407,35 +474,39 @@ class Interface(StencilView, GridLayout):
             overlay.open_menu(menu)
 
     def add_selected_box_menu(self, top_right_overlay):
-        # Default `selected_box_menu`'s Button height is 30 unit and width is 120 unit
-        x = top_right_overlay[0]
-        y = top_right_overlay[1]
-        funcs = self.selected_box_menu_funcs
+        if self.selected_nodes:
+            # Default `selected_box_menu`'s Button height is 30 unit and width is 120 unit
+            x = top_right_overlay[0]
+            y = top_right_overlay[1]
+            funcs = self.selected_box_menu_funcs
 
-        overlay = get_obj(self, 'Overlay')
+            overlay = get_obj(self, 'Overlay')
 
-        menu_layout_height = self.selected_box_menu_button_height * \
-                             len(funcs.keys()) + \
-                             self.selected_box_menu_spacing * (len(funcs.keys()) - 1)
+            menu_layout_height = self.selected_box_menu_button_height * \
+                                 len(funcs.keys()) + \
+                                 self.selected_box_menu_spacing * (len(funcs.keys()) - 1)
 
-        menu_layout = BoxLayout(size_hint=(None, None),
+            menu_layout = BoxLayout(size_hint=(None, None),
+                                    size=(self.selected_box_menu_button_width,
+                                          menu_layout_height),
+                                    pos=(x, y - menu_layout_height),
+                                    orientation='vertical',
+                                    spacing=self.selected_box_menu_spacing)
+
+            for func_name in funcs.keys():
+                button = Button(text=func_name,
+                                size_hint=(None, None),
                                 size=(self.selected_box_menu_button_width,
-                                      menu_layout_height),
-                                pos=(x, y - menu_layout_height),
-                                orientation='vertical',
-                                spacing=self.selected_box_menu_spacing)
-
-        for func_name in funcs.keys():
-            button = Button(text=func_name,
-                            size_hint=(None, None),
-                            size=(self.selected_box_menu_button_width,
-                                  self.selected_box_menu_button_height))
-            button.bind(on_press=lambda obj: funcs[func_name]())
-            menu_layout.add_widget(button)
-        overlay.open_menu(menu_layout)
+                                      self.selected_box_menu_button_height))
+                button.bind(on_press=lambda obj: funcs[func_name]())
+                menu_layout.add_widget(button)
+            overlay.open_menu(menu_layout)
+        else:
+            # Clear Canvas if there aren't any nodes selected
+            self.clear_canvas()
 
     # Manually set Input and Output Node for selected nodes
-    # Throw warning when there are an unconnected nodes
+    # Throw warning when there is any unconnected node
     def group_infos(self):
         input_nodes = []
         output_nodes = []
@@ -473,6 +544,34 @@ class Interface(StencilView, GridLayout):
             return True
         return False
 
+    # Set nodes name
+    def set_nodes_name(self, node, template, currentNodeName):
+        def remove_old_nodes(obj, _node, _template, _currentNodeName):
+            for node in obj.selected_nodes:
+                for hierarchy_node in hierarchy.iterate_all_nodes():
+                    if node.name == hierarchy_node.text:
+                        hierarchy.add_node(TreeViewLabel(text=node.name),
+                                           parent=parent_node)
+                        hierarchy.remove_node(hierarchy_node)
+                        break
+
+            _template['model'][_node.name] = template['model'].pop(_currentNodeName)
+
+        hierarchy = get_obj(self, 'Hierarchy')
+
+        parent_node = TreeViewLabel(text='Parent Node')
+        hierarchy.add_node(parent_node)
+
+        nodesNamePopup = GroupNamePopup(parent_node=parent_node,
+                                        func=remove_old_nodes,
+                                        node=node,
+                                        obj=self,
+                                        template=template,
+                                        currentNodeName=currentNodeName)
+        nodesNamePopup.open()
+
+        # node_label.text = parent_node.text
+
     # Group all `selected_nodes` into one stacked node
     def grouping_nodes(self):
         overlay = get_obj(self, 'Overlay')
@@ -482,7 +581,8 @@ class Interface(StencilView, GridLayout):
             # Re-formatting node's relationships for selected elements
             grouped_rels_copy = copy.copy(
                 self.rels
-            )  # A copy of `self.rels` so that changing the `rels` won't affect `self.rels`
+            )
+            # A copy of `self.rels` so that changing the `rels` won't affect `self.rels`
             new_rels = copy.copy(self.rels)
 
             group_remove_list = []
@@ -519,7 +619,17 @@ class Interface(StencilView, GridLayout):
                 'Layer': [5, 'Hidden Layer'],
                 'model': {},
                 'rels': grouped_rels_copy,
-                'node_type': STACKED
+                'node_type': STACKED,
+                'nl_output': {
+                    'n_links': len(output_nodes),
+                    'position': RIGHT_CODE,
+                    'type': 'output'
+                },
+                'nl_input': {
+                    'n_links': len(input_nodes),
+                    'position': LEFT_CODE,
+                    'type': 'input'
+                }
             }
 
             for node in self.selected_nodes:
@@ -536,8 +646,10 @@ class Interface(StencilView, GridLayout):
             setattr(stacked_node, 'algorithm', stacked_algorithm)
 
             self._node = stacked_node
-            node = self.add_node2interface(node_name='Group 0',
-                                           spawn_position=self.selected_nodes[0].pos)
+            node = self.add_node2interface(node_name='Parent Node',
+                                           spawn_position=self.selected_nodes[0].pos,
+                                           node_type=STACKED)
+            currentNodeName = copy.copy(node.name)
 
             # Node's template format for interface
             self.template['model'][node.name] = {
@@ -546,6 +658,7 @@ class Interface(StencilView, GridLayout):
                 },
                 'rels': template['rels'],
                 'node_type': template['node_type'],
+                'beziers_coord': self.template['beziers_coord'],
                 'nl_output': {
                     'n_links': len(output_nodes),
                     'position': RIGHT_CODE,
@@ -578,6 +691,10 @@ class Interface(StencilView, GridLayout):
                 key='output'
             )
 
+            self.set_nodes_name(node,
+                                self.template,
+                                currentNodeName)
+
             # Clear grouped nodes
             for node in self.selected_nodes:
                 self.remove_node(node)
@@ -589,7 +706,7 @@ class Interface(StencilView, GridLayout):
             # Clean canvas after rendering new grouped node
             overlay.clear_menu()
 
-            # Somehow you have to invoke `self.clear_canvas`
+            # Somehow you have to invoke `self.clear_canvas()`
             # twice to get rid of the selection box
             self.clear_canvas()
             self.clear_canvas()
@@ -672,7 +789,7 @@ class Interface(StencilView, GridLayout):
     def _is_in_bbox(self, obj, pos):
         _pos = self.to_widget(*pos)
 
-        if self.collide_point(*_pos) and not self.action_bar.collide_point(*_pos):
+        if self.collide_point(*_pos) and not self.action_bar_0.collide_point(*_pos):
             self.scatter_plane.do_translation = True
         else:
             self.scatter_plane.do_translation = False
@@ -692,7 +809,7 @@ class Interface(StencilView, GridLayout):
 
         return c
 
-    def add_node_names(self, node_name=None, node=None):
+    def add_node_names(self, hierarchy, node_name=None, node=None, node_type=NORM, has_parent=False):
         if not node_name:
             node_class = str(node)
             node_class = node_class.split(' ')[0]
@@ -706,6 +823,9 @@ class Interface(StencilView, GridLayout):
 
         node_name_obj = get_obj(node, 'NodeName')
         node_name_obj.text = node.name = node_name
+
+        if node_type != STACKED and not has_parent:
+            hierarchy.add_node(TreeViewLabel(text=node_name))
 
     def node_links(self):
         _node_links = []
@@ -726,14 +846,18 @@ class Interface(StencilView, GridLayout):
 
         return _nodes
 
-    def add_node2interface(self, node_name=None, spawn_position=(0, 0)):
+    def add_node2interface(self, node_type=NORM, node_name=None, spawn_position=(0, 0), has_parent=False):
         spl = get_obj(self, 'ScatterPlaneLayout')
+        hierarchy = get_obj(self, 'Hierarchy')
 
         node = self._node(spawn_position=spawn_position,
                           interface=self)
 
         self.add_node_names(node_name=node_name,
-                            node=node)
+                            node=node,
+                            hierarchy=hierarchy,
+                            node_type=node_type,
+                            has_parent=has_parent)
         spl.add_widget(node)
         self._state = 0
         self._node = None
@@ -890,11 +1014,13 @@ class SubContainer2(BoxLayout):
 
         # Update initial BaseInputForm for every BaseForms
         self.interface_toolbar = IToolBar()
+        self.hierarchy = Hierarchy()
 
         self.add_widget(self.sub_layout)
         self.add_widget(self.interface_toolbar)
+        self.sub_layout.add_widget(self.hierarchy)
 
-        self.sub_layout.add_widget(ComponentPanel())
+        # self.sub_layout.add_widget(ComponentPanel())
 
 
 class Container(BoxLayout, Widget):
@@ -910,6 +1036,8 @@ class Container(BoxLayout, Widget):
                                     spacing=10,
                                     padding=10)
 
+        # Change ComponentPanel to left-side of the Interface
+        self.sub_layout.add_widget(ComponentPanel())
         self.sub_layout.add_widget(SubContainer1())
         self.sub_layout.add_widget(SubContainer2())
 
