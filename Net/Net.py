@@ -5,6 +5,7 @@ class Net(Module):
     def __init__(self, nodes=None, mapped_path=None, **kwargs):
         super(Net, self).__init__()
         self.nodes = nodes
+        # print(self.nodes)
         self.interface = kwargs.get('interface')
 
         self.layers = ModuleDict()
@@ -26,10 +27,12 @@ class Net(Module):
         for node in self.nodes:
             # Format: `Node's name`: `Node's Algorithm`
             self.layers.update({node.name: node.algorithm()})
+        # print(self.layers)
 
     # Add all needed nodes into a queue with the Input at index 0 and
     # Output at index len(self.queue)
     def initialize(self):
+        # print(f'Nodes: {self.nodes}, Use mapped?: {self.use_mapped}')
         for node in self.nodes:
             if not self.use_mapped:
                 if 'Input' in node.c_type:
@@ -42,7 +45,7 @@ class Net(Module):
 
                 else:
                     # print(node.name)
-                    self.queue.insert(1, node)
+                    self.queue.insert(len(self.queue) - 1, node)
             else:
                 self.queue = self.mapped_path
 
@@ -85,12 +88,14 @@ class Net(Module):
 
     def forward(self, x):
         self.initialize()
+        # print(f'Forward: {self.queue}')
 
         if [] in self.queue:
             self.queue.remove([])
 
         # Processing Input Node's output
         input_node = self.queue[0]
+        # print(f'Input: {self.layers[input_node.name]}')
         x = self.layers[input_node.name](x)
 
         self.add_output(input_node, (x,))
@@ -107,6 +112,7 @@ class Net(Module):
             for node in self.queue:
                 try:
                     cted_nodes = node.connected_nodes
+                    print(self.layers[node.name])
 
                     if self.is_existed_inputs(cted_nodes):
                         if len(cted_nodes) == 1:

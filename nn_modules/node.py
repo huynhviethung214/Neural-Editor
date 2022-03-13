@@ -272,6 +272,12 @@ class Node(ScatterLayout):
             return True
         return False
 
+    @staticmethod
+    def get_degrouped_node_class(node_class):
+        module = __import__('nn_modules.nn_nodes',
+                            fromlist=[node_class + 'Node'])
+        return getattr(module, node_class + 'Node')
+
     def degrouping_nodes(self):
         if self.type == STACKED and self.is_connected():
             with open('./nn_modules/nn_nodes.json', 'r') as f:
@@ -284,49 +290,56 @@ class Node(ScatterLayout):
                         break
 
                 for node_name in self.properties.keys():
-                    node_class = self.properties[node_name]['node_class']
+                    try:
+                        node_class = self.properties[node_name]['node_class']
 
-                    # Node's template format
-                    template = {
-                        'pos': self.properties[node_name]['pos'],
-                        'properties': {
-                            'nl_input': node_templates[node_class]['nl_input'],
-                            'nl_output': node_templates[node_class]['nl_output'],
-                            'node_type': NORM,
-                            'Layer': self.properties[node_name]['properties']['Layer']
+                        # Node's template format
+                        template = {
+                            'pos': self.properties[node_name]['pos'],
+                            'properties': {
+                                'nl_input': node_templates[node_class]['nl_input'],
+                                'nl_output': node_templates[node_class]['nl_output'],
+                                'node_type': NORM,
+                                'Layer': self.properties[node_name]['properties']['Layer']
+                            }
                         }
-                    }
 
-                    # print(template)
+                        # print(template)
 
-                    for property_name in self.properties[node_name]['properties']:
-                        template['properties'].update({
-                            property_name: self.properties[node_name]['properties'][property_name]
-                        })
-                    # template['properties'].update({
-                    #                                'Layer': self.properties[node_name]['properties']['Layer']})
+                        for property_name in self.properties[node_name]['properties']:
+                            template['properties'].update({
+                                property_name: self.properties[node_name]['properties'][property_name]
+                            })
+                        # template['properties'].update({
+                        #                                'Layer': self.properties[node_name]['properties']['Layer']})
 
-                    # Initialize Node's properties
-                    node = Node
-                    node.node_template = template['properties']
-                    node.type = NORM
-                    node.node_class = node_class
-                    node.algorithm = self.get_algorithm(node_class)
-                    node.name = node_name
+                        # Initialize Node's properties
+                        node = self.get_degrouped_node_class(node_class)
+                        node.node_template = template['properties']
+                        node.type = NORM
+                        node.node_class = node_class
+                        node.algorithm = self.get_algorithm(node_class)
+                        node.name = node_name
 
-                    self.interface._node = node
-                    self.interface.template['model'].update({node_name: template})
+                        self.interface._node = node
+                        self.interface.template['model'].update({node_name: template})
 
-                    node = self.interface.add_node2interface(
-                        node_name=node_name,
-                        spawn_position=self.properties[node_name]['pos']
-                    )
-                    node.c_type = \
-                        node.drop_butt.text = \
-                        self.properties[node_name]['properties']['Layer'][1]
+                        node = self.interface.add_node2interface(
+                            node_name=node_name,
+                            spawn_position=self.properties[node_name]['pos']
+                        )
+                        node.c_type = \
+                            node.drop_butt.text = \
+                            self.properties[node_name]['properties']['Layer'][1]
 
-                draw_beziers(self.interface.template['model'][self.name],
+                    except TypeError:
+                        pass
+                        # if 'Layer' in node_name:
+                        #     self.set_type(None, self.properties['Layer'][1])
+
+                draw_beziers(self.node_template,
                              self.interface)
+                # print(self.interface.rels)
                 self.interface.remove_node(self)
         else:
             print('[DEBUG]: Node is being connected to other Node(s). '
@@ -468,27 +481,29 @@ class Node(ScatterLayout):
 
     def set_model_properties(self, model):
         for key in model.keys():
-            try:
-                node_type = key.split(' ')[0]
-                node = self.get_functions(node_type)
+            if key != 'rels' and key != 'beziers_coord':
+                try:
+                    node_type = key.split(' ')[0]
+                    node = self.get_functions(node_type)
 
-                self.interface_template._node = node
-                node = self.interface_template.add_node2interface(node_name=key,
-                                                                  node_type=NORM,
-                                                                  has_parent=True)
+                    self.interface_template._node = node
+                    node = self.interface_template.add_node2interface(node_name=key,
+                                                                      node_type=NORM,
+                                                                      has_parent=True)
 
-                for widget in node.sub_layout.children:
-                    if type(widget) == Spinner:
-                        node.c_type = self.properties[node.name]['properties']['Layer'][1]
+                    for widget in node.sub_layout.children:
+                        if type(widget) == Spinner:
+                            node.c_type = self.properties[node.name]['properties']['Layer'][1]
 
-                self.set_nodes_properties(node_obj=node,
-                                          properties=self.properties[key]['properties'])
+                    self.set_nodes_properties(node_obj=node,
+                                              properties=self.properties[key]['properties'])
 
-            except AttributeError as e:
-                raise e
+                except AttributeError as e:
+                    raise e
 
     def load_nodes(self):
         if not self.is_loaded:
+            # print(f'Load Nodes: {self.interface_template.nodes()}')
             model = None
             datas = None
 
@@ -503,10 +518,12 @@ class Node(ScatterLayout):
                 self.set_model_properties(model)
                 self.binding(datas=datas)
             else:
+                # print(self.node_template)
                 self.set_model_properties(self.node_template['model'])
                 self.binding(datas=self.node_template)
 
             self.is_loaded = True
+            # print(self.interface_template.nodes())
 
     def binding(self, datas=None):
         rels = formatting_rels(datas['rels'], self.interface_template.node_links())
@@ -536,43 +553,46 @@ class Node(ScatterLayout):
         scroll_view.add_widget(tree_view)
 
         for node_name in model.keys():
-            tree_node = tree_view.add_node(TreeViewLabel(text=node_name))
-            self.properties.update({node_name: {'properties': {},
-                                                'node_class': model[node_name]['node_class'],
-                                                'pos': model[node_name]['pos']}})
+            try:
+                tree_node = tree_view.add_node(TreeViewLabel(text=node_name))
+                self.properties.update({node_name: {'properties': {},
+                                                    'node_class': model[node_name]['node_class'],
+                                                    'pos': model[node_name]['pos']}})
 
-            for property_key in model[node_name]['properties'].keys():
-                if property_key != 'Layer':
-                    value = str(model[node_name]['properties'][property_key][1])
-                    variable_type = model[node_name]['properties'][property_key][0]
+                for property_key in model[node_name]['properties'].keys():
+                    if property_key != 'Layer':
+                        value = str(model[node_name]['properties'][property_key][1])
+                        variable_type = model[node_name]['properties'][property_key][0]
 
-                    self.properties[node_name]['properties'].update({property_key: [variable_type, value]})
+                        self.properties[node_name]['properties'].update({property_key: [variable_type, value]})
 
-                    _layout = TreeViewLayout(height=25,
-                                             spacing=20)
+                        _layout = TreeViewLayout(height=25,
+                                                 spacing=20)
 
-                    if variable_type == BOOL_CODE:
-                        spinner_form = CustomSpinnerInput(property_name=property_key,
-                                                          c_height=self.c_height)
-                        spinner_form.input.text = value
-                        spinner_form.input.bind(text=partial(self.set_stacked_val,
-                                                             name=property_key,
-                                                             node=node_name))
-                        _layout.add_widget(spinner_form)
+                        if variable_type == BOOL_CODE:
+                            spinner_form = CustomSpinnerInput(property_name=property_key,
+                                                              c_height=self.c_height)
+                            spinner_form.input.text = value
+                            spinner_form.input.bind(text=partial(self.set_stacked_val,
+                                                                 name=property_key,
+                                                                 node=node_name))
+                            _layout.add_widget(spinner_form)
+                        else:
+                            input_form = CustomValueInput(name=property_key)
+                            input_form.input.text = value
+                            input_form.input.bind(text=partial(self.set_stacked_val,
+                                                               name=property_key,
+                                                               node=node_name))
+                            _layout.add_widget(input_form)
+
+                        tree_view.add_node(_layout, tree_node)
                     else:
-                        input_form = CustomValueInput(name=property_key)
-                        input_form.input.text = value
-                        input_form.input.bind(text=partial(self.set_stacked_val,
-                                                           name=property_key,
-                                                           node=node_name))
-                        _layout.add_widget(input_form)
-
-                    tree_view.add_node(_layout, tree_node)
-                else:
-                    self.properties[node_name]['properties'].update({property_key: [
-                        LAYER_CODE,
-                        model[node_name]['properties'][property_key][1]]
-                    })
+                        self.properties[node_name]['properties'].update({property_key: [
+                            LAYER_CODE,
+                            model[node_name]['properties'][property_key][1]]
+                        })
+            except TypeError:
+                pass
 
         self.sub_layout.rows = 10
         self.add_component(scroll_view)

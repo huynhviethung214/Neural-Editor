@@ -135,6 +135,7 @@ def formatting_rels(rels, node_links):
 
 # Draw beziers from the formatted relationships to the interface
 def draw_beziers(datas, interface):
+    # print(f'Datas: {datas}')
     rels = formatting_rels(datas['rels'], interface.node_links())
 
     for coord, rel in zip(datas['beziers_coord'], rels):

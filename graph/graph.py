@@ -24,7 +24,6 @@ class Graphs(GridLayout):
 
         for graph_name in self.graphs.keys():
             xlabel = self.graphs[graph_name]['xlabel']
-
             ylabel = self.graphs[graph_name]['ylabel']
 
             plt.figure()

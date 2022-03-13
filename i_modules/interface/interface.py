@@ -619,6 +619,7 @@ class Interface(StencilView, GridLayout):
                 'Layer': [5, 'Hidden Layer'],
                 'model': {},
                 'rels': grouped_rels_copy,
+                'beziers_coord': self.template['beziers_coord'],
                 'node_type': STACKED,
                 'nl_output': {
                     'n_links': len(output_nodes),
@@ -642,6 +643,7 @@ class Interface(StencilView, GridLayout):
 
             stacked_node = Node
             stacked_node.node_template = template
+
             stacked_node.type = STACKED
             setattr(stacked_node, 'algorithm', stacked_algorithm)
 
@@ -649,15 +651,15 @@ class Interface(StencilView, GridLayout):
             node = self.add_node2interface(node_name='Parent Node',
                                            spawn_position=self.selected_nodes[0].pos,
                                            node_type=STACKED)
+            node.properites = template['model']
             currentNodeName = copy.copy(node.name)
 
-            # Node's template format for interface
             self.template['model'][node.name] = {
                 'properties': {
-                    'Layer': template['Layer']
+                    'Layer': template['Layer'],
                 },
-                'rels': template['rels'],
                 'node_type': template['node_type'],
+                'rels': template['rels'],
                 'beziers_coord': self.template['beziers_coord'],
                 'nl_output': {
                     'n_links': len(output_nodes),
@@ -670,6 +672,7 @@ class Interface(StencilView, GridLayout):
                     'type': 'input'
                 }
             }
+            # Node's template format for interface
 
             for node_name in template['model'].keys():
                 self.template['model'][node.name]['properties'].update({

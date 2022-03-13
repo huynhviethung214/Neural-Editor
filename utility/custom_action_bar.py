@@ -301,6 +301,10 @@ class CustomActionBar(ActionBar):
                                                     datas['model'][node_name]['properties']), 1)
                     elif node.type == STACKED:
                         node.properties = datas['model'][node_name]['properties']
+                        node.properties.update({
+                            'beziers_coord': datas['model'][node_name]['beziers_coord'],
+                            'rels': datas['model'][node_name]['rels']
+                        })
                         Clock.schedule_once(partial(self.set_stacked_node_properties,
                                                     node,
                                                     datas['model'][node_name]['properties']), 1)
@@ -407,6 +411,7 @@ class CustomActionBar(ActionBar):
                                    'hvfs': self.get_hvfs(interface)})
         interface.template = self.save_nodes_pos(interface.template,
                                                  interface)
+        # print(interface.template)
 
         if interface.is_trained:
             interface.template.update({
