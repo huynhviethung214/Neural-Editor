@@ -112,7 +112,7 @@ class Net(Module):
             for node in self.queue:
                 try:
                     cted_nodes = node.connected_nodes
-                    print(self.layers[node.name])
+                    # print(self.layers[node.name])
 
                     if self.is_existed_inputs(cted_nodes):
                         if len(cted_nodes) == 1:
@@ -135,12 +135,13 @@ class Net(Module):
                     self.queue.remove(node)
                     self.queue.insert(-2, node)
 
-        self.use_mapped = True
+        self.use_mapped = False
         self.outputs.clear()
 
+        # Temporary disabling mapped path for training model
         if self.interface:
-            self.interface.mapped_path = self.queue = self.mapped_path
+            # self.interface.mapped_path = self.queue = self.mapped_path
             self.interface.is_trained = True
-            self.interface.str_mapped_path = [node.name for node in self.mapped_path if node != []]
+            # self.interface.str_mapped_path = [node.name for node in self.mapped_path if node != []]
 
         return x

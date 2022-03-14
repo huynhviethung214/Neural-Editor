@@ -38,7 +38,7 @@ from utility.custom_input.custom_input import CustomTextInput
 from i_modules.interface_actionbar.interface_actionbar import TrainButton, \
     ProgressIndicator, CheckpointButton, TrainedModelLabel, ModeLabel
 from nn_modules.code_names import *
-from i_modules.stacked_code_template import stacked_algorithm
+from i_modules.stacked_code_template import algorithm as stacked_algorithm
 from hyper_variables_forms.hvfs import *
 
 Config.set('input', 'mouse', 'mouse,disable_multitouch')
@@ -137,8 +137,6 @@ class ComponentPanel(ScrollView):
                                   hide_root=True)
         self.tree_view.bind(minimum_height=self.tree_view.setter('height'))
         # self.tree_view.root_options = {'text': 'Component Panel'}
-
-        nodes_file_path = []
 
         self.norm_nodes_label = TreeViewLabel(text='Normal Nodes')
         self.stacked_nodes_label = TreeViewLabel(text='Stacked Nodes')
@@ -658,9 +656,9 @@ class Interface(StencilView, GridLayout):
                 'properties': {
                     'Layer': template['Layer'],
                 },
-                'node_type': template['node_type'],
                 'rels': template['rels'],
                 'beziers_coord': self.template['beziers_coord'],
+                'node_type': template['node_type'],
                 'nl_output': {
                     'n_links': len(output_nodes),
                     'position': RIGHT_CODE,

@@ -141,8 +141,8 @@ class TrainingManager:
             locals()['evaluating_alg'](self, properties)
 
         except Exception as e:
-            # raise e
-            pass
+            raise e
+            # pass
             # MessageBox(message=str(e),
             #            message_type='Error Message').open()
             #
@@ -156,8 +156,8 @@ class TrainingManager:
             locals()['training_alg'](self, properties['training'])
 
         except Exception as e:
-            # raise e
-            pass
+            raise e
+            # pass
             # MessageBox(message=str(e),
             #            message_type='Error Message').open()
             # return 0

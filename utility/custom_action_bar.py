@@ -16,7 +16,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.spinner import Spinner
 
 from custom_filechooser.custom_filechooser import FileChooser
-from i_modules.stacked_code_template import stacked_algorithm
+from i_modules.stacked_code_template import algorithm as stacked_algorithm
 from nn_modules.code_names import NORM, STACKED
 from nn_modules.node import CustomValueInput, NodeLink, Node
 from node_editor.node_editor import NodeEditor
@@ -88,7 +88,8 @@ class CustomActionBar(ActionBar):
 
         self.file_chooser_popup = Popup(size_hint=(0.6, 0.6),
                                         title='Models')
-        self.file_chooser = FileChooser(component_panel=kwargs.get('component_panel'))
+        self.file_chooser = FileChooser(component_panel=kwargs.get('component_panel'),
+                                        obj=self)
         self.file_chooser.bind(on_submit=self.load_model)
         self.file_chooser_popup.content = self.file_chooser
 
@@ -96,7 +97,6 @@ class CustomActionBar(ActionBar):
         self.save_button.bind(on_release=self.save_model)
 
         self.load_button = ActionButton(text='Load File', size_hint_x=0.05)
-        self.load_button.bind(on_release=lambda obj: self.file_chooser_popup.open())
         self.load_button.bind(on_release=lambda obj: self.file_chooser_popup.open())
 
         # self.setting_button.add_widget(self.setting_button_view)
@@ -302,8 +302,8 @@ class CustomActionBar(ActionBar):
                     elif node.type == STACKED:
                         node.properties = datas['model'][node_name]['properties']
                         node.properties.update({
-                            'beziers_coord': datas['model'][node_name]['beziers_coord'],
-                            'rels': datas['model'][node_name]['rels']
+                            'beziers_coord': datas['beziers_coord'],
+                            'rels': datas['rels']
                         })
                         Clock.schedule_once(partial(self.set_stacked_node_properties,
                                                     node,

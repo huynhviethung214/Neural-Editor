@@ -7,6 +7,7 @@ from kivy.uix.filechooser import FileChooserIconView
 from nn_modules.code_names import STACKED, LAYER_CODE
 from node_editor.node_editor import NodeEditor
 from utility.rightclick_toolbar.rightclick_toolbar import RightClickMenu
+from utility.utils import get_obj
 
 
 class FileChooser(FileChooserIconView):
@@ -15,6 +16,8 @@ class FileChooser(FileChooserIconView):
         self.rootpath = 'models'
         self.selected = None
         self.touch = None
+
+        self.obj = kwargs.get('obj')
         self.component_panel = kwargs.get('component_panel')
 
         self.bind(on_touch_up=self.open_menu)
@@ -22,7 +25,7 @@ class FileChooser(FileChooserIconView):
         self.bind(selection=self.select)
 
     # ADD EXCEPTION HANDLER FOR NOT CHOOSING INPUT AND OUTPUT LAYER IN CURRENT SELECTED MODEL
-    def model_to_stacked(self, obj):
+    def model_to_stacked(self):
         properties = {}
         node_name = self.selected.split('.')[0]
         node_name = node_name[0].upper() + node_name[1:]
@@ -48,9 +51,10 @@ class FileChooser(FileChooserIconView):
                                 nl_output['nl_output']['type'] = 'output'
 
                 properties.update({'Layer': [LAYER_CODE, 'Hidden Layer']})
-                properties.update({'rels': model_json['rels']})
                 properties.update({'node_type': STACKED})
                 properties.update({'model': model})
+                properties.update({'rels': model_json['rels']})
+                properties.update({'beziers_coord': model_json['beziers_coord']})
                 properties.update(nl_input)
                 properties.update(nl_output)
 
@@ -86,10 +90,12 @@ class FileChooser(FileChooserIconView):
     def select(self, obj, value):
         if value and self.touch.button == 'right':
             self.selected = value[0].split('\\')[-1]
-            RightClickMenu(pos_hint={'x': self.touch.spos[0], 'top': self.touch.spos[1]},
-                           size_hint=(None, None),
-                           size=(300, 500),
-                           funcs={'Export as Stacked': self.model_to_stacked})
+            self.add_widget(
+                RightClickMenu(pos_hint={'x': self.touch.spos[0], 'top': self.touch.spos[1]},
+                               size_hint=(None, None),
+                               size=(300, 500),
+                               funcs={'Export as Stacked': self.model_to_stacked})
+            )
         return True
 
     def open_menu(self, obj, touch):

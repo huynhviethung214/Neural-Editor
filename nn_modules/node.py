@@ -591,6 +591,11 @@ class Node(ScatterLayout):
                             LAYER_CODE,
                             model[node_name]['properties'][property_key][1]]
                         })
+
+                self.properties.update({
+                    'rels': self.node_template['rels'],
+                    'beziers_coord': self.node_template['beziers_coord'],
+                })
             except TypeError:
                 pass
 
