@@ -741,6 +741,7 @@ class Interface(StencilView, GridLayout):
     # `rpos0` and `rpos1` are the references of first position and second position
     def is_in_range(self, pos, rpos0, rpos1):
         left, right, top, bottom = self.create_virtual_box(rpos0, rpos1)
+
         if (left <= pos[0] <= right) and (bottom <= pos[1] <= top):
             return True
 
