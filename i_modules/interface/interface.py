@@ -142,11 +142,40 @@ class ComponentPanel(ScrollView):
         self.stacked_nodes_label = TreeViewLabel(text='Stacked Nodes')
         self.function_nodes_label = TreeViewLabel(text='Functions')
 
+        self.node_funcs = {
+            'Delete Node': self.delete_node
+        }
+
         self.tree_view.add_node(self.norm_nodes_label)
         self.tree_view.add_node(self.stacked_nodes_label)
         self.tree_view.add_node(self.function_nodes_label)
         self.add_widget(self.tree_view)
         self.update_panel()
+
+    def delete_node(self):
+        nodes = json.load(open('./nn_modules/nn_nodes.json'))
+        nodes.pop(self.tree_view.selected_node.text)
+
+        open('./nn_modules/nn_nodes.json', 'w').write(
+            json.dumps(nodes,
+                       sort_keys=True,
+                       indent=4)
+        )
+        self.tree_view.remove_node(self.tree_view.selected_node)
+
+    def open_node_rightclick_menu(self, obj, touch):
+        overlay = get_obj(self, 'Overlay')
+        overlay.clear_menu()
+
+        if touch.button == 'right':
+            overlay.open_menu(
+                RightClickMenu(funcs=self.node_funcs,
+                               pos=overlay.to_overlay_coord(touch,
+                                                            self.tree_view.selected_node)
+                               )
+            )
+
+        return True
 
     def get_node_names(self):
         node_names = []
@@ -168,6 +197,9 @@ class ComponentPanel(ScrollView):
                     module = __import__('nn_modules.nn_components',
                                         fromlist=[node_name])
                     _class = getattr(module, node_name)
+                    node = _class(interface=Interface)
+                    node.bind(on_touch_up=self.open_node_rightclick_menu)
+
                     if nodes[node_name]['node_type'] == FUNCTION:
                         c_label = self.function_nodes_label
 
@@ -177,8 +209,7 @@ class ComponentPanel(ScrollView):
                     elif nodes[node_name]['node_type'] == NORM:
                         c_label = self.norm_nodes_label
 
-                    self.tree_view.add_node(_class(interface=Interface),
-                                            parent=c_label)
+                    self.tree_view.add_node(node, parent=c_label)
 
 
 class SIToolBar(BoxLayout):
@@ -334,7 +365,7 @@ class Interface(StencilView, GridLayout):
         self.selected_node_link.node.connected_nodes.remove(formattedTargetNodeLinkName)
 
     def unbind(self, obj, touch):
-        if touch.button == 'left':
+        if touch.button == 'left' and self.collide_point(*touch.pos):
             try:
                 if self.selected_node_link:
                     if self.is_drawing and self.selected_node_link.target:
@@ -360,7 +391,7 @@ class Interface(StencilView, GridLayout):
                 pass
 
     def touch_up(self, obj, touch):
-        if touch.button == 'left':
+        if touch.button == 'left' and self.collide_point(*touch.pos):
             try:
                 valid, node, node_link = self.check_nl_collision(touch=touch)
 
@@ -384,7 +415,6 @@ class Interface(StencilView, GridLayout):
 
                         bezier = self.draw(self.ori, pos)
 
-                        # NEW ATTRIBUTE
                         rel = [self.current_node_down,
                                f'{node.name} {node_link.name}']
                         self.rels.append(rel)
@@ -422,7 +452,7 @@ class Interface(StencilView, GridLayout):
     def touch_down(self, obj, touch):
         overlay = get_obj(self, 'Overlay')
 
-        if touch.button == 'left':
+        if touch.button == 'left' and self.collide_point(*touch.pos):
             overlay.clear_menu()
             self.clear_canvas()
 
@@ -465,11 +495,14 @@ class Interface(StencilView, GridLayout):
             except TypeError:
                 pass
 
-        elif touch.button == 'right':
+        elif touch.button == 'right' and self.collide_point(*touch.pos):
             menu = RightClickMenu(pos=overlay.to_overlay_coord(touch, self),
                                   button_width=140,
                                   funcs=self.rightclick_menu_funcs)
             overlay.open_menu(menu)
+
+        elif touch.button == 'right' and not self.collide_point(*touch.pos):
+            overlay.clear_menu()
 
     def add_selected_box_menu(self, top_right_overlay):
         if self.selected_nodes:
@@ -503,8 +536,6 @@ class Interface(StencilView, GridLayout):
             # Clear Canvas if there aren't any nodes selected
             self.clear_canvas()
 
-    # Manually set Input and Output Node for selected nodes
-    # Throw warning when there is any unconnected node
     def group_infos(self):
         input_nodes = []
         output_nodes = []
@@ -571,6 +602,8 @@ class Interface(StencilView, GridLayout):
         # node_label.text = parent_node.text
 
     # Group all `selected_nodes` into one stacked node
+    # Manually set Input and Output Node for selected nodes
+    # Throw warning when there is any unconnected node
     def grouping_nodes(self):
         overlay = get_obj(self, 'Overlay')
         input_nodes, output_nodes = self.group_infos()

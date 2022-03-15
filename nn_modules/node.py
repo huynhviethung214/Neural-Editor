@@ -234,7 +234,8 @@ class Node(ScatterLayout):
         self.add_ib()
 
         self.funcs = {
-            'De-grouping Node(s)': self.degrouping_nodes
+            'De-grouping Node(s)': self.degrouping_nodes,
+            'Remove Node': self.delete_node
         }
 
         # Combinding components and add event listener/handler
@@ -283,12 +284,7 @@ class Node(ScatterLayout):
             with open('./nn_modules/nn_nodes.json', 'r') as f:
                 node_templates = json.load(f)
 
-                hierarchy = get_obj(self.interface, 'Hierarchy')
-                for hierarchy_node in hierarchy.iterate_all_nodes():
-                    if hierarchy_node.text == self.name:
-                        hierarchy.remove_node(hierarchy_node)
-                        break
-
+                self.remove_node_from_hierarchy(self.name)
                 for node_name in self.properties.keys():
                     try:
                         node_class = self.properties[node_name]['node_class']
@@ -372,18 +368,16 @@ class Node(ScatterLayout):
                              self.node_template['nl_output']['position'],
                              'nl_output')
 
-    def delete_node(self, obj):
+    def remove_node_from_hierarchy(self, node_name):
+        hierarchy = get_obj(self.interface, 'Hierarchy')
+        for hierarchy_node in hierarchy.iterate_all_nodes():
+            if hierarchy_node.text == node_name:
+                hierarchy.remove_node(hierarchy_node)
+                break
+
+    def delete_node(self):
+        self.remove_node_from_hierarchy(self.name)
         self.interface.remove_node(self)
-        self.overlay.remove_widget(self.right_click_toolbar)
-
-        for key in self.beziers.keys():
-            if self.beziers[key]:
-                try:
-                    self.interface.clear_canvas()
-                    Node.n_layer -= 1
-
-                except ValueError:
-                    pass
 
     def algorithm(self):
         pass

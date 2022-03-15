@@ -12,6 +12,7 @@ class RightClickMenu(BoxLayout):
         super(RightClickMenu, self).__init__(**kwargs)
         self.size_hint = (None, None)
         self.size = (button_width, menu_height)
+        self.orientation = 'vertical'
 
         self.button_width = button_width
         self.button_height = button_height
