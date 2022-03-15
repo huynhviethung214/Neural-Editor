@@ -714,10 +714,34 @@ class Interface(StencilView, GridLayout):
         else:
             print('[DEBUG]: Warning: There is no Output / Input Layer')
 
+    # Create a virtual box for referencing the position of the nodes
+    def create_virtual_box(self, rpos0, rpos1):
+        left, right, top, bottom = None, None, None, None
+
+        # Determine left & right coord of the box
+        if rpos0[0] < rpos1[0]:
+            left = rpos0[0]
+            right = rpos1[0]
+
+        elif rpos0[0] > rpos1[0]:
+            left = rpos1[0]
+            right = rpos0[0]
+
+        if rpos0[1] < rpos1[1]:
+            top = rpos1[1]
+            bottom = rpos0[1]
+
+        elif rpos0[1] > rpos1[1]:
+            top = rpos0[1]
+            bottom = rpos1[1]
+
+        return left, right, top, bottom
+
     # Check if object's position is in referenced range
     # `rpos0` and `rpos1` are the references of first position and second position
     def is_in_range(self, pos, rpos0, rpos1):
-        if (rpos0[0] <= pos[0] <= rpos1[0]) and (rpos0[1] <= pos[1] <= rpos1[1]):
+        left, right, top, bottom = self.create_virtual_box(rpos0, rpos1)
+        if (left <= pos[0] <= right) and (bottom <= pos[1] <= top):
             return True
 
     def select_nodes(self, top_right_overlay):
