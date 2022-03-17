@@ -1,5 +1,6 @@
 import copy
 import json
+import math
 
 from kivy.clock import Clock
 from kivy.uix.floatlayout import FloatLayout
@@ -32,7 +33,7 @@ from nn_modules.node import NodeLink, Node
 from node_editor.node_editor import NodeEditor
 from utility.custom_action_bar import CustomActionBar
 from utility.rightclick_toolbar.rightclick_toolbar import RightClickMenu
-from utility.utils import get_obj
+from utility.utils import get_obj, combination
 from utility.custom_tabbedpanel import TabManager
 from utility.custom_input.custom_input import CustomTextInput
 from i_modules.interface_actionbar.interface_actionbar import TrainButton, \
@@ -662,8 +663,10 @@ class Interface(StencilView, GridLayout):
     def grouping_nodes(self):
         overlay = get_obj(self, 'Overlay')
         input_nodes, output_nodes = self.group_infos()
+        num_links = combination(2, len(self.selected_nodes))
 
-        if input_nodes and output_nodes and self.is_independent_group(input_nodes, output_nodes):
+        if input_nodes and output_nodes and self.is_independent_group(input_nodes, output_nodes) and \
+                len(self.selected_beziers) >= num_links:
             # Re-formatting node's relationships for selected elements
             grouped_rels_copy = copy.copy(self.rels)
             # A copy of `self.rels` so that changing the `rels` won't affect `self.rels`
@@ -798,7 +801,8 @@ class Interface(StencilView, GridLayout):
             self.clear_canvas()
             self.clear_canvas()
         else:
-            print('[DEBUG]: Warning: There is no Output / Input Layer')
+            print(f'[DEBUG]: Warning: There is no Output / Input Layer (And the number of'
+                  f' links must be at least: {int(num_links)})')
 
     # Create a virtual box for referencing the position of the nodes
     @staticmethod
@@ -885,8 +889,6 @@ class Interface(StencilView, GridLayout):
                                   segments=800)
             bezier.begin = output_node
             bezier.end = input_node
-
-            # print(f'Begin: {bezier.begin}, End: {bezier.end}')
 
             return bezier
 

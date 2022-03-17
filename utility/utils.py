@@ -1,3 +1,5 @@
+import math
+
 import torch
 
 from functools import wraps
@@ -113,6 +115,11 @@ def record_graph(fn):
         return 1
 
     return _record_graph
+
+
+def combination(k, n):
+    return math.factorial(n) / (math.factorial(k) *
+                                math.factorial(n - 2))
 
 
 # Formatting relationships according to the `node_links`
