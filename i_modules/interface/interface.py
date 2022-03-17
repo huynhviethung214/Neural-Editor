@@ -235,7 +235,7 @@ class ComponentPanel(ScrollView):
                                         fromlist=[node_name])
                     _class = getattr(module, node_name)
                     node = _class(interface=Interface)
-                    node.bind(on_touch_up=self.open_node_rightclick_menu)
+                    node.bind(on_touch_down=self.open_node_rightclick_menu)
 
                     if nodes[node_name]['node_type'] == FUNCTION:
                         c_label = self.function_nodes_label
