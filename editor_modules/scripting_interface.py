@@ -167,7 +167,7 @@ class SavePopup(Popup):
 
         self.file_name = kwargs.get('file_name')
         self.file_content = kwargs.get('file_content')
-        self._type = kwargs.get('link_type')
+        self._type = kwargs.get('gate_type')
         self.current_tab = kwargs.get('obj')
 
         self.title = 'Save Form'

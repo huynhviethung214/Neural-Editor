@@ -19,7 +19,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.progressbar import ProgressBar
-from kivy.graphics import *
+from kivy.graphics import Line, Bezier
 
 from kivy.config import Config
 
@@ -112,8 +112,6 @@ class GroupNamePopup(Popup):
         self.add_widget(self.layout)
 
     def confirm(self, obj):
-        text = None
-
         if self.nameInput.text:
             text = self.nameInput.text
         else:
@@ -124,9 +122,47 @@ class GroupNamePopup(Popup):
         self.dismiss()
 
 
+class CustomBezier(Bezier):
+    def __init__(self, **kwargs):
+        super(CustomBezier, self).__init__(**kwargs)
+        self.begin = None
+        self.end = None
+
+
 class Hierarchy(TreeView):
-    def __init__(self):
-        super(Hierarchy, self).__init__()
+    def __init__(self, **kwargs):
+        super(Hierarchy, self).__init__(**kwargs)
+
+        self.node_funcs = {
+            'Remove Node': self.remove_selected_node
+        }
+
+        # self.bind(on_touch_up=self.open_rightclick_menu)
+
+    def open_rightclick_menu(self, obj, touch):
+        overlay = get_obj(self, 'Overlay')
+        overlay.clear_menu()
+
+        if touch.button == 'right' and self.selected_node and self.collide_point(*touch.pos):
+            overlay.open_menu(
+                RightClickMenu(funcs=self.node_funcs,
+                               pos=overlay.to_overlay_coord(touch, self))
+            )
+
+    def remove_selected_node(self):
+        interface = get_obj(self, 'Interface')
+
+        for node in interface.nodes():
+            if node.name == self.selected_node.text:
+                for node_gate in node.node_links():
+                    if node_gate.gate_type == 1:
+                        interface.set_unbind(node_gate)
+                    else:
+                        interface.set_unbind(node_gate.target)
+
+                interface.remove_node(node)
+                self.remove_node(self.selected_node)
+                break
 
 
 class ComponentPanel(ScrollView):
@@ -264,7 +300,6 @@ class Interface(StencilView, GridLayout):
 
         self.selected_node_link = None
         self.connected_node_link = None
-        self.current_bezier = None
 
         self.links = []
         self.instructions = []
@@ -277,8 +312,6 @@ class Interface(StencilView, GridLayout):
         self.selected_box_menu_funcs = {
             'Stacking Node(s)': self.grouping_nodes
         }
-
-        self.output_node = None
 
         self.action_bar_0 = SIToolBar(width=500)
         self.model_name_input = CustomTextInput(size_hint_x=0.3,
@@ -351,40 +384,62 @@ class Interface(StencilView, GridLayout):
             pass
 
     # CAN BE OPTIMIZED
-    def remove_rel(self):
-        target_node_link = self.selected_node_link.target
+    def remove_rel(self, node_gate):
+        targetNodeLink = node_gate.target
 
-        _rel = [f'{target_node_link.node.name} {target_node_link.name}',
-                f'{self.selected_node_link.node.name} {self.selected_node_link.name}']
+        _rel = [f'{targetNodeLink.node.name} {targetNodeLink.name}',
+                f'{node_gate.node.name} {node_gate.name}']
 
         if _rel in self.rels:
             self.rels.remove(_rel)
 
         # Remove connected node from the selected node
-        formattedTargetNodeLinkName = target_node_link.node.name + ' 0'
-        self.selected_node_link.node.connected_nodes.remove(formattedTargetNodeLinkName)
+        formattedTargetNodeLinkName = targetNodeLink.node.name + ' 0'
+        # print(formattedTargetNodeLinkName, node_gate.node.connected_nodes)
+        node_gate.node.connected_nodes.remove(formattedTargetNodeLinkName)
+
+    def set_unbind(self, node_gate):
+        # Unbinding nodes base on connected node_links
+        for info in self.links:
+            if node_gate in info:
+                # print(node_link.node.name, info[0].node.name)
+                # print(node_link.target.node.name, info[1].node.name)
+                # Disconnecting node_link and node_link.target
+                node_gate.target.connected = False
+                node_gate.connected = False
+
+                # Remove old `node link`'s relationship
+                self.remove_rel(node_gate)
+                node_gate.target.target = None
+                node_gate.target = None
+
+                self.links.remove(info)
+                # print(info[-1].begin.node.name, info[-1].end.node.name)
+                self.instructions.remove(info[-1])
+                self.clear_canvas()
 
     def unbind(self, obj, touch):
         if touch.button == 'left' and self.collide_point(*touch.pos):
             try:
                 if self.selected_node_link:
                     if self.is_drawing and self.selected_node_link.target:
-                        for info in self.links:
-                            if self.selected_node_link in info and self.selected_node_link.target in info:
-                                self.instructions.remove(info[-1])
-
-                                # Disconnecting node_link and node_link.target
-                                self.selected_node_link.target.connected = False
-                                self.selected_node_link.connected = False
-
-                                # Remove old `node link`'s relationship
-                                self.remove_rel()
-                                self.selected_node_link.target.target = None
-                                self.selected_node_link.target = None
-
-                                # Unbinding nodes base on connected node_links
-                                self.links.remove(info)
-                                self.clear_canvas()
+                        self.set_unbind(self.selected_node_link)
+                        # for info in self.links:
+                        #     if self.selected_node_link in info and self.selected_node_link.target in info:
+                        #         self.instructions.remove(info[-1])
+                        #
+                        #         # Disconnecting node_link and node_link.target
+                        #         self.selected_node_link.target.connected = False
+                        #         self.selected_node_link.connected = False
+                        #
+                        #         # Remove old `node link`'s relationship
+                        #         self.remove_rel()
+                        #         self.selected_node_link.target.target = None
+                        #         self.selected_node_link.target = None
+                        #
+                        #         # Unbinding nodes base on connected node_links
+                        #         self.links.remove(info)
+                        #         self.clear_canvas()
                     return True
 
             except TypeError:
@@ -396,7 +451,7 @@ class Interface(StencilView, GridLayout):
                 valid, node, node_link = self.check_nl_collision(touch=touch)
 
                 if valid:
-                    if node_link.link_type == 1 and not node_link.connected:
+                    if node_link.gate_type == 1 and not node_link.connected:
                         pos = self.scatter_plane.to_local(*touch.pos)
 
                         node_link.c_pos = pos
@@ -460,24 +515,23 @@ class Interface(StencilView, GridLayout):
                 valid, node, node_link = self.check_nl_collision(touch=touch)
 
                 if valid:
-                    if node_link.link_type == 0 and not node_link.connected:
+                    if node_link.gate_type == 0 and not node_link.connected:
                         pos = self.scatter_plane.to_local(*touch.pos)
                         node_link.c_pos = (pos[0] + 5, pos[1] + 5)
 
                         self.connected_node_link = node_link
-                        self.output_node = node
+                        self.selected_node_link = node_link
 
                         self.ori = pos
                         self.current_node_down = f'{node.name} {node_link.name}'
 
-                        self.is_drawing = 1
+                        # self.is_drawing = 1
 
-                    elif node_link.link_type == 1 and node_link.connected:
+                    elif node_link.gate_type == 1 and node_link.connected:
                         self.ori = node_link.t_pos
                         self.selected_node_link = node_link
 
-                        self.is_drawing = 1
-
+                    self.is_drawing = 1
                     return True
 
                 elif not valid and self.enable_drawing_box:
@@ -557,14 +611,14 @@ class Interface(StencilView, GridLayout):
 
         for input_node in input_nodes:
             for children in input_node.children[0].children:
-                if type(children) == NodeLink and children.link_type == 1:
+                if type(children) == NodeLink and children.gate_type == 1:
                     if not children.target:
                         n_inputs += 1
                         break
 
         for output_node in output_nodes:
             for children in output_node.children[0].children:
-                if type(children) == NodeLink and children.link_type == 0:
+                if type(children) == NodeLink and children.gate_type == 0:
                     if not children.target:
                         n_outputs += 1
                         break
@@ -589,6 +643,7 @@ class Interface(StencilView, GridLayout):
         hierarchy = get_obj(self, 'Hierarchy')
 
         parent_node = TreeViewLabel(text='Parent Node')
+        parent_node.bind(on_touch_down=hierarchy.open_rightclick_menu)
         hierarchy.add_node(parent_node)
 
         nodesNamePopup = GroupNamePopup(parent_node=parent_node,
@@ -610,9 +665,7 @@ class Interface(StencilView, GridLayout):
 
         if input_nodes and output_nodes and self.is_independent_group(input_nodes, output_nodes):
             # Re-formatting node's relationships for selected elements
-            grouped_rels_copy = copy.copy(
-                self.rels
-            )
+            grouped_rels_copy = copy.copy(self.rels)
             # A copy of `self.rels` so that changing the `rels` won't affect `self.rels`
             new_rels = copy.copy(self.rels)
 
@@ -748,7 +801,8 @@ class Interface(StencilView, GridLayout):
             print('[DEBUG]: Warning: There is no Output / Input Layer')
 
     # Create a virtual box for referencing the position of the nodes
-    def create_virtual_box(self, rpos0, rpos1):
+    @staticmethod
+    def create_virtual_box(rpos0, rpos1):
         left, right, top, bottom = None, None, None, None
 
         # Determine left & right coord of the box
@@ -791,7 +845,7 @@ class Interface(StencilView, GridLayout):
                 self.selected_nodes.append(node)
 
         for ins in self.scatter_plane.canvas.children:
-            if type(ins) == Bezier:
+            if type(ins) == CustomBezier:
                 bezier_pos_bottom_left = ins.points[:2]
                 bezier_pos_top_right = ins.points[-2:]
 
@@ -819,26 +873,44 @@ class Interface(StencilView, GridLayout):
             self._draw_selected_box(self.box_ori,
                                     self.scatter_plane.to_local(*touch.pos))
 
-    def draw(self, ori=None, end=None):
+    def draw(self, ori=None, end=None, output_node=None, input_node=None):
         self.clear_canvas()
         self.scatter_plane.canvas.ask_update()
 
         with self.scatter_plane.canvas:
-            bezier = Bezier(points=(ori[0], ori[1],
-                                    (end[0] + ori[0]) / 2 + 20, ori[1],
-                                    (end[0] + ori[0]) / 2 - 20, end[1],
-                                    end[0], end[1]),
-                            segments=800)
+            bezier = CustomBezier(points=(ori[0], ori[1],
+                                          (end[0] + ori[0]) / 2 + 20, ori[1],
+                                          (end[0] + ori[0]) / 2 - 20, end[1],
+                                          end[0], end[1]),
+                                  segments=800)
+            bezier.begin = output_node
+            bezier.end = input_node
+
+            # print(f'Begin: {bezier.begin}, End: {bezier.end}')
+
             return bezier
+
+    def remove_node(self, node):
+        self.children[0].remove_widget(node)
+        self.template['model'].pop(node.name)
 
     def draw_link(self, obj, touch):
         if self.is_drawing:
-            self.draw(self.ori, self.scatter_plane.to_local(*touch.pos))
+            input_node = None
+            output_node = self.selected_node_link
+
+            if self.selected_node_link:
+                input_node = self.selected_node_link.target
+
+            self.draw(self.ori,
+                      self.scatter_plane.to_local(*touch.pos),
+                      output_node,
+                      input_node)
 
     def clear_canvas(self):
         if len(self.scatter_plane.canvas.children) > 1:
             for ins in self.scatter_plane.canvas.children:
-                if (type(ins) == Bezier or type(ins) == Line) and ins not in self.instructions:
+                if (type(ins) == CustomBezier or type(ins) == Line) and ins not in self.instructions:
                     self.scatter_plane.canvas.remove(ins)
 
     def get_pos(self, obj, pos):
@@ -854,10 +926,6 @@ class Interface(StencilView, GridLayout):
             self.scatter_plane.do_translation = False
 
         return True
-
-    def remove_node(self, node):
-        self.children[0].remove_widget(node)
-        self.template['model'].pop(node.name)
 
     def num_nodes(self, node_class):
         c = 0
@@ -884,7 +952,9 @@ class Interface(StencilView, GridLayout):
         node_name_obj.text = node.name = node_name
 
         if node_type != STACKED and not has_parent:
-            hierarchy.add_node(TreeViewLabel(text=node_name))
+            tree_node = TreeViewLabel(text=node_name)
+            tree_node.bind(on_touch_down=hierarchy.open_rightclick_menu)
+            hierarchy.add_node(tree_node)
 
     def node_links(self):
         _node_links = []
@@ -1073,7 +1143,7 @@ class SubContainer2(BoxLayout):
 
         # Update initial BaseInputForm for every BaseForms
         self.interface_toolbar = IToolBar()
-        self.hierarchy = Hierarchy()
+        self.hierarchy = Hierarchy(hide_root=True)
 
         self.add_widget(self.sub_layout)
         self.add_widget(self.interface_toolbar)

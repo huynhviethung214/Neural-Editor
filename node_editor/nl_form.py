@@ -38,14 +38,14 @@ class NLForm(BoxLayout):
                                       hint_text=self.hint_text)
         self.inputs.bind(text=self.set_n_links)
 
-        # self.link_type = Spinner(values=('input',
+        # self.gate_type = Spinner(values=('input',
         #                                  'output'),
         #                          size_hint=(0.4, 1),
         #                          text='input',
         #                          sync_height=True)
-        # self.link_type.bind(text=self.set_type)
+        # self.gate_type.bind(text=self.set_type)
 
-        # self.add_widget(self.link_type)
+        # self.add_widget(self.gate_type)
         self.add_widget(self.inputs)
         self.add_widget(self.position)
 

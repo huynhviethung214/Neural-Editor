@@ -130,9 +130,9 @@ class TrainingManager:
                     MessageBox(message_type='Training Succeed',
                                message='').open()
             # print('Close Job')
-
-            gc.collect()
             self.jobs.task_done()
+
+        gc.collect()
 
     # Dynamic evaluating algorithm
     def _evaluate(self, properties=None, code=None):

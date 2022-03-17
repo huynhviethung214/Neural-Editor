@@ -162,6 +162,10 @@ def draw_beziers(datas, interface):
 
         # Draw Bezier
         bezier = interface.draw(*coord)
+        bezier.begin = rel[0]
+        bezier.end = rel[1]
+
+        # print(bezier.begin.node.name, bezier.end.node.name)
 
         interface.links.append([rel[1], rel[0], bezier])
         interface.instructions.append(bezier)

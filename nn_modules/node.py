@@ -61,7 +61,7 @@ class NodeLink(Widget):
         self.size_hint = (None, None)
         self.size = (12, 12)
         self.pos = spawn_position
-        self.link_type = _type  # Input is 1 and Output is 0
+        self.gate_type = _type  # Input is 1 and Output is 0
 
         # self.callback = self._callback
         self.connected = False
@@ -69,7 +69,7 @@ class NodeLink(Widget):
         # self.b_node = None
         # self.u_node = None
 
-        # print(self.link_type)
+        # print(self.gate_type)
 
         # self.input_bezier = None
         # self.output_bezier = None
@@ -91,9 +91,6 @@ class NodeLink(Widget):
         with self.canvas:
             Rectangle(pos=self.pos,
                       size=self.size)
-
-    def __str__(self):
-        return self.name
 
 
 class CustomSpinnerInput(BoxLayout):
@@ -242,12 +239,12 @@ class Node(ScatterLayout):
         self.combine()
         self.bind(on_touch_down=self.open_rightclick_menu)
 
-    # In the future version `node_link` will be changed to `node_gate`
-    def node_links(self, link_type: str):
+    # In the future version `node_link` will be changed to `node_gate` or `gate`
+    def node_links(self):
         node_links = []
 
         for children in self.children[0].children:
-            if type(children) == NodeLink and link_type in children.name:
+            if type(children) == NodeLink:
                 node_links.append(children)
 
         return node_links
