@@ -30,6 +30,19 @@ def get_obj(hierarchy=None, widget_name='', condition=None):
                         return w
 
 
+def remove_node_from_interface(interface, node_name):
+    for node in interface.nodes():
+        if node.name == node_name:
+            for node_gate in node.node_links():
+                if node_gate.gate_type == 1:
+                    interface.set_unbind(node_gate)
+                else:
+                    interface.set_unbind(node_gate.target)
+
+            interface.remove_node(node)
+            break
+
+
 def update_progress_bar(obj, epoch, epochs):
     obj.progress_bar.max = epochs
     obj.progress_bar.value = epoch

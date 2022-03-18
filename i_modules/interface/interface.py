@@ -33,7 +33,7 @@ from nn_modules.node import NodeLink, Node
 from node_editor.node_editor import NodeEditor
 from utility.custom_action_bar import CustomActionBar
 from utility.rightclick_toolbar.rightclick_toolbar import RightClickMenu
-from utility.utils import get_obj, combination
+from utility.utils import get_obj, combination, remove_node_from_interface
 from utility.custom_tabbedpanel import TabManager
 from utility.custom_input.custom_input import CustomTextInput
 from i_modules.interface_actionbar.interface_actionbar import TrainButton, \
@@ -152,18 +152,10 @@ class Hierarchy(TreeView):
 
     def remove_selected_node(self):
         interface = get_obj(self, 'Interface')
+        remove_node_from_interface(interface, self.selected_node.text)
 
-        for node in interface.nodes():
-            if node.name == self.selected_node.text:
-                for node_gate in node.node_links():
-                    if node_gate.gate_type == 1:
-                        interface.set_unbind(node_gate)
-                    else:
-                        interface.set_unbind(node_gate.target)
-
-                interface.remove_node(node)
-                self.remove_node(self.selected_node)
-                break
+        # Remove Node in the Hierarchy
+        self.remove_node(self.selected_node)
 
 
 class ComponentPanel(ScrollView):
@@ -204,7 +196,7 @@ class ComponentPanel(ScrollView):
         overlay = get_obj(self, 'Overlay')
         overlay.clear_menu()
 
-        if touch.button == 'right':
+        if touch.button == 'right' and self.collide_point(*touch.pos):
             overlay.open_menu(
                 RightClickMenu(funcs=self.node_funcs,
                                pos=overlay.to_overlay_coord(touch,
@@ -234,8 +226,7 @@ class ComponentPanel(ScrollView):
                     module = __import__('nn_modules.nn_components',
                                         fromlist=[node_name])
                     _class = getattr(module, node_name)
-                    node = _class(interface=Interface)
-                    node.bind(on_touch_down=self.open_node_rightclick_menu)
+                    node = _class(tree_view=self.tree_view)
 
                     if nodes[node_name]['node_type'] == FUNCTION:
                         c_label = self.function_nodes_label
@@ -422,26 +413,25 @@ class Interface(StencilView, GridLayout):
     def unbind(self, obj, touch):
         if touch.button == 'left' and self.collide_point(*touch.pos):
             try:
-                if self.selected_node_link:
-                    if self.is_drawing and self.selected_node_link.target:
-                        self.set_unbind(self.selected_node_link)
-                        # for info in self.links:
-                        #     if self.selected_node_link in info and self.selected_node_link.target in info:
-                        #         self.instructions.remove(info[-1])
-                        #
-                        #         # Disconnecting node_link and node_link.target
-                        #         self.selected_node_link.target.connected = False
-                        #         self.selected_node_link.connected = False
-                        #
-                        #         # Remove old `node link`'s relationship
-                        #         self.remove_rel()
-                        #         self.selected_node_link.target.target = None
-                        #         self.selected_node_link.target = None
-                        #
-                        #         # Unbinding nodes base on connected node_links
-                        #         self.links.remove(info)
-                        #         self.clear_canvas()
-                    return True
+                if self.selected_node_link and self.is_drawing and self.selected_node_link.target:
+                    self.set_unbind(self.selected_node_link)
+                    # for info in self.links:
+                    #     if self.selected_node_link in info and self.selected_node_link.target in info:
+                    #         self.instructions.remove(info[-1])
+                    #
+                    #         # Disconnecting node_link and node_link.target
+                    #         self.selected_node_link.target.connected = False
+                    #         self.selected_node_link.connected = False
+                    #
+                    #         # Remove old `node link`'s relationship
+                    #         self.remove_rel()
+                    #         self.selected_node_link.target.target = None
+                    #         self.selected_node_link.target = None
+                    #
+                    #         # Unbinding nodes base on connected node_links
+                    #         self.links.remove(info)
+                    #         self.clear_canvas()
+                return True
 
             except TypeError:
                 pass
@@ -996,7 +986,7 @@ class Interface(StencilView, GridLayout):
         return node
 
     def add_node(self, obj, touch):
-        if self.collide_point(*touch.pos):
+        if touch.button == 'left' and self.collide_point(*touch.pos):
             if self._state == 1:
                 spl = get_obj(self, 'ScatterPlaneLayout')
                 pos = spl.to_local(*touch.pos)

@@ -20,7 +20,7 @@ from kivy.uix.label import Label
 from functools import partial
 
 from utility.rightclick_toolbar.rightclick_toolbar import RightClickMenu
-from utility.utils import get_obj, draw_beziers, formatting_rels
+from utility.utils import get_obj, draw_beziers, formatting_rels, remove_node_from_interface
 from utility.custom_input.custom_input import CustomTextInput
 from nn_modules.code_names import *
 
@@ -235,7 +235,7 @@ class Node(ScatterLayout):
             'Remove Node': self.delete_node
         }
 
-        # Combinding components and add event listener/handler
+        # Combining components and add event listener/handler
         self.combine()
         self.bind(on_touch_down=self.open_rightclick_menu)
 
@@ -374,8 +374,9 @@ class Node(ScatterLayout):
 
     def delete_node(self):
         self.remove_node_from_hierarchy(self.name)
-        self.interface.remove_node(self)
+        remove_node_from_interface(self.interface, self.name)
 
+    # Placeholder function for the algorithm of family of Nodes
     def algorithm(self):
         pass
 
