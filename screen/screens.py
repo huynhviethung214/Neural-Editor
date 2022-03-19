@@ -53,7 +53,7 @@ class GraphScreen(Screen):
         self.graph_tab_manager = TabManager(func=Graphs,
                                             default_name='New Graph',
                                             _fkwargs={},
-                                            add_default_tab=False)
+                                            default_tab=False)
 
         self.layout.add_widget(self.graph_tab_manager)
         self.add_widget(self.layout)

@@ -56,6 +56,14 @@ class InterfaceTabManager(TabManager):
         if self.previous_tab != self.current_tab:
             try:
                 interface = self.current_tab.content.children[0]
+                hierarchy = get_obj(interface, 'Hierarchy')
+                hierarchy.clear_hierarchy(self.previous_tab.content.children[0])
+
+                # Load Hierarchy according to the current Interface
+                for tree_node in interface.hierarchy_nodes:
+                    hierarchy.add_node(tree_node)
+
+                # Load HVFS (Hyper Variable FormS) according to the current Interface
                 custom_action_bar = get_obj(interface, 'CustomActionBar')
                 custom_action_bar.load_hvfs({'hvfs': interface.hvfs},
                                             interface)
@@ -139,6 +147,11 @@ class Hierarchy(TreeView):
         }
 
         # self.bind(on_touch_up=self.open_rightclick_menu)
+
+    def clear_hierarchy(self, interface):
+        if len(interface.hierarchy_nodes) > 0:
+            for tree_node in interface.hierarchy_nodes:
+                self.remove_node(tree_node)
 
     def open_rightclick_menu(self, obj, touch):
         overlay = get_obj(self, 'Overlay')
@@ -266,6 +279,7 @@ class Interface(StencilView, GridLayout):
 
         self.current_bezier_pos = []
         self.rels = []
+        self.hierarchy_nodes = []
 
         self.current_node_down = None
         self._node = None
@@ -946,7 +960,8 @@ class Interface(StencilView, GridLayout):
         if node_type != STACKED and not has_parent:
             tree_node = TreeViewLabel(text=node_name)
             tree_node.bind(on_touch_down=hierarchy.open_rightclick_menu)
-            hierarchy.add_node(tree_node)
+            # hierarchy.add_node(tree_node)
+            self.hierarchy_nodes.append(tree_node)
 
     def node_links(self):
         _node_links = []

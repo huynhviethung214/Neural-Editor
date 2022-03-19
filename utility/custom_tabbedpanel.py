@@ -13,7 +13,7 @@ from time import sleep
 
 
 class TabManager(TabbedPanel):
-    def __init__(self, add_default_tab=True, **kwargs):
+    def __init__(self, default_tab=True, **kwargs):
         super(TabManager, self).__init__()
         # self.size_hint_y = 0.95
         self.do_default_tab = False
@@ -27,7 +27,7 @@ class TabManager(TabbedPanel):
 
         self.func = kwargs.get('func')
 
-        if add_default_tab:
+        if default_tab:
             self.add_tab(func_name=self.default_name,
                          _fkwargs=self._fkwargs)
 
