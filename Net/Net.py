@@ -132,21 +132,20 @@ class Net(Module):
 
                     if self.is_existed_inputs(cted_nodes):
                         # x = self.layers[node.name](*self.zip_inputs(cted_nodes))
+
+                        # if len(cted_nodes) == 1:
+                        #     # logging.info(f'FORWARD: [INPUT\'S SIZE]: {len(x)}')
+                        #     x = self.layers[node.name](*self.zip_inputs(cted_nodes))
+
+                        if len(cted_nodes) >= 1:
+                            # logging.info(f'FORWARD: [INPUT\'S SIZE]: {len(x)}')
+                            x = self.layers[node.name](*self.zip_inputs(cted_nodes))
                         logging.info(f'FORWARD: {node.name}')
-
-                        if len(cted_nodes) == 1:
-                            # logging.info(f'FORWARD: [INPUT\'S SIZE]: {len(x)}')
-                            x = self.layers[node.name](*self.zip_inputs(cted_nodes))
-
-                        elif len(cted_nodes) > 1:
-                            # logging.info(f'FORWARD: [INPUT\'S SIZE]: {len(x)}')
-                            x = self.layers[node.name](*self.zip_inputs(cted_nodes))
 
                         if len(x) == 2 or len(x) == 3:
                             self.add_output(node, x)
                         else:
                             self.add_output(node, (x,))
-
                         logging.info(f'ADD OUTPUT: {node.name}')
 
                         if not self.use_mapped:
