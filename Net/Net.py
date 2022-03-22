@@ -1,4 +1,12 @@
+import inspect
+import logging
+from utility.utils import TerminalColor
+from termcolor import colored
+
 from torch.nn import Module, ModuleDict
+
+
+# logging.basicConfig(format='[%(created)f]: %(message)s', level=logging.DEBUG)
 
 
 class Net(Module):
@@ -32,31 +40,35 @@ class Net(Module):
     # Add all needed nodes into a queue with the Input at index 0 and
     # Output at index len(self.queue)
     def initialize(self):
-        # print(f'Nodes: {self.nodes}, Use mapped?: {self.use_mapped}')
+        logging.info('[Initialize][START]')
         for node in self.nodes:
             if not self.use_mapped:
                 if 'Input' in node.c_type:
-                    # print('Input ', node.name)
+                    logging.info(f'Initialize: [Input Node]: {node.name}')
                     self.queue.insert(0, node)
 
                 elif 'Output' in node.c_type:
-                    # print('Output ', node.name)
+                    logging.info(f'Initialize: [Output Node]: {node.name}')
                     self.queue.insert(len(self.queue), node)
 
                 else:
-                    # print(node.name)
+                    logging.info(f'Initialize: [Hidden Node]: {node.name}')
                     self.queue.insert(len(self.queue) - 1, node)
             else:
                 self.queue = self.mapped_path
+
+        # logging.info(colored('INITIALIZE: [QUEUE]', 'blue') + f'{self.queue}')
+        logging.info('[Initialize][END]')
 
     # Zipping multiple inputs into 1 single list of inputs
     def zip_inputs(self, cted_nodes):
         inputs = []
 
-        for i in range(len(cted_nodes)):
-            inputs.insert(i, self.outputs[cted_nodes[i]])
+        for i, cted_node in enumerate(cted_nodes):
+            logging.info(f'PACKING INPUT(S): {cted_node}')
+            inputs.insert(i, self.outputs[cted_node])
 
-        # print(inputs)
+        # logging.info(colored('SIZE OF INPUT', 'green') + f': [{len(inputs)}]')
         return inputs
 
     # Add outputs to self.outputs
@@ -67,6 +79,7 @@ class Net(Module):
 
         for i in range(n):
             self.outputs.update({node.name + ' ' + str(i): x[i]})
+        # logging.info(f'OUTPUT: Number of outputs: {len(self.outputs)}')
 
     def remove_output(self, node):
         for output in self.outputs.keys():
@@ -81,29 +94,33 @@ class Net(Module):
             for key in self.outputs.keys():
                 if cted_node == key:
                     count += 1
+                    break
 
         if count == len(cted_nodes):
             return 1
         return 0
 
     def forward(self, x):
+        logging.info('[FORWARD][START]')
         self.initialize()
         # print(f'Forward: {self.queue}')
 
+        # Remove empty array in `self.queue`
         if [] in self.queue:
             self.queue.remove([])
 
         # Processing Input Node's output
         input_node = self.queue[0]
-        # print(f'Input: {self.layers[input_node.name]}')
+        logging.info(f'Input Node: {input_node.name}')
         x = self.layers[input_node.name](x)
 
         self.add_output(input_node, (x,))
+        logging.info(f'ADD OUTPUT: {input_node.name}')
 
         if not self.use_mapped:
             self.queue.pop(0)
 
-            # Map Input and Output to self.mapped_path for faster processing
+            # Map Input and Output to self.mapped_path for later processing
             self.mapped_path.insert(0, input_node)
             self.mapped_path.insert(1, self.queue)
 
@@ -112,13 +129,17 @@ class Net(Module):
             for node in self.queue:
                 try:
                     cted_nodes = node.connected_nodes
-                    # print(self.layers[node.name])
 
                     if self.is_existed_inputs(cted_nodes):
+                        # x = self.layers[node.name](*self.zip_inputs(cted_nodes))
+                        logging.info(f'FORWARD: {node.name}')
+
                         if len(cted_nodes) == 1:
-                            x = self.layers[node.name](x)
+                            # logging.info(f'FORWARD: [INPUT\'S SIZE]: {len(x)}')
+                            x = self.layers[node.name](*self.zip_inputs(cted_nodes))
 
                         elif len(cted_nodes) > 1:
+                            # logging.info(f'FORWARD: [INPUT\'S SIZE]: {len(x)}')
                             x = self.layers[node.name](*self.zip_inputs(cted_nodes))
 
                         if len(x) == 2 or len(x) == 3:
@@ -126,16 +147,18 @@ class Net(Module):
                         else:
                             self.add_output(node, (x,))
 
+                        logging.info(f'ADD OUTPUT: {node.name}')
+
                         if not self.use_mapped:
                             self.queue.remove(node)
-
                             self.mapped_path.append(node)
 
                 except Exception as e:
+                    # logging.warning(f'EXCEPTION: \"{e}\" at \"{node.name}\"')
                     self.queue.remove(node)
                     self.queue.insert(-2, node)
 
-        self.use_mapped = False
+        self.use_mapped = True
         self.outputs.clear()
 
         # Temporary disabling mapped path for training model
@@ -144,4 +167,5 @@ class Net(Module):
             self.interface.is_trained = True
             # self.interface.str_mapped_path = [node.name for node in self.mapped_path if node != []]
 
+        logging.info('FORWARD: [END]')
         return x

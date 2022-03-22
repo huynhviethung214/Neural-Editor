@@ -15,14 +15,15 @@ class FileChooser(FileChooserIconView):
         super(FileChooser, self).__init__()
         self.rootpath = 'models'
         self.selected = None
-        self.touch = None
+
+        self.funcs = {
+            'Export as Stacked': self.model_to_stacked
+        }
 
         self.obj = kwargs.get('obj')
         self.component_panel = kwargs.get('component_panel')
 
         self.bind(on_touch_up=self.open_menu)
-        # self.bind(selection=lambda obj, value: setattr(self, 'selected', value))
-        self.bind(selection=self.select)
 
     # ADD EXCEPTION HANDLER FOR NOT CHOOSING INPUT AND OUTPUT LAYER IN CURRENT SELECTED MODEL
     def model_to_stacked(self):
@@ -62,7 +63,7 @@ class FileChooser(FileChooserIconView):
             code_template = self.get_code_template(node_name)
             self.add_alg_file(node_name, code_template)
 
-            with open('nn_modules/nn_nodes.json', 'w') as f:
+            with open('./nn_modules/nn_nodes.json', 'w') as f:
                 json.dump(nodes, f, sort_keys=True, indent=4)
 
             importlib.reload(nn_modules.nn_components)
@@ -87,19 +88,22 @@ class FileChooser(FileChooserIconView):
 
         return code_template
 
-    def select(self, obj, value):
-        if value and self.touch.button == 'right':
-            self.selected = value[0].split('\\')[-1]
-            self.add_widget(
-                RightClickMenu(pos_hint={'x': self.touch.spos[0], 'top': self.touch.spos[1]},
-                               size_hint=(None, None),
-                               size=(300, 500),
-                               funcs={'Export as Stacked': self.model_to_stacked})
-            )
-        return True
+    def clear_menu(self):
+        for widget in self.children:
+            if type(widget) == RightClickMenu:
+                self.remove_widget(widget)
 
     def open_menu(self, obj, touch):
-        if self.collide_point(*touch.pos):
-            self.touch = touch
+        if touch.button == 'right' and self.collide_point(*touch.pos) and self.selection:
+            self.clear_menu()
+
+            self.selected = self.selection[0].split('\\')[-1]
+            self.add_widget(
+                RightClickMenu(pos_hint={'x': touch.spos[0], 'top': touch.spos[1]},
+                               size_hint=(None, None),
+                               size=(300, 500),
+                               funcs=self.funcs)
+            )
+            self.selection = []
 
         return True

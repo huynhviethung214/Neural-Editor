@@ -508,6 +508,27 @@
         },
         "node_type": 10
     },
+    "Reshape": {
+        "nl_input": {
+            "n_links": 1,
+            "position": 12,
+            "type": "input"
+        },
+        "nl_output": {
+            "n_links": 1,
+            "position": 13,
+            "type": "output"
+        },
+        "node_type": 10,
+        "x": [
+            1,
+            "1"
+        ],
+        "y": [
+            1,
+            "1"
+        ]
+    },
     "Sigmoid": {
         "nl_input": {
             "n_links": 1,

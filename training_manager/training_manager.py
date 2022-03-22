@@ -1,3 +1,4 @@
+import logging
 from time import sleep
 
 import torch
@@ -141,7 +142,7 @@ class TrainingManager:
             locals()['evaluating_alg'](self, properties)
 
         except Exception as e:
-            raise e
+            logging.warning(f'[EVALUATING]: {e}')
             # pass
             # MessageBox(message=str(e),
             #            message_type='Error Message').open()
@@ -156,7 +157,7 @@ class TrainingManager:
             locals()['training_alg'](self, properties['training'])
 
         except Exception as e:
-            raise e
+            logging.warning(f'[TRAINING]: {e}')
             # pass
             # MessageBox(message=str(e),
             #            message_type='Error Message').open()

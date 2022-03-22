@@ -20,7 +20,7 @@ from i_modules.stacked_code_template import algorithm as stacked_algorithm
 from nn_modules.code_names import NORM, STACKED
 from nn_modules.node import CustomValueInput, NodeLink, Node
 from node_editor.node_editor import NodeEditor
-from utility.utils import get_obj, draw_beziers
+from utility.utils import get_obj, draw_beziers, CustomBezier
 from settings.config import configs
 
 
@@ -170,8 +170,9 @@ class CustomActionBar(ActionBar):
         coordinates = []
 
         for children in interface.scatter_plane.canvas.children:
-            if type(children) == Bezier:
+            if type(children) == CustomBezier:
                 coordinates.append([children.points[0:2], children.points[-2:]])
+
         return coordinates
 
     @staticmethod

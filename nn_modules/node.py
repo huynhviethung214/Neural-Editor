@@ -373,6 +373,7 @@ class Node(ScatterLayout):
                 break
 
     def delete_node(self):
+        self.interface.hierarchy_nodes.remove(self.name)
         self.remove_node_from_hierarchy(self.name)
         remove_node_from_interface(self.interface, self.name)
 

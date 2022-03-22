@@ -5,6 +5,8 @@ import torch
 from functools import wraps
 from threading import Thread
 
+from kivy.graphics import Bezier
+
 from nn_modules.code_names import INT_CODE, FLOAT_CODE, STR_CODE, BOOL_CODE
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -12,6 +14,25 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 class BreakException(Exception):
     pass
+
+
+class CustomBezier(Bezier):
+    def __init__(self, **kwargs):
+        super(CustomBezier, self).__init__(**kwargs)
+        self.begin = None
+        self.end = None
+
+
+class TerminalColor:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 
 # Dynamically retrieve a widget from it's hierarchy
@@ -78,7 +99,6 @@ def map_properties(fn):
                 new_properties.update({key: str(value)})
 
         return algorithm(**new_properties)
-
     return _map_properties
 
 

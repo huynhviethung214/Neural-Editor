@@ -33,7 +33,7 @@ from nn_modules.node import NodeLink, Node
 from node_editor.node_editor import NodeEditor
 from utility.custom_action_bar import CustomActionBar
 from utility.rightclick_toolbar.rightclick_toolbar import RightClickMenu
-from utility.utils import get_obj, combination, remove_node_from_interface
+from utility.utils import get_obj, combination, remove_node_from_interface, CustomBezier
 from utility.custom_tabbedpanel import TabManager
 from utility.custom_input.custom_input import CustomTextInput
 from i_modules.interface_actionbar.interface_actionbar import TrainButton, \
@@ -56,12 +56,10 @@ class InterfaceTabManager(TabManager):
         if self.previous_tab != self.current_tab:
             try:
                 interface = self.current_tab.content.children[0]
-                hierarchy = get_obj(interface, 'Hierarchy')
-                hierarchy.clear_hierarchy(self.previous_tab.content.children[0])
 
                 # Load Hierarchy according to the current Interface
-                for tree_node in interface.hierarchy_nodes:
-                    hierarchy.add_node(tree_node)
+                hierarchy = get_obj(self, 'Hierarchy')
+                hierarchy.load_hierarchy(interface)
 
                 # Load HVFS (Hyper Variable FormS) according to the current Interface
                 custom_action_bar = get_obj(interface, 'CustomActionBar')
@@ -131,13 +129,6 @@ class GroupNamePopup(Popup):
         self.dismiss()
 
 
-class CustomBezier(Bezier):
-    def __init__(self, **kwargs):
-        super(CustomBezier, self).__init__(**kwargs)
-        self.begin = None
-        self.end = None
-
-
 class Hierarchy(TreeView):
     def __init__(self, **kwargs):
         super(Hierarchy, self).__init__(**kwargs)
@@ -146,12 +137,18 @@ class Hierarchy(TreeView):
             'Remove Node': self.remove_selected_node
         }
 
-        # self.bind(on_touch_up=self.open_rightclick_menu)
+    def clear_hierarchy(self):
+        for tree_node in self.children:
+            self.remove_node(tree_node)
 
-    def clear_hierarchy(self, interface):
-        if len(interface.hierarchy_nodes) > 0:
-            for tree_node in interface.hierarchy_nodes:
-                self.remove_node(tree_node)
+    def load_hierarchy(self, interface):
+        self.clear_hierarchy()
+        # print(interface.nodes())
+
+        for node_name in interface.hierarchy_nodes:
+            tree_node = TreeViewLabel(text=node_name)
+            tree_node.bind(on_touch_down=self.open_rightclick_menu)
+            self.add_node(tree_node)
 
     def open_rightclick_menu(self, obj, touch):
         overlay = get_obj(self, 'Overlay')
@@ -958,10 +955,8 @@ class Interface(StencilView, GridLayout):
         node_name_obj.text = node.name = node_name
 
         if node_type != STACKED and not has_parent:
-            tree_node = TreeViewLabel(text=node_name)
-            tree_node.bind(on_touch_down=hierarchy.open_rightclick_menu)
-            # hierarchy.add_node(tree_node)
-            self.hierarchy_nodes.append(tree_node)
+            self.hierarchy_nodes.append(node_name)
+            hierarchy.load_hierarchy(self)
 
     def node_links(self):
         _node_links = []
@@ -974,27 +969,24 @@ class Interface(StencilView, GridLayout):
         return _node_links
 
     def nodes(self):
-        _nodes = []
+        ws = []
 
-        for widget in self.children[0].children:
+        for widget in get_obj(self, 'ScatterPlaneLayout').children:
             if 'Node' in str(widget):
-                _nodes.append(widget)
+                ws.append(widget)
 
-        return _nodes
+        return ws
 
     def add_node2interface(self, node_type=NORM, node_name=None, spawn_position=(0, 0), has_parent=False):
-        spl = get_obj(self, 'ScatterPlaneLayout')
-        hierarchy = get_obj(self, 'Hierarchy')
-
         node = self._node(spawn_position=spawn_position,
                           interface=self)
 
         self.add_node_names(node_name=node_name,
                             node=node,
-                            hierarchy=hierarchy,
+                            hierarchy=get_obj(self, 'Hierarchy'),
                             node_type=node_type,
                             has_parent=has_parent)
-        spl.add_widget(node)
+        get_obj(self, 'ScatterPlaneLayout').add_widget(node)
         self._state = 0
         self._node = None
 

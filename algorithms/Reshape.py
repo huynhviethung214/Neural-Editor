@@ -8,9 +8,11 @@ from torch.nn import Module
 
 # `self` has `properties` attribute which contain `inputs` that you have been
 # added in the `Node Editor`
+from utility.utils import map_properties
+
 
 class reshape(Module):
-    def __init__(self, x=1, y=1):
+    def __init__(self, x, y):
         super(reshape, self).__init__()
         self.x = x
         self.y = y
@@ -27,7 +29,7 @@ class reshape(Module):
         return x.view(self.x, self.y)
 
 
+@map_properties
 def algorithm(self):
     # YOUR CODE GOES HERE
-    return reshape(x=self.properties['x'][1],
-                   y=self.properties['y'][1])
+    return reshape
