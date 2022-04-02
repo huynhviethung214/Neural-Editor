@@ -61,6 +61,7 @@ def remove_node_from_interface(interface, node_name):
                     interface.set_unbind(node_gate.target)
 
             interface.remove_node(node)
+            interface.node_names.remove(node_name)
             break
 
 

@@ -59,7 +59,8 @@ class InterfaceTabManager(TabManager):
 
                 # Load Hierarchy according to the current Interface
                 hierarchy = get_obj(self, 'Hierarchy')
-                hierarchy.load_hierarchy(interface)
+                hierarchy.clear_hierarchy()
+                hierarchy.load_hierarchy_from_interface(interface)
 
                 # Load HVFS (Hyper Variable FormS) according to the current Interface
                 custom_action_bar = get_obj(interface, 'CustomActionBar')
@@ -137,18 +138,25 @@ class Hierarchy(TreeView):
             'Remove Node': self.remove_selected_node
         }
 
+    def on_tree(self, node_name):
+        for tree_node in self.iterate_all_nodes():
+            if node_name == tree_node.text:
+                return True
+        return False
+
     def clear_hierarchy(self):
         for tree_node in self.children:
             self.remove_node(tree_node)
 
-    def load_hierarchy(self, interface):
-        self.clear_hierarchy()
-        # print(interface.nodes())
+    def add_tree_node(self, node_name):
+        tree_node = TreeViewLabel(text=node_name)
+        tree_node.bind(on_touch_down=self.open_rightclick_menu)
+        self.add_node(tree_node)
 
-        for node_name in interface.hierarchy_nodes:
-            tree_node = TreeViewLabel(text=node_name)
-            tree_node.bind(on_touch_down=self.open_rightclick_menu)
-            self.add_node(tree_node)
+    def load_hierarchy_from_interface(self, interface):
+        for node in interface.nodes():
+            if not self.on_tree(node.name):
+                self.add_tree_node(node.name)
 
     def open_rightclick_menu(self, obj, touch):
         overlay = get_obj(self, 'Overlay')
@@ -276,7 +284,7 @@ class Interface(StencilView, GridLayout):
 
         self.current_bezier_pos = []
         self.rels = []
-        self.hierarchy_nodes = []
+        # self.hierarchy_nodes = []
 
         self.current_node_down = None
         self._node = None
@@ -309,7 +317,7 @@ class Interface(StencilView, GridLayout):
         self.template = {'model': {}}
 
         self.rightclick_menu_funcs = {
-            'Select Node(s)': lambda: setattr(self, 'enable_drawing_box', True)
+            'Select Node(s)': lambda obj: setattr(self, 'enable_drawing_box', True)
         }
 
         self.selected_box_menu_funcs = {
@@ -663,11 +671,12 @@ class Interface(StencilView, GridLayout):
     # Throw warning when there is any unconnected node
     def grouping_nodes(self):
         overlay = get_obj(self, 'Overlay')
+        hierarchy = get_obj(self, 'Hierarchy')
         input_nodes, output_nodes = self.group_infos()
-        num_links = combination(2, len(self.selected_nodes))
+        # num_links = combination(2, len(self.selected_nodes)) - 1
 
         if input_nodes and output_nodes and self.is_independent_group(input_nodes, output_nodes) and \
-                len(self.selected_beziers) >= num_links:
+                len(self.selected_beziers) >= len(self.selected_nodes) - 1:
             # Re-formatting node's relationships for selected elements
             grouped_rels_copy = copy.copy(self.rels)
             # A copy of `self.rels` so that changing the `rels` won't affect `self.rels`
@@ -728,6 +737,8 @@ class Interface(StencilView, GridLayout):
                     'properties': node.properties,
                     'node_class': node.node_class
                 }})
+                # self.hierarchy_nodes.remove(node.name)
+                hierarchy.seen.remove(node.name)
 
             stacked_node = Node
             stacked_node.node_template = template
@@ -760,8 +771,8 @@ class Interface(StencilView, GridLayout):
                     'type': 'input'
                 }
             }
-            # Node's template format for interface
 
+            # Node's template format for Interface
             for node_name in template['model'].keys():
                 self.template['model'][node.name]['properties'].update({
                     node_name: template['model'][node_name]
@@ -803,7 +814,7 @@ class Interface(StencilView, GridLayout):
             self.clear_canvas()
         else:
             print(f'[DEBUG]: Warning: There is no Output / Input Layer (And the number of'
-                  f' links must be at least: {int(num_links)})')
+                  f' links must be at least: {len(self.selected_nodes) - 1})')
 
     # Create a virtual box for referencing the position of the nodes
     @staticmethod
@@ -894,7 +905,7 @@ class Interface(StencilView, GridLayout):
             return bezier
 
     def remove_node(self, node):
-        self.children[0].remove_widget(node)
+        self.scatter_plane.remove_widget(node)
         self.template['model'].pop(node.name)
 
     def draw_link(self, obj, touch):
@@ -938,25 +949,6 @@ class Interface(StencilView, GridLayout):
                 c += 1
 
         return c
-
-    def add_node_names(self, hierarchy, node_name=None, node=None, node_type=NORM, has_parent=False):
-        if not node_name:
-            node_class = str(node)
-            node_class = node_class.split(' ')[0]
-            node_class = node_class.split('.')[-1]
-            node_class = node_class[0:-4]
-            node_name = f'{node_class} {self.num_nodes(node_class)}'
-
-            self.node_names.append(node_name)
-        else:
-            self.node_names.append(node_name)
-
-        node_name_obj = get_obj(node, 'NodeName')
-        node_name_obj.text = node.name = node_name
-
-        if node_type != STACKED and not has_parent:
-            self.hierarchy_nodes.append(node_name)
-            hierarchy.load_hierarchy(self)
 
     def node_links(self):
         _node_links = []
@@ -1002,6 +994,23 @@ class Interface(StencilView, GridLayout):
                 self.create_template(node)
 
             return True
+
+    def add_node_names(self, hierarchy, node_name=None, node=None, node_type=NORM, has_parent=False):
+        if not node_name:
+            node_class = str(node)
+            node_class = node_class.split(' ')[0]
+            node_class = node_class.split('.')[-1]
+            node_class = node_class[0:-4]
+            node_name = f'{node_class} {self.num_nodes(node_class)}'
+
+        self.node_names.append(node_name)
+
+        node_name_obj = get_obj(node, 'NodeName')
+        node_name_obj.text = node.name = node_name
+
+        # self.hierarchy_nodes.append(node_name)
+        # hierarchy.load_hierarchy(self)
+        hierarchy.add_tree_node(node_name)
 
     def _update_canvas(self, obj, touch):
         try:

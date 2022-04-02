@@ -25,7 +25,7 @@ class RightClickMenu(BoxLayout):
                             size_hint=(None, None),
                             size=(self.button_width,
                                   self.button_height))
-            button.bind(on_press=lambda obj: self.funcs[func_name]())
+            button.bind(on_release=self.funcs[func_name])
             self.add_widget(button)
 
         # self.pos_hint = kwargs.get('pos_hint')

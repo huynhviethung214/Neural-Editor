@@ -276,12 +276,14 @@ class Node(ScatterLayout):
                             fromlist=[node_class + 'Node'])
         return getattr(module, node_class + 'Node')
 
-    def degrouping_nodes(self):
+    def degrouping_nodes(self, obj):
         if self.type == STACKED and self.is_connected():
             with open('./nn_modules/nn_nodes.json', 'r') as f:
                 node_templates = json.load(f)
 
+                # REMOVE STACKED NODE'S NAME AND UPDATE THE HIERARCHY
                 self.remove_node_from_hierarchy(self.name)
+
                 for node_name in self.properties.keys():
                     try:
                         node_class = self.properties[node_name]['node_class']
@@ -297,14 +299,10 @@ class Node(ScatterLayout):
                             }
                         }
 
-                        # print(template)
-
                         for property_name in self.properties[node_name]['properties']:
                             template['properties'].update({
                                 property_name: self.properties[node_name]['properties'][property_name]
                             })
-                        # template['properties'].update({
-                        #                                'Layer': self.properties[node_name]['properties']['Layer']})
 
                         # Initialize Node's properties
                         node = self.get_degrouped_node_class(node_class)
@@ -321,6 +319,7 @@ class Node(ScatterLayout):
                             node_name=node_name,
                             spawn_position=self.properties[node_name]['pos']
                         )
+
                         node.c_type = \
                             node.drop_butt.text = \
                             self.properties[node_name]['properties']['Layer'][1]
@@ -332,7 +331,7 @@ class Node(ScatterLayout):
 
                 draw_beziers(self.node_template,
                              self.interface)
-                # print(self.interface.rels)
+
                 self.interface.remove_node(self)
         else:
             print('[DEBUG]: Node is being connected to other Node(s). '
@@ -372,8 +371,7 @@ class Node(ScatterLayout):
                 hierarchy.remove_node(hierarchy_node)
                 break
 
-    def delete_node(self):
-        self.interface.hierarchy_nodes.remove(self.name)
+    def delete_node(self, obj):
         self.remove_node_from_hierarchy(self.name)
         remove_node_from_interface(self.interface, self.name)
 
