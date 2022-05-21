@@ -99,11 +99,12 @@ class FileChooser(FileChooserIconView):
 
             self.selected = self.selection[0].split('\\')[-1]
             self.add_widget(
-                RightClickMenu(pos_hint={'x': touch.spos[0], 'top': touch.spos[1]},
+                RightClickMenu(pos_hint={'x': touch.spos[0], 'y': touch.spos[1]},
+                               pos=touch.pos,
                                size_hint=(None, None),
-                               size=(300, 500),
+                               button_width=150,
                                funcs=self.funcs)
             )
-            self.selection = []
 
+        self.selection = []
         return True

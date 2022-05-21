@@ -1,13 +1,10 @@
 import math
-
 import torch
-
 from functools import wraps
-from threading import Thread
 
 from kivy.graphics import Bezier
 
-from nn_modules.code_names import INT_CODE, FLOAT_CODE, STR_CODE, BOOL_CODE
+from nn_modules.code_names import *
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -21,18 +18,6 @@ class CustomBezier(Bezier):
         super(CustomBezier, self).__init__(**kwargs)
         self.begin = None
         self.end = None
-
-
-class TerminalColor:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
 
 
 # Dynamically retrieve a widget from it's hierarchy
@@ -61,7 +46,7 @@ def remove_node_from_interface(interface, node_name):
                     interface.set_unbind(node_gate.target)
 
             interface.remove_node(node)
-            interface.node_names.remove(node_name)
+            # interface.node_names.remove(node_name)
             break
 
 
@@ -111,16 +96,17 @@ def checkpoint(fn):
 
         try:
             fn(self, properties)
-            return 1
 
         except BreakException:
-            if self.save_checkpoint:
-                name = self.model_name.replace(' ', '_').lower()
-                torch.save(properties['model'].state_dict(),
-                           f'checkpoints/{name}.state')
             properties['interface'].is_trained = False
             self.end_task = False
-            return 1
+
+        if self.save_checkpoint:
+            name = self.model_name.replace(' ', '_').lower()
+            torch.save(properties['model'].state_dict(),
+                       properties['weight_path'] + f'/{name}.w')
+            torch.cuda.empty_cache()
+        return 1
 
     return _checkpoint
 
@@ -146,8 +132,6 @@ def record_graph(fn):
                                           'epochs': epochs
                                       }
                                   }})
-        return 1
-
     return _record_graph
 
 
@@ -212,4 +196,5 @@ def draw_beziers(datas, interface):
         interface.instructions.append(bezier)
 
     interface.template['beziers_coord'] = datas['beziers_coord']
+    # print(interface.template['beziers_coord'])
     interface.rels = datas['rels']

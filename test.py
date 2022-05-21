@@ -545,6 +545,9 @@
 # # print(a)
 
 import json
+
+# import torch
+
 from settings.config import configs
 # from settings import config
 from importlib import reload
@@ -808,32 +811,32 @@ from importlib import reload
 # q.put(['p3', 'c3'])
 
 
-import threading, queue
-from time import sleep
-
-q = queue.Queue()
-
-
-def worker():
-    while True:
-        if q.not_empty:
-            item = q.get()
-            sleep(10)
-            print(f'Working on {item}')
-            print(f'Finished {item}')
-            q.task_done()
-
-
-# turn-on the worker thread
-threading.Thread(target=worker, daemon=True).start()
-
-# send thirty task requests to the worker
-for item in range(30):
-    q.put(item)
-print('All task requests sent\n', end='')
-
-# block until all tasks are done
-q.join()
-print('All work completed')
-q.put(str(input('Entering: ')))
+# import threading, queue
+# from time import sleep
+#
+# q = queue.Queue()
+#
+#
+# def worker():
+#     while True:
+#         if q.not_empty:
+#             item = q.get()
+#             sleep(10)
+#             print(f'Working on {item}')
+#             print(f'Finished {item}')
+#             q.task_done()
+#
+#
+# # turn-on the worker thread
+# threading.Thread(target=worker, daemon=True).start()
+#
+# # send thirty task requests to the worker
+# for item in range(30):
+#     q.put(item)
+# print('All task requests sent\n', end='')
+#
+# # block until all tasks are done
+# q.join()
+# print('All work completed')
+# q.put(str(input('Entering: ')))
 

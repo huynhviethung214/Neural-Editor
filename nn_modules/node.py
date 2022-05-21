@@ -479,7 +479,6 @@ class Node(ScatterLayout):
 
                     self.interface_template._node = node
                     node = self.interface_template.add_node2interface(node_name=key,
-                                                                      node_type=NORM,
                                                                       has_parent=True)
 
                     for widget in node.sub_layout.children:

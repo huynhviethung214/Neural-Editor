@@ -40,8 +40,8 @@ def training_alg(self, properties):
     # properties['obj']._evaluate(properties['eval_properties'],
     #                             properties['eval_properties']['eval_code'])
 
-    if properties['is_save']:
-        torch.save(properties['model'].state_dict(), 'weights/{0}.prmt'.format(properties['output_file_name']))
-        torch.cuda.empty_cache()
+    # if properties['is_save']:
+    #     torch.save(properties['model'].state_dict(), 'weights/{0}.prmt'.format(properties['output_file_name']))
+    #     torch.cuda.empty_cache()
 
     return losses, properties['epochs']

@@ -4,21 +4,15 @@ from utility.func_template import Template
 kwargs = {
     'PerceptronExample': {
         'file_path': 'hyper_variables_forms\\perceptron_example\\train\\training.py',
-        'epochs': 10,
-        'is_save': True,
-        'output_file_name': 'test'
+        'epochs': 10
     },
     'TestCNN': {
         'file_path': 'hyper_variables_forms\\test_cnn\\train\\training.py',
-        'epochs': 20,
-        'is_save': True,
-        'output_file_name': 'test1'
+        'epochs': 20
     },
     'VAE': {
         'file_path': 'hyper_variables_forms\\vae\\train\\training.py',
-        'epochs': 20,
-        'is_save': True,
-        'output_file_name': 'test2'
+        'epochs': 20
     }
 }
 

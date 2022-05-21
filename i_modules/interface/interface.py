@@ -94,7 +94,8 @@ class CreateBlock(BoxLayout):
 
 
 class GroupNamePopup(Popup):
-    def __init__(self, parent_node, node, func, obj, template, currentNodeName, **kwargs):
+    def __init__(self, hierarchy, parent_node, node,
+                 func, obj, template, currentNodeName, **kwargs):
         super(GroupNamePopup, self).__init__(**kwargs)
         self.title = 'Nodes\' Name'
 
@@ -102,6 +103,7 @@ class GroupNamePopup(Popup):
         self.node = node
         self.func = func
         self.obj = obj
+        self.hierarchy = hierarchy
         self.template = template
         self.currentNodeName = currentNodeName
 
@@ -127,6 +129,7 @@ class GroupNamePopup(Popup):
 
         self.parent_node.text = self.node.label.text = self.node.name = text
         self.func(self.obj, self.node, self.template, self.currentNodeName)
+        self.hierarchy.remove_node_name('Parent Node')
         self.dismiss()
 
 
@@ -148,6 +151,11 @@ class Hierarchy(TreeView):
         for tree_node in self.children:
             self.remove_node(tree_node)
 
+    def remove_node_name(self, node_name):
+        for tree_node in self.children:
+            if tree_node.text == node_name and tree_node.is_leaf:
+                self.remove_node(tree_node)
+
     def add_tree_node(self, node_name):
         tree_node = TreeViewLabel(text=node_name)
         tree_node.bind(on_touch_down=self.open_rightclick_menu)
@@ -168,7 +176,7 @@ class Hierarchy(TreeView):
                                pos=overlay.to_overlay_coord(touch, self))
             )
 
-    def remove_selected_node(self):
+    def remove_selected_node(self, obj):
         interface = get_obj(self, 'Interface')
         remove_node_from_interface(interface, self.selected_node.text)
 
@@ -277,7 +285,7 @@ class Interface(StencilView, GridLayout):
         self.size_hint = (1, 1)
         # self.m_list = []
         self.mn_list = []
-        self.node_names = []
+        # self.node_names = []
         self.str_mapped_path = []
         self.hvfs = None
         self.model_name = 'Unknown'
@@ -314,7 +322,8 @@ class Interface(StencilView, GridLayout):
 
         self.links = []
         self.instructions = []
-        self.template = {'model': {}}
+        self.template = {'model': {},
+                         'beziers_coord': []}
 
         self.rightclick_menu_funcs = {
             'Select Node(s)': lambda obj: setattr(self, 'enable_drawing_box', True)
@@ -660,6 +669,7 @@ class Interface(StencilView, GridLayout):
                                         func=remove_old_nodes,
                                         node=node,
                                         obj=self,
+                                        hierarchy=hierarchy,
                                         template=template,
                                         currentNodeName=currentNodeName)
         nodesNamePopup.open()
@@ -712,6 +722,7 @@ class Interface(StencilView, GridLayout):
                 grouped_rels_copy.remove(rel)
 
             # Node's template format
+            # print(self.template)
             template = {
                 'Layer': [5, 'Hidden Layer'],
                 'model': {},
@@ -738,7 +749,7 @@ class Interface(StencilView, GridLayout):
                     'node_class': node.node_class
                 }})
                 # self.hierarchy_nodes.remove(node.name)
-                hierarchy.seen.remove(node.name)
+                # hierarchy.seen.remove(node.name)
 
             stacked_node = Node
             stacked_node.node_template = template
@@ -748,8 +759,7 @@ class Interface(StencilView, GridLayout):
 
             self._node = stacked_node
             node = self.add_node2interface(node_name='Parent Node',
-                                           spawn_position=self.selected_nodes[0].pos,
-                                           node_type=STACKED)
+                                           spawn_position=self.selected_nodes[0].pos)
             node.properites = template['model']
             currentNodeName = copy.copy(node.name)
 
@@ -902,6 +912,7 @@ class Interface(StencilView, GridLayout):
             bezier.begin = output_node
             bezier.end = input_node
 
+            self.template['beziers_coord'].append([ori, end])
             return bezier
 
     def remove_node(self, node):
@@ -969,14 +980,13 @@ class Interface(StencilView, GridLayout):
 
         return ws
 
-    def add_node2interface(self, node_type=NORM, node_name=None, spawn_position=(0, 0), has_parent=False):
+    def add_node2interface(self, node_name=None, spawn_position=(0, 0), has_parent=False):
         node = self._node(spawn_position=spawn_position,
                           interface=self)
 
         self.add_node_names(node_name=node_name,
                             node=node,
                             hierarchy=get_obj(self, 'Hierarchy'),
-                            node_type=node_type,
                             has_parent=has_parent)
         get_obj(self, 'ScatterPlaneLayout').add_widget(node)
         self._state = 0
@@ -995,7 +1005,7 @@ class Interface(StencilView, GridLayout):
 
             return True
 
-    def add_node_names(self, hierarchy, node_name=None, node=None, node_type=NORM, has_parent=False):
+    def add_node_names(self, hierarchy, node_name=None, node=None, has_parent=False):
         if not node_name:
             node_class = str(node)
             node_class = node_class.split(' ')[0]
@@ -1003,14 +1013,13 @@ class Interface(StencilView, GridLayout):
             node_class = node_class[0:-4]
             node_name = f'{node_class} {self.num_nodes(node_class)}'
 
-        self.node_names.append(node_name)
+        # self.node_names.append(node_name)
 
         node_name_obj = get_obj(node, 'NodeName')
         node_name_obj.text = node.name = node_name
 
-        # self.hierarchy_nodes.append(node_name)
-        # hierarchy.load_hierarchy(self)
-        hierarchy.add_tree_node(node_name)
+        if not has_parent:
+            hierarchy.add_tree_node(node_name)
 
     def _update_canvas(self, obj, touch):
         try:

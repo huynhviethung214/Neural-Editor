@@ -9,12 +9,9 @@ class Template:
 		if _type == 0:
 			if 'params' in self.prop_dict.keys():
 				self.prop_dict['params'] = params
-
 			return self.alg(**self.prop_dict)
-
 		elif _type == 1:
 			return self.alg(properties=self.prop_dict).dataset()
-		
 		else:
 			return self.alg(properties=self.prop_dict).load_algorithm()
 

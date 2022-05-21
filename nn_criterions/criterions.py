@@ -17,15 +17,15 @@ built_in_args_list = {
         'reduction': 'mean'
     },
     'MSELoss': {
-        'size_average':True,
-        'reduce':True,
+        'size_average': True,
+        'reduce': True,
         'reduction': 'mean'
     },
     'CrossEntropyLoss': {
         'weight': None,
-        'size_average':True,
+        'size_average': True,
         'ignore_index': -100,
-        'reduce':True,
+        'reduce': True,
         'reduction': 'mean'
     },
     'CTCLoss': {
@@ -35,72 +35,72 @@ built_in_args_list = {
     },
     'NLLLoss': {
         'weight': None,
-        'size_average':True,
+        'size_average': True,
         'ignore_index': -100,
-        'reduce':None,
+        'reduce': None,
         'reduction': 'mean'
     },
     'PoissonNLLLoss': {
         'log_input': True,
         'full': False,
-        'size_average':True,
+        'size_average': True,
         'eps': 1e-08,
-        'reduce':None,
+        'reduce': None,
         'reduction': 'mean'
     },
     'KLDivLoss': {
-        'size_average':True,
-        'reduce':True,
+        'size_average': True,
+        'reduce': True,
         'reduction': 'mean'
     },
     'BCELoss': {
         'weight': None,
-        'size_average':True,
-        'reduce':True,
+        'size_average': True,
+        'reduce': True,
         'reduction': 'mean'
     },
     'BCEWithLogitsLoss': {
         'weight': None,
-        'size_average':True,
-        'reduce':True,
+        'size_average': True,
+        'reduce': True,
         'reduction': 'mean',
         'pos_weight': None
     },
     'MarginRankingLoss': {
         'margin': 0.0,
-        'size_average':True,
-        'reduce':True,
+        'size_average': True,
+        'reduce': True,
         'reduction': 'mean'
     },
     'HingeEmbeddingLoss': {
         'margin': 1.0,
-        'size_average':True,
-        'reduce':True,
+        'size_average': True,
+        'reduce': True,
         'reduction': 'mean'
     },
     'SmoothL1Loss': {
-        'size_average':True,
-        'reduce':True,
+        'size_average': True,
+        'reduce': True,
         'reduction': 'mean'
     },
     'MultiLabelSoftMarginLoss': {
         'weight': None,
-        'size_average':True,
-        'reduce':True,
+        'size_average': True,
+        'reduce': True,
         'reduction': 'mean'
     },
     'CosineEmbeddingLoss': {
         'margin': 0.0,
-        'size_average':True,
-        'reduce':True,
+        'size_average': True,
+        'reduce': True,
         'reduction': 'mean'
     },
     'MultiMarginLoss': {
         'p': 1,
         'margin': 1.0,
         'weight': None,
-        'size_average':True,
-        'reduce':True,
+        'size_average': True,
+        'reduce': True,
         'reduction': 'mean'
     },
     'TripletMarginLoss': {
@@ -108,8 +108,8 @@ built_in_args_list = {
         'p': 2.0,
         'eps': 1e-06,
         'swap': False,
-        'size_average':True,
-        'reduce':True,
+        'size_average': True,
+        'reduce': True,
         'reduction': 'mean'
     }
 }
