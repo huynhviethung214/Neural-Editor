@@ -15,12 +15,11 @@ from time import sleep
 class TabManager(TabbedPanel):
     def __init__(self, default_tab=True, **kwargs):
         super(TabManager, self).__init__()
-        # self.size_hint_y = 0.95
         self.do_default_tab = False
         self.tab_pos = 'top_left'
         self.tab_height = 30
         self.tab_width = 200
-        self.tab_name_list = []
+        self.tab_name_list = {}
 
         self.default_name = kwargs.get('default_name')
         self._fkwargs = kwargs.get('_fkwargs')
@@ -42,15 +41,24 @@ class TabManager(TabbedPanel):
         add_button_layout.add_widget(add_button, 1)
         self._tab_strip.add_widget(add_button_layout)
 
+    @staticmethod
+    def get_missing_idx(l):
+        for i in range(max(l) + 2):
+            if i not in l:
+                return i
+
     def add_tab(self, **fkwargs):
         func_name = fkwargs.get('func_name')
         _fkwargs = fkwargs.get('_fkwargs')
-        ntabs = 0
+        missing_idx = 0
 
-        for fname in self.tab_name_list:
-            if func_name in fname:
-                ntabs += 1
-        func_name = f'{func_name} {str(ntabs)}'
+        if func_name not in list(self.tab_name_list.keys()):
+            self.tab_name_list.update({func_name: [0]})
+        else:
+            missing_idx = self.get_missing_idx(self.tab_name_list[func_name])
+            self.tab_name_list[func_name].insert(missing_idx, missing_idx)
+
+        func_name = f'{func_name} {missing_idx}'
 
         header = CustomHeader(func_name=func_name,
                               tabbed_panel=self,
@@ -63,7 +71,7 @@ class TabManager(TabbedPanel):
         # Wait for the newly created header to be initialized
         # Switch to the newly created header 1 frame after the header is being initialized
         Clock.schedule_once(partial(self.switch, header), 0)
-        self.tab_name_list.append(func_name)
+        # self.tab_name_list.append(func_name)
 
     # Let the widget initiate completely and then add your tabs
     def switch(self, header, *args):
@@ -86,7 +94,10 @@ class CloseButton(Button):
 
     def on_press(self):
         # print(self.parent.text, self.tabbed_panel.tab_name_list)
-        self.tabbed_panel.tab_name_list.remove(self.parent.text)
+        # self.tabbed_panel.tab_name_list.remove(self.parent.text)
+        tab_name = self.parent.text[:-2]
+        tab_idx = self.parent.text[-1]
+        self.tabbed_panel.tab_name_list[tab_name].pop(int(tab_idx))
 
         if len(self.tabbed_panel.tab_list) == 2:
             self.tabbed_panel.remove_widget(self.parent)
