@@ -1,0 +1,1 @@
+- Neural Editor is a tool that makes researching ML/DL a lot easier just by drag & drop Nodes which is equivalent to a Layer in Pytorch (future version)
