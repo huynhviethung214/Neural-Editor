@@ -128,8 +128,9 @@ class TrainingManager:
 
             if 'interface' in training_properties.keys():
                 if training_properties['interface'].is_trained:
-                    MessageBox(message_type='Training Succeed',
-                               message='').open()
+                    # MessageBox(message_type='Training Succeed',
+                    #            message='').open()
+                    pass
             # print('Close Job')
             self.jobs.task_done()
 

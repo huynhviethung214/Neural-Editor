@@ -97,7 +97,8 @@ class CloseButton(Button):
         # self.tabbed_panel.tab_name_list.remove(self.parent.text)
         tab_name = self.parent.text[:-2]
         tab_idx = self.parent.text[-1]
-        self.tabbed_panel.tab_name_list[tab_name].pop(int(tab_idx))
+
+        self.tabbed_panel.tab_name_list[tab_name].remove(int(tab_idx))
 
         if len(self.tabbed_panel.tab_list) == 2:
             self.tabbed_panel.remove_widget(self.parent)

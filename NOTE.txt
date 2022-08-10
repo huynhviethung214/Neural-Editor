@@ -27,11 +27,11 @@ THE ALGORITHM IN 'generate_evaluating_algorithms.py' AND 'generate_training_algo
 23. REMOVE BEZIERS WHEN UNBINDING NODES ✅
 24. SAVE & LOAD STACKED NODE PROPERLY ✅
 25. TEXT DISAPPEAR WHEN CHANGING TAB IN `IToolBar` ✅
-26. CLEAN UP YOUR FKING CODE YOU IDIOT!!!!!!!!!
+26.
 27. FIX REPETITIVE VARIABLES WHEN ADDING `Stacked Node` ✅
 28. FIX UNBINDING METHOD IN INTERFACE ✅
 29. PLOT GRAPH AFTER TRAINING/EVALUATING ✅
-30. Fix TAB'S NAME IN `TabManager`
+30. Fix TAB'S NAME IN `TabManager` ✅
 31. FIX `Scripting Screen` ✅
 32. Switch HVFS after changing tab in Interface's TabManager ✅
 33. DE-GROUPING GROUPED NODES ✅
@@ -49,3 +49,5 @@ THE ALGORITHM IN 'generate_evaluating_algorithms.py' AND 'generate_training_algo
 41. CREATE A CUSTOM FILE-CHOOSER USING KIVY LIBRARY
 42. FIND A WAY TO SAVE ALL THE UNCHANGEABLE COMPONENTS / WIDGETS WHEN WE NEED TO RE-USE IT
     (MAYBE PRE-SAVE IT?)
+43. FIX "Cannot create graphics instruction outside the main Kivy thread" IN kivy.garden.matplotlib
+    & MessageBox

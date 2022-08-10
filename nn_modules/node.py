@@ -230,14 +230,18 @@ class Node(ScatterLayout):
         self.add_components()
         self.add_ib()
 
-        self.funcs = {
-            'De-grouping Node(s)': self.degrouping_nodes,
+        self.stacked_funcs = {
+            'De-grouping Node(s)': self.degrouping_nodes
+        }
+
+        self.norm_funcs = {
             'Remove Node': self.delete_node
         }
 
         # Combining components and add event listener/handler
         self.combine()
         self.bind(on_touch_down=self.open_rightclick_menu)
+        self.load_schema(kwargs.get('schema'))
 
     # In the future version `node_link` will be changed to `node_gate` or `gate`
     def node_links(self):
@@ -339,10 +343,17 @@ class Node(ScatterLayout):
 
     def open_rightclick_menu(self, obj, touch):
         overlay = get_obj(self.interface, 'Overlay')
+        funcs = None
 
         if touch.button == 'right' and self.collide_point(*touch.pos):
+            if self.type == NORM:
+                funcs = self.norm_funcs
+            elif self.type == STACKED:
+                funcs = self.stacked_funcs.copy()
+                funcs.update(self.norm_funcs)
+
             overlay.clear_menu()
-            overlay.open_menu(menu_obj=RightClickMenu(funcs=self.funcs,
+            overlay.open_menu(menu_obj=RightClickMenu(funcs=funcs,
                                                       button_width=140,
                                                       pos=overlay.to_overlay_coord(touch, self)))
 

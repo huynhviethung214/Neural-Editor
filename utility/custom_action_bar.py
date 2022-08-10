@@ -221,15 +221,16 @@ class CustomActionBar(ActionBar):
     def load_model(self, obj, selection, touch):
         interface_tab_manager = get_obj(self, 'InterfaceTabManager')
 
-        func_name = selection[0].split('\\')[-1].split('.')[0]
-        interface_tab_manager.add_tab(func_name=func_name,
-                                      _fkwargs={})
+        if selection:
+            func_name = selection[0].split('\\')[-1].split('.')[0]
+            interface_tab_manager.add_tab(func_name=func_name,
+                                          _fkwargs={})
 
-        # Add nodes 1 frame after tab_manager.add_tab function is called
-        Clock.schedule_once(partial(self.add_nodes,
-                                    interface_tab_manager,
-                                    func_name,
-                                    selection), 0)
+            # Add nodes 1 frame after tab_manager.add_tab function is called
+            Clock.schedule_once(partial(self.add_nodes,
+                                        interface_tab_manager,
+                                        func_name,
+                                        selection), 0)
 
     # Clock.schedule_once(partial(self.set_model_name, tab_manager, func_name), 0)
 

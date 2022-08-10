@@ -840,3 +840,8 @@ from importlib import reload
 # print('All work completed')
 # q.put(str(input('Entering: ')))
 
+import requests
+from bs4 import BeautifulSoup
+
+# specify the URL of the archive here
+# archive_url = "https://play.playhn.xyz/47342582-de73-433d-b301-81f86ff3c2c3"
