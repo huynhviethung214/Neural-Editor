@@ -18,7 +18,8 @@ from kivy.uix.spinner import Spinner
 from custom_filechooser.custom_filechooser import FileChooser
 from i_modules.stacked_code_template import algorithm as stacked_algorithm
 from nn_modules.code_names import NORM, STACKED
-from nn_modules.node import CustomValueInput, NodeLink, Node
+from nn_modules.node import NodeLink, Node
+from nn_modules.node_utils import CustomValueInput
 from node_editor.node_editor import NodeEditor
 from utility.utils import get_obj, draw_beziers, CustomBezier
 from settings.config import configs

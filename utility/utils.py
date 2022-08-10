@@ -40,7 +40,7 @@ def remove_node_from_interface(interface, node_name):
     for node in interface.nodes():
         if node.name == node_name:
             for node_gate in node.node_links():
-                if node_gate.gate_type == 1:
+                if node_gate.gateType == 1:
                     interface.set_unbind(node_gate)
                 else:
                     interface.set_unbind(node_gate.target)

@@ -470,7 +470,7 @@ class Interface(StencilView, GridLayout):
                 valid, node, node_link = self.check_nl_collision(touch=touch)
 
                 if valid:
-                    if node_link.gate_type == 1 and not node_link.connected:
+                    if node_link.gateType == 1 and not node_link.connected:
                         pos = self.scatter_plane.to_local(*touch.pos)
 
                         node_link.c_pos = pos
@@ -534,7 +534,7 @@ class Interface(StencilView, GridLayout):
                 valid, node, node_link = self.check_nl_collision(touch=touch)
 
                 if valid:
-                    if node_link.gate_type == 0 and not node_link.connected:
+                    if node_link.gateType == 0 and not node_link.connected:
                         pos = self.scatter_plane.to_local(*touch.pos)
                         node_link.c_pos = (pos[0] + 5, pos[1] + 5)
 
@@ -546,7 +546,7 @@ class Interface(StencilView, GridLayout):
 
                         # self.is_drawing = 1
 
-                    elif node_link.gate_type == 1 and node_link.connected:
+                    elif node_link.gateType == 1 and node_link.connected:
                         self.ori = node_link.t_pos
                         self.selected_node_link = node_link
 
@@ -630,14 +630,14 @@ class Interface(StencilView, GridLayout):
 
         for input_node in input_nodes:
             for children in input_node.children[0].children:
-                if type(children) == NodeLink and children.gate_type == 1:
+                if type(children) == NodeLink and children.gateType == 1:
                     if not children.target:
                         n_inputs += 1
                         break
 
         for output_node in output_nodes:
             for children in output_node.children[0].children:
-                if type(children) == NodeLink and children.gate_type == 0:
+                if type(children) == NodeLink and children.gateType == 0:
                     if not children.target:
                         n_outputs += 1
                         break
