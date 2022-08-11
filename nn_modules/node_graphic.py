@@ -12,6 +12,7 @@ from kivy.uix.treeview import TreeViewLabel, TreeView, TreeViewNode
 
 from nn_modules.code_names import *
 from nn_modules.node_link import NodeLink
+from schematics.node_schematic import NodeSchematic
 from nn_modules.node_utils import CustomSpinnerInput, KernelInput, CustomValueInput
 from utility.rightclick_toolbar.rightclick_toolbar import RightClickMenu
 from utility.utils import get_obj
@@ -72,9 +73,10 @@ class NodeGraphic(ScatterLayout):
         funcs = None
 
         if touch.button == 'right' and self.collide_point(*touch.pos):
-            if self.type == NORM:
+            if self.attributes_get('node_type') == NORM:
                 funcs = self.norm_funcs
-            elif self.type == STACKED:
+
+            elif self.attributes_get('node_type') == STACKED:
                 funcs = self.stacked_funcs.copy()
                 funcs.update(self.norm_funcs)
 
@@ -83,45 +85,67 @@ class NodeGraphic(ScatterLayout):
                                                       button_width=140,
                                                       pos=overlay.to_overlay_coord(touch, self)))
 
-    def set_val(self, obj, val, name):
+    def set_val(self, obj, val, _type, name):
         try:
             if val:
-                self.properties[name][1] = val
+                self.properties_set(name, _type, val)
+        except Exception as e:
+            obj.text = ''
+
+    def set_stacked_val(self, obj, val, key, _type, node_name):
+        try:
+            if val:
+                sub_node = NodeSchematic(self.schema['sub_nodes'][node_name])
+                sub_node.properties_set(key, _type, val)
         except Exception as e:
             obj.text = ''
 
     def set_type(self, obj, text):
-        template = self.interface.template['model'][self.name]
-        template['properties']['Layer'] = [LAYER_CODE, text]
+        # template = self.interface.template['model'][self.name]
+        # template['properties']['Layer'] = [LAYER_CODE, text]
+        self.attributes_set('layer', text)
         setattr(self, 'currentLayerType', text)
 
     def add_components(self):
         setattr(self, 'label', self.add_id())
         setattr(self, 'dropDownList', self.add_drop_down_list())
 
-        if self.node_template['node_type'] == STACKED:
+        if self.attributes_get('node_type') == STACKED:
             self.add_stacked_nodes()
-            setattr(self, 'type', STACKED)
+            # setattr(self, 'type', STACKED)
         else:
             self.sub_layout.row_force_default = True
             self.sub_layout.row_default_height = 25
 
-            for key in self.node_template.keys():
-                if key != 'node_type' and 'nl' not in key:
-                    if self.node_template[key][0] in self.code_names:
-                        self.add_val_input(name=key,
-                                           _type=self.node_template[key][0],
-                                           default_val=self.node_template[key][1])
+            for key in self.schema['properties'].keys():
+                node_property = self.properties_get(key)
 
-                    elif self.node_template[key][0] == BOOL_CODE:
-                        self.add_list_data(name=key,
-                                           datas=[True, False],
-                                           _type=BOOL_CODE)
+                if node_property[0] in self.code_names:
+                    self.add_val_input(name=key,
+                                       _type=node_property[0],
+                                       default_val=node_property[1])
 
-                    elif self.node_template[key][0] == MATRIX_CODE:
-                        self.add_kernel_input(name=key,
-                                              default_size=(2, 2),
-                                              _type=MATRIX_CODE)
+                elif node_property[0] == BOOL_CODE:
+                    self.add_list_data(name=key,
+                                       datas=[True, False],
+                                       _type=BOOL_CODE)
+
+            # for key in self.node_template.keys():
+            #     if key != 'node_type' and 'nl' not in key:
+            #         if self.node_template[key][0] in self.code_names:
+            #             self.add_val_input(name=key,
+            #                                _type=self.node_template[key][0],
+            #                                default_val=self.node_template[key][1])
+            #
+            #         elif self.node_template[key][0] == BOOL_CODE:
+            #             self.add_list_data(name=key,
+            #                                datas=[True, False],
+            #                                _type=BOOL_CODE)
+            #
+            #         elif self.node_template[key][0] == MATRIX_CODE:
+            #             self.add_kernel_input(name=key,
+            #                                   default_size=(2, 2),
+            #                                   _type=MATRIX_CODE)
 
     # CAN BE OPTIMIZED
     def add_list_data(self, name=None, datas=None, _type=BOOL_CODE):
@@ -131,7 +155,8 @@ class NodeGraphic(ScatterLayout):
         _layout = BoxLayout(size_hint=(1, None),
                             height=self.c_height,
                             spacing=20)
-        self.properties.update({name: [_type, datas[0]]})
+        # self.properties.update({name: [_type, datas[0]]})
+        self.properties_set(name, _type, datas[0])
         _datas = ()
 
         for i in range(len(datas)):
@@ -141,8 +166,9 @@ class NodeGraphic(ScatterLayout):
                             values=_datas,
                             size_hint=(0.6, 1),
                             sync_height=True)
-        drop_butt.bind(text=partial(self.set_val, name=name))
-        drop_butt.text = str(self.node_template[name][1])
+        drop_butt.bind(text=partial(self.set_val, _type=_type, name=name))
+        # drop_butt.text = str(self.node_template[name][1])
+        drop_butt.text = str(self.properties_get(name)[1])
 
         _layout.add_widget(Label(text=name,
                                  size_hint=(0.4, 1),
@@ -165,8 +191,10 @@ class NodeGraphic(ScatterLayout):
         self.add_component(spinner)
         return spinner
 
+    # FIX
     def add_stacked_nodes(self):
-        model = self.node_template['model']
+        # model = self.node_template['model']
+        sub_nodes = self.schema['sub_nodes']
 
         scroll_view = ScrollView(size_hint=(1, 1))
         tree_view = TreeView(size_hint=(1, None),
@@ -175,52 +203,69 @@ class NodeGraphic(ScatterLayout):
         tree_view.bind(minimum_height=tree_view.setter('height'))
         scroll_view.add_widget(tree_view)
 
-        for node_name in model.keys():
+        for sub_node_name in sub_nodes.keys():
             try:
-                tree_node = tree_view.add_node(TreeViewLabel(text=node_name))
-                self.properties.update({node_name: {'properties': {},
-                                                    'node_class': model[node_name]['node_class'],
-                                                    'pos': model[node_name]['pos']}})
+                sub_node = NodeSchematic(sub_nodes[sub_node_name])
+                tree_node = tree_view.add_node(TreeViewLabel(text=sub_node_name))
+                # self.properties.update({sub_node: {'properties': {},
+                #                                    'node_class': model[node_name]['node_class'],
+                #                                    'pos': model[node_name]['pos']}})
 
-                for property_key in model[node_name]['properties'].keys():
-                    if property_key != 'Layer':
-                        value = str(model[node_name]['properties'][property_key][1])
-                        variable_type = model[node_name]['properties'][property_key][0]
+                for key in sub_node.schema['properties'].keys():
+                    # if property_key != 'Layer':
+                    sub_node_property = sub_node.properties_get(key)
+                    variable_type = sub_node_property[0]
+                    value = str(sub_node_property[1])
 
-                        self.properties[node_name]['properties'].update({property_key: [variable_type, value]})
+                    # self.properties[node_name]['properties'].update({property_key: [variable_type, value]})
 
-                        _layout = TreeViewLayout(height=25,
-                                                 spacing=20)
+                    _layout = TreeViewLayout(height=25,
+                                             spacing=20)
 
-                        if variable_type == BOOL_CODE:
-                            spinner_form = CustomSpinnerInput(property_name=property_key,
-                                                              c_height=self.c_height)
-                            spinner_form.input.text = value
-                            spinner_form.input.bind(text=partial(self.set_stacked_val,
-                                                                 name=property_key,
-                                                                 node=node_name))
-                            _layout.add_widget(spinner_form)
-                        else:
-                            input_form = CustomValueInput(name=property_key)
-                            input_form.input.text = value
-                            input_form.input.bind(text=partial(self.set_stacked_val,
-                                                               name=property_key,
-                                                               node=node_name))
-                            _layout.add_widget(input_form)
-
-                        tree_view.add_node(_layout, tree_node)
+                    if variable_type == BOOL_CODE:
+                        widget = CustomSpinnerInput(property_name=key,
+                                                    c_height=self.c_height)
                     else:
-                        self.properties[node_name]['properties'].update({property_key: [
-                            LAYER_CODE,
-                            model[node_name]['properties'][property_key][1]]
-                        })
+                        widget = CustomValueInput(name=key)
 
-                self.properties.update({
-                    'rels': self.node_template['rels'],
-                    'beziers_coord': self.node_template['beziers_coord'],
-                })
-            except TypeError:
-                pass
+                    widget.input.text = value
+                    widget.input.bind(text=partial(self.set_stacked_val,
+                                                   key=key,
+                                                   _type=variable_type,
+                                                   node_name=sub_node_name))
+                    _layout.add_widget(widget)
+
+                    # if variable_type == BOOL_CODE:
+                    #     spinner_form = CustomSpinnerInput(property_name=key,
+                    #                                       c_height=self.c_height)
+                    #     spinner_form.input.text = value
+                    #     spinner_form.input.bind(text=partial(self.set_stacked_val,
+                    #                                          key=key,
+                    #                                          _type=variable_type,
+                    #                                          node_name=sub_node))
+                    #     _layout.add_widget(spinner_form)
+                    # else:
+                    #     input_form = CustomValueInput(name=key)
+                    #     input_form.input.text = value
+                    #     input_form.input.bind(text=partial(self.set_stacked_val,
+                    #                                        key=key,
+                    #                                        _type=variable_type,
+                    #                                        node_name=sub_node))
+                    #     _layout.add_widget(input_form)
+
+                    tree_view.add_node(_layout, tree_node)
+                    # else:
+                    #     self.properties[node_name]['properties'].update({property_key: [
+                    #         LAYER_CODE,
+                    #         model[node_name]['properties'][property_key][1]]
+                    #     })
+
+                # self.properties.update({
+                #     'rels': self.node_template['rels'],
+                #     'beziers_coord': self.node_template['beziers_coord'],
+                # })
+            except Exception as e:
+                raise e
 
         self.sub_layout.rows = 10
         self.add_component(scroll_view)
@@ -248,8 +293,8 @@ class NodeGraphic(ScatterLayout):
 
     def add_val_input(self, name=None, _type=None, default_val=None):
         input_form = CustomValueInput(name=name)
-        input_form.input.text = str(self.node_template[name][1])
-        input_form.input.bind(text=partial(self.set_val, name=name))
+        input_form.input.text = str(default_val)
+        input_form.input.bind(text=partial(self.set_val, _type=_type, name=name))
 
         self.properties.update({name: [_type, str(default_val)]})
         self.add_component(input_form)
@@ -271,12 +316,12 @@ class NodeGraphic(ScatterLayout):
         return output_node
 
     def add_node_links(self):
-        self._add_node_links(self.node_template['nl_input']['n_links'],
-                             self.node_template['nl_input']['position'],
+        self._add_node_links(self.nl_input_get('n_links'),
+                             self.nl_input_get('position'),
                              'nl_input')
 
-        self._add_node_links(self.node_template['nl_output']['n_links'],
-                             self.node_template['nl_output']['position'],
+        self._add_node_links(self.nl_output_get('n_links'),
+                             self.nl_output_get('position'),
                              'nl_output')
 
     def _add_node_links(self, n_links, position, key):

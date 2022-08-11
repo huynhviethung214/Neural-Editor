@@ -17,6 +17,9 @@ from utility.custom_input.custom_input import CustomTextInput
 from .property_form import PropertyForm
 from .nl_form import NLForm
 from .node_form import NodeForm
+from nn_modules.twn2j.n2j import post_node
+
+import nn_modules.nn_components
 
 
 class NodeEditor(Popup):
@@ -217,6 +220,7 @@ class NodeEditor(Popup):
     def create_node(self, obj, nn_modules=None):
         import nn_modules
         properties = {}
+        attributes = {}
 
         with open('nn_modules\\nn_nodes.json', 'r') as f:
             nodes = json.load(f)
@@ -229,9 +233,9 @@ class NodeEditor(Popup):
                                                                 str(_property['default_value'])]})
 
         # Add `node_type` property
-        properties.update({'node_type': self.node_type})
-        properties.update({'nl_input': self.n_in_links.property})
-        properties.update({'nl_output': self.n_out_links.property})
+        attributes.update({'node_type': self.node_type})
+        attributes.update({'nl_input': self.n_in_links.property})
+        attributes.update({'nl_output': self.n_out_links.property})
 
         node_name = self.custom_title.children[2].text
 
@@ -240,7 +244,7 @@ class NodeEditor(Popup):
                 prefix = node_name[0].upper()
                 node_name = prefix + node_name[1::]
 
-            nodes.update({node_name: properties})
+            # nodes.update({node_name: properties})
 
             code_template = self.get_code_template(node_name)
 
@@ -253,8 +257,11 @@ class NodeEditor(Popup):
             self.add_alg_file(node_name,
                               code_template)
 
-            with open('nn_modules\\nn_nodes.json', 'w') as f:
-                json.dump(nodes, f, sort_keys=True, indent=4)
+            # with open('nn_modules\\nn_nodes.json', 'w') as f:
+            #     json.dump(nodes, f, sort_keys=True, indent=4)
+
+            attributes.update({'node_name': node_name})
+            post_node(attributes, properties)
 
             importlib.reload(nn_modules.nn_components)
             self.component_panel.update_panel()

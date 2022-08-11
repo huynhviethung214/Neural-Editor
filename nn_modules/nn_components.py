@@ -20,7 +20,6 @@ def generate_nn_components():
                 module = __import__('nn_modules.nn_nodes',
                                     fromlist=[node_name + 'Node'])
                 _class = getattr(module, node_name + 'Node')
-                # print(_class)
 
                 globals()[node_name] = type(node_name,
                                             (Component,),

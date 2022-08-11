@@ -1,9 +1,7 @@
 import copy
 import json
-import math
 
 from kivy.clock import Clock
-from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
@@ -15,32 +13,28 @@ from kivy.uix.scatterlayout import ScatterPlaneLayout
 from kivy.uix.treeview import TreeViewLabel, TreeView
 from kivy.uix.spinner import Spinner
 from kivy.uix.tabbedpanel import TabbedPanel
-from kivy.graphics import Bezier
 from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
-from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.progressbar import ProgressBar
-from kivy.graphics import Line, Bezier
+from kivy.graphics import Line
 
 from kivy.config import Config
 
-from math import sin
-from kivy_garden.graph import Graph, MeshLinePlot
-
 # import datasets_processors.generate_processors
-
+from hyper_variables_forms.hvfs import CriterionForm
 from nn_modules.node import NodeLink, Node
+from schematics.interface_schematic import InterfaceSchematic
+from schematics.node_schematic import NodeSchematic
 from node_editor.node_editor import NodeEditor
 from utility.custom_action_bar import CustomActionBar
 from utility.rightclick_toolbar.rightclick_toolbar import RightClickMenu
-from utility.utils import get_obj, combination, remove_node_from_interface, CustomBezier
+from utility.utils import get_obj, remove_node_from_interface, CustomBezier
 from utility.custom_tabbedpanel import TabManager
 from utility.custom_input.custom_input import CustomTextInput
 from i_modules.interface_actionbar.interface_actionbar import TrainButton, \
     ProgressIndicator, CheckpointButton, TrainedModelLabel, ModeLabel
 from nn_modules.code_names import *
 from i_modules.stacked_code_template import algorithm as stacked_algorithm
-from hyper_variables_forms.hvfs import *
 
 Config.set('input', 'mouse', 'mouse,disable_multitouch')
 
@@ -248,19 +242,23 @@ class ComponentPanel(ScrollView):
             nodes = json.load(f)
 
             for node_name in nodes.keys():
+                node_schematic = NodeSchematic(nodes[node_name])
+                # print(node_name, node_schematic.schema['attributes'])
+
                 if node_name not in self.get_node_names():
                     module = __import__('nn_modules.nn_components',
                                         fromlist=[node_name])
                     _class = getattr(module, node_name)
                     node = _class(tree_view=self.tree_view)
+                    # print(node_name, node_schematic.attributes_get('node_type'))
 
-                    if nodes[node_name]['node_type'] == FUNCTION:
+                    if node_schematic.attributes_get('node_type') == FUNCTION:
                         c_label = self.function_nodes_label
 
-                    elif nodes[node_name]['node_type'] == STACKED:
+                    elif node_schematic.attributes_get('node_type') == STACKED:
                         c_label = self.stacked_nodes_label
 
-                    elif nodes[node_name]['node_type'] == NORM:
+                    elif node_schematic.attributes_get('node_type') == NORM:
                         c_label = self.norm_nodes_label
 
                     self.tree_view.add_node(node, parent=c_label)
@@ -279,20 +277,16 @@ class IToolBar(TabbedPanel):
     _children = []
 
 
-class Interface(StencilView, GridLayout):
+class Interface(StencilView, GridLayout, InterfaceSchematic):
     def __init__(self, **kwargs):
         super(Interface, self).__init__()
         self.size_hint = (1, 1)
-        # self.m_list = []
-        self.mn_list = []
-        # self.node_names = []
         self.str_mapped_path = []
         self.hvfs = None
         self.model_name = 'Unknown'
 
         self.current_bezier_pos = []
         self.rels = []
-        # self.hierarchy_nodes = []
 
         self.current_node_down = None
         self._node = None
@@ -614,10 +608,10 @@ class Interface(StencilView, GridLayout):
         output_nodes = []
 
         for node in self.selected_nodes:
-            if 'Input' in node.c_type:
+            if 'Input' in node.layer_get():
                 input_nodes.append(node)
 
-            elif 'Output' in node.c_type:
+            elif 'Output' in node.layer_get():
                 output_nodes.append(node)
 
         return input_nodes, output_nodes
@@ -988,6 +982,7 @@ class Interface(StencilView, GridLayout):
                             node=node,
                             hierarchy=get_obj(self, 'Hierarchy'),
                             has_parent=has_parent)
+
         get_obj(self, 'ScatterPlaneLayout').add_widget(node)
         self._state = 0
         self._node = None
@@ -1000,8 +995,8 @@ class Interface(StencilView, GridLayout):
                 spl = get_obj(self, 'ScatterPlaneLayout')
                 pos = spl.to_local(*touch.pos)
 
-                node = self.add_node2interface(spawn_position=pos)
-                self.create_template(node)
+                self.add_node2interface(spawn_position=pos)
+                # self.create_template(node)
 
             return True
 
@@ -1064,8 +1059,9 @@ class Interface(StencilView, GridLayout):
 
         self.template['model'].update({node.name: {'properties': node_properties}})
 
-        if node.type != STACKED:
-            self.template['model'][node.name].update({'node_class': node.node_class})
+        # if node.attributes_get('node_type') != STACKED:
+            # node.attributes_set('node_class', node.node_class)
+            # self.template['model'][node.name].update({'node_class': node.node_class})
 
 
 class ILayout(BoxLayout):

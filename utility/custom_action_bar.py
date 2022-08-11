@@ -298,11 +298,11 @@ class CustomActionBar(ActionBar):
 
                     interface.create_template(node)
 
-                    if node.type == NORM:
+                    if node.attributes_get('node_type') == NORM:
                         Clock.schedule_once(partial(self.set_nodes_properties,
                                                     node,
                                                     datas['model'][node_name]['properties']), 1)
-                    elif node.type == STACKED:
+                    elif node.attributes_get('node_type') == STACKED:
                         node.properties = datas['model'][node_name]['properties']
                         node.properties.update({
                             'beziers_coord': datas['beziers_coord'],

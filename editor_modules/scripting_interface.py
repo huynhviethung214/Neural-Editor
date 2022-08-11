@@ -54,7 +54,7 @@ class ScriptingToolBar(BoxLayout):
             save_popup.open()
 
         else:
-            file_path = 'algorithms\\{0}'.format(file_name + '.py')
+            file_path = f'algorithms\\{file_name}.py'
             with open(file_path, 'w') as f:
                 f.write(file_content)
 

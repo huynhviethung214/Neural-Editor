@@ -1,204 +1,315 @@
 {
     "BatchNorm2D": {
-        "affine": [
-            3,
-            "True"
-        ],
-        "eps": [
-            4,
-            "1e-05"
-        ],
-        "momentum": [
-            4,
-            "0.1"
-        ],
-        "nl_input": {
-            "n_links": 1,
-            "position": 12,
-            "type": "input"
+        "attributes": {
+            "layer": "Hidden Layer",
+            "nl_input": {
+                "n_links": 1,
+                "position": 12,
+                "type": "input"
+            },
+            "nl_output": {
+                "n_links": 1,
+                "position": 13,
+                "type": "output"
+            },
+            "node_class": "BatchNorm2D",
+            "node_type": 10
         },
-        "nl_output": {
-            "n_links": 1,
-            "position": 13,
-            "type": "output"
+        "cmap": [],
+        "graphic_attributes": {
+            "beziers_coord": [],
+            "node_pos": [
+                0,
+                0
+            ]
         },
-        "node_type": 10,
-        "num_features": [
-            1,
-            "0"
-        ],
-        "track_running_stats": [
-            3,
-            "True"
-        ]
+        "properties": {
+            "affine": [
+                3,
+                true
+            ],
+            "eps": [
+                4,
+                "1e-05"
+            ],
+            "momentum": [
+                4,
+                "0.1"
+            ],
+            "num_features": [
+                1,
+                "0"
+            ],
+            "track_running_stats": [
+                3,
+                true
+            ]
+        },
+        "script": "algorithms/BatchNorm2D.py",
+        "sub_nodes": {}
     },
     "Concatenate": {
-        "dimension": [
-            1,
-            0
-        ],
-        "nl_input": {
-            "n_links": 2,
-            "position": 12,
-            "type": "input"
+        "attributes": {
+            "layer": "Hidden Layer",
+            "nl_input": {
+                "n_links": 2,
+                "position": 12,
+                "type": "input"
+            },
+            "nl_output": {
+                "n_links": 1,
+                "position": 13,
+                "type": "output"
+            },
+            "node_class": "Concatenate",
+            "node_type": 8
         },
-        "nl_output": {
-            "n_links": 1,
-            "position": 13,
-            "type": "output"
+        "cmap": [],
+        "graphic_attributes": {
+            "beziers_coord": [],
+            "node_pos": [
+                0,
+                0
+            ]
         },
-        "node_type": 8
+        "properties": {
+            "dimension": [
+                1,
+                0
+            ]
+        },
+        "script": "algorithms/Concatenate.py",
+        "sub_nodes": {}
     },
     "Conv1D": {
-        "bias": [
-            3,
-            true
-        ],
-        "dilation": [
-            1,
-            10
-        ],
-        "groups": [
-            1,
-            10
-        ],
-        "in_channels": [
-            1,
-            10
-        ],
-        "kernel_size": [
-            11,
-            [
-                2,
-                2
+        "attributes": {
+            "layer": "Hidden Layer",
+                "nl_input": {
+                "n_links": 1,
+                "position": 12,
+                "type": "input"
+            },
+            "nl_output": {
+                "n_links": 1,
+                "position": 13,
+                "type": "output"
+            },
+            "node_class": "Conv1D",
+            "node_type": 10
+        },
+        "cmap": [],
+        "graphic_attributes": {
+            "beziers_coord": [],
+            "node_pos": [
+                0,
+                0
             ]
-        ],
-        "nl_input": {
-            "n_links": 1,
-            "position": 12,
-            "type": "input"
         },
-        "nl_output": {
-            "n_links": 1,
-            "position": 13,
-            "type": "output"
+        "properties": {
+            "bias": [
+                3,
+                true
+            ],
+            "dilation": [
+                1,
+                10
+            ],
+            "groups": [
+                1,
+                10
+            ],
+            "in_channels": [
+                1,
+                10
+            ],
+            "kernel_size": [
+                11,
+                [
+                    2,
+                    2
+                ]
+            ],
+            "out_channels": [
+                1,
+                10
+            ],
+            "padding": [
+                1,
+                10
+            ],
+            "padding_mode": [
+                2,
+                10
+            ],
+            "stride": [
+                1,
+                10
+            ]
         },
-        "node_type": 10,
-        "out_channels": [
-            1,
-            10
-        ],
-        "padding": [
-            1,
-            10
-        ],
-        "padding_mode": [
-            2,
-            10
-        ],
-        "stride": [
-            1,
-            10
-        ]
+        "script": "algorithms/Conv1D.py",
+        "sub_nodes": {}
     },
     "Conv2D": {
-        "bias": [
-            3,
-            "True"
-        ],
-        "dilation": [
-            1,
-            "1"
-        ],
-        "groups": [
-            1,
-            "1"
-        ],
-        "in_channels": [
-            1,
-            "0"
-        ],
-        "kernel_size": [
-            1,
-            "0"
-        ],
-        "nl_input": {
-            "n_links": 1,
-            "position": 12,
-            "type": "input"
+        "attributes": {
+            "layer": "Hidden Layer",
+            "nl_input": {
+                "n_links": 1,
+                "position": 12,
+                "type": "input"
+            },
+            "nl_output": {
+                "n_links": 1,
+                "position": 13,
+                "type": "output"
+            },
+            "node_class": "Conv2D",
+            "node_type": 10
         },
-        "nl_output": {
-            "n_links": 1,
-            "position": 13,
-            "type": "output"
+        "cmap": [],
+        "graphic_attributes": {
+            "beziers_coord": [],
+            "node_pos": [
+                0,
+                0
+            ]
         },
-        "node_type": 10,
-        "out_channels": [
-            1,
-            "0"
-        ],
-        "padding": [
-            1,
-            "0"
-        ],
-        "padding_mode": [
-            2,
-            "zeros"
-        ],
-        "stride": [
-            1,
-            "1"
-        ]
+        "properties": {
+            "bias": [
+                3,
+                true
+            ],
+            "dilation": [
+                1,
+                1
+            ],
+            "groups": [
+                1,
+                1
+            ],
+            "in_channels": [
+                1,
+                0
+            ],
+            "kernel_size": [
+                1,
+                0
+            ],
+            "out_channels": [
+                1,
+                0
+            ],
+            "padding": [
+                1,
+                0
+            ],
+            "padding_mode": [
+                2,
+                "zeros"
+            ],
+            "stride": [
+                1,
+                1
+            ]
+        },
+        "script": "algorithms/Conv2D.py",
+        "sub_nodes": {}
     },
     "Conv2dBlock": {
-        "Layer": [
-            5,
-            "Hidden Layer"
-        ],
-        "beziers_coord": [
+        "attributes": {
+            "layer": "Hidden Layer",
+            "nl_input": {
+                "n_links": 1,
+                "position": 12,
+                "type": "input"
+            },
+            "nl_output": {
+                "n_links": 1,
+                "position": 13,
+                "type": "output"
+            },
+            "node_class": "Conv2dBlock",
+            "node_type": 9
+        },
+        "cmap": [
             [
-                [
-                    1110.6666666666665,
-                    666.5374677002583
-                ],
-                [
-                    956.6666666666666,
-                    631.5374677002583
-                ]
+                "ReLU 0 Output 0",
+                "MaxPool2D 0 Input 0"
             ],
             [
-                [
-                    716.6666666666666,
-                    631.5374677002583
-                ],
-                [
-                    567.6666666666666,
-                    606.5374677002583
-                ]
+                "BatchNorm2D 0 Output 0",
+                "ReLU 0 Input 0"
             ],
             [
-                [
-                    108.66666666666663,
-                    647.5374677002583
-                ],
-                [
-                    327.66666666666663,
-                    606.5374677002583
-                ]
+                "Conv2D 0 Output 0",
+                "BatchNorm2D 0 Input 0"
             ]
         ],
-        "model": {
-            "BatchNorm2D 0": {
-                "node_class": "BatchNorm2D",
-                "pos": [
-                    328.66666666666663,
-                    476.5374677002583
-                ],
-                "properties": {
-                    "Layer": [
-                        5,
-                        "Hidden Layer"
+        "graphic_attributes": {
+            "beziers_coord": [
+                [
+                    [
+                        1110.6666666666665,
+                        666.5374677002583
                     ],
+                    [
+                        956.6666666666666,
+                        631.5374677002583
+                    ]
+                ],
+                [
+                    [
+                        716.6666666666666,
+                        631.5374677002583
+                    ],
+                    [
+                        567.6666666666666,
+                        606.5374677002583
+                    ]
+                ],
+                [
+                    [
+                        108.66666666666663,
+                        647.5374677002583
+                    ],
+                    [
+                        327.66666666666663,
+                        606.5374677002583
+                    ]
+                ]
+            ],
+            "node_pos": [
+                0,
+                0
+            ]
+        },
+        "properties": {},
+        "script": "algorithms/Conv2dBlock.py",
+        "sub_nodes": {
+            "BatchNorm2D 0": {
+                "attributes": {
+                    "layer": "Hidden Layer",
+                    "nl_input": {
+                        "n_links": 1,
+                        "position": 12,
+                        "type": "input"
+                    },
+                    "nl_output": {
+                        "n_links": 1,
+                        "position": 13,
+                        "type": "output"
+                    },
+                    "node_class": "BatchNorm2D",
+                    "node_type": 10
+                },
+                "cmap": [],
+                "graphic_attributes": {
+                    "beziers_coord": [],
+                    "node_pos": [
+                        328.66666666666663,
+                        476.5374677002583
+                    ]
+                },
+                "properties": {
                     "affine": [
                         3,
                         true
@@ -219,46 +330,62 @@
                         3,
                         true
                     ]
-                }
+                },
+                "script": "algorithms/BatchNorm2D.py",
+                "sub_nodes": {}
             },
             "Conv2D 0": {
-                "node_class": "Conv2D",
-                "pos": [
-                    -130.33333333333337,
-                    457.53746770025833
-                ],
+                "attributes": {
+                    "layer": "Input Layer",
+                    "nl_input": {
+                        "n_links": 1,
+                        "position": 12,
+                        "type": "input"
+                    },
+                    "nl_output": {
+                        "n_links": 1,
+                        "position": 13,
+                        "type": "output"
+                    },
+                    "node_class": "Conv2D",
+                    "node_type": 10
+                },
+                "cmap": [],
+                "graphic_attributes": {
+                    "beziers_coord": [],
+                    "node_pos": [
+                        -130.33333333333337,
+                        457.53746770025833
+                    ]
+                },
                 "properties": {
-                    "Layer": [
-                        5,
-                        "Input Layer"
-                    ],
                     "bias": [
                         3,
                         true
                     ],
                     "dilation": [
                         1,
-                        "1"
+                        1
                     ],
                     "groups": [
                         1,
-                        "1"
+                        1
                     ],
                     "in_channels": [
                         1,
-                        "0"
+                        0
                     ],
                     "kernel_size": [
                         1,
-                        "0"
+                        0
                     ],
                     "out_channels": [
                         1,
-                        "0"
+                        0
                     ],
                     "padding": [
                         1,
-                        "0"
+                        0
                     ],
                     "padding_mode": [
                         2,
@@ -266,280 +393,419 @@
                     ],
                     "stride": [
                         1,
-                        "1"
+                        1
                     ]
-                }
+                },
+                "script": "algorithms/Conv2D.py",
+                "sub_nodes": {}
             },
             "MaxPool2D 0": {
-                "node_class": "MaxPool2D",
-                "pos": [
-                    1111.6666666666665,
-                    521.5374677002583
-                ],
+                "attributes": {
+                    "layer": "Output Layer",
+                    "nl_input": {
+                        "n_links": 1,
+                        "position": 12,
+                        "type": "input"
+                    },
+                    "nl_output": {
+                        "n_links": 1,
+                        "position": 13,
+                        "type": "output"
+                    },
+                    "node_class": "MaxPool2D",
+                    "node_type": 10
+                },
+                "cmap": [],
+                "graphic_attributes": {
+                    "beziers_coord": [],
+                    "node_pos": [
+                        1111.6666666666665,
+                        521.5374677002583
+                    ]
+                },
                 "properties": {
-                    "Layer": [
-                        5,
-                        "Output Layer"
-                    ],
                     "ceil_mode": [
                         3,
-                        "False"
+                        false
                     ],
                     "dilation": [
                         1,
-                        "1"
+                        1
                     ],
                     "kernel_size": [
                         1,
-                        "0"
+                        0
                     ],
                     "padding": [
                         1,
-                        "0"
+                        0
                     ],
                     "return_indices": [
                         3,
-                        "False"
+                        false
                     ],
                     "stride": [
                         1,
-                        "0"
+                        0
                     ]
-                }
+                },
+                "script": "algorithms/MaxPool2D.py",
+                "sub_nodes": {}
             },
             "ReLU 0": {
-                "node_class": "ReLU",
-                "pos": [
-                    717.6666666666666,
-                    561.5374677002583
-                ],
+                "attributes": {
+                    "layer": "Hidden Layer",
+                    "nl_input": {
+                        "n_links": 1,
+                        "position": 12,
+                        "type": "input"
+                    },
+                    "nl_output": {
+                        "n_links": 1,
+                        "position": 13,
+                        "type": "output"
+                    },
+                    "node_class": "ReLU",
+                    "node_type": 10
+                },
+                "cmap": [],
+                "graphic_attributes": {
+                    "beziers_coord": [],
+                    "node_pos": [
+                        717.6666666666666,
+                        561.5374677002583
+                    ]
+                },
                 "properties": {
-                    "Layer": [
-                        5,
-                        "Hidden Layer"
-                    ],
                     "inplace": [
                         3,
-                        "False"
+                        false
                     ]
-                }
+                },
+                "script": "algorithms/ReLU.py",
+                "sub_nodes": {}
             }
-        },
-        "nl_input": {
-            "n_links": 1,
-            "position": 12,
-            "type": "input"
-        },
-        "nl_output": {
-            "n_links": 1,
-            "position": 13,
-            "type": "output"
-        },
-        "node_type": 9,
-        "rels": [
-            [
-                "ReLU 0 Output 0",
-                "MaxPool2D 0 Input 0"
-            ],
-            [
-                "BatchNorm2D 0 Output 0",
-                "ReLU 0 Input 0"
-            ],
-            [
-                "Conv2D 0 Output 0",
-                "BatchNorm2D 0 Input 0"
-            ]
-        ]
+        }
     },
     "Conv3D": {
-        "bias": [
-            3,
-            true
-        ],
-        "dilation": [
-            1,
-            10
-        ],
-        "groups": [
-            1,
-            10
-        ],
-        "in_channels": [
-            1,
-            10
-        ],
-        "kernel_size": [
-            11,
-            [
-                2,
-                2
+        "attributes": {
+            "layer": "Hidden Layer",
+                "nl_input": {
+                    "n_links": 1,
+                    "position": 12,
+                    "type": "input"
+                },
+                "nl_output": {
+                    "n_links": 1,
+                    "position": 13,
+                    "type": "output"
+                },
+            "node_class": "Conv3D",
+            "node_type": 10
+        },
+        "cmap": [],
+        "graphic_attributes": {
+            "beziers_coord": [],
+            "node_pos": [
+                0,
+                0
             ]
-        ],
-        "nl_input": {
-            "n_links": 1,
-            "position": 12,
-            "type": "input"
         },
-        "nl_output": {
-            "n_links": 1,
-            "position": 13,
-            "type": "output"
+        "properties": {
+            "bias": [
+                3,
+                true
+            ],
+            "dilation": [
+                1,
+                10
+            ],
+            "groups": [
+                1,
+                10
+            ],
+            "in_channels": [
+                1,
+                10
+            ],
+            "kernel_size": [
+                11,
+                [
+                    2,
+                    2
+                ]
+            ],
+            "out_channels": [
+                1,
+                10
+            ],
+            "padding": [
+                1,
+                10
+            ],
+            "padding_mode": [
+                2,
+                10
+            ],
+            "stride": [
+                1,
+                10
+            ]
         },
-        "node_type": 10,
-        "out_channels": [
-            1,
-            10
-        ],
-        "padding": [
-            1,
-            10
-        ],
-        "padding_mode": [
-            2,
-            10
-        ],
-        "stride": [
-            1,
-            10
-        ]
+        "script": "algorithms/Conv3D.py",
+        "sub_nodes": {}
     },
     "Duplicate": {
-        "nl_input": {
-            "n_links": 1,
-            "position": 12,
-            "type": "input"
+        "attributes": {
+            "layer": "Hidden Layer",
+            "nl_input": {
+                "n_links": 1,
+                "position": 12,
+                "type": "input"
+            },
+            "nl_output": {
+                "n_links": 2,
+                "position": 13,
+                "type": "output"
+            },
+            "node_class": "Duplicate",
+            "node_type": 8
         },
-        "nl_output": {
-            "n_links": 2,
-            "position": 13,
-            "type": "output"
+        "cmap": [],
+        "graphic_attributes": {
+            "beziers_coord": [],
+            "node_pos": [
+                0,
+                0
+            ]
         },
-        "node_type": 8
+        "properties": {},
+        "script": "algorithms/Duplicate.py",
+        "sub_nodes": {}
     },
     "Flatten": {
-        "nl_input": {
-            "n_links": 1,
-            "position": 12,
-            "type": "input"
+        "attributes": {
+            "layer": "Hidden Layer",
+            "nl_input": {
+                "n_links": 1,
+                "position": 12,
+                "type": "input"
+            },
+            "nl_output": {
+                "n_links": 2,
+                "position": 13,
+                "type": "output"
+            },
+            "node_class": "Flatten",
+            "node_type": 8
         },
-        "nl_output": {
-            "n_links": 1,
-            "position": 13,
-            "type": "output"
+        "cmap": [],
+        "graphic_attributes": {
+            "beziers_coord": [],
+            "node_pos": [
+                0,
+                0
+            ]
         },
-        "node_type": 8
+        "properties": {},
+        "script": "algorithms/Flatten.py",
+        "sub_nodes": {}
     },
     "Linear": {
-        "bias": [
-            3,
-            "True"
-        ],
-        "in_features": [
-            1,
-            "0"
-        ],
-        "nl_input": {
-            "n_links": 1,
-            "position": 12,
-            "type": "input"
+        "attributes": {
+            "layer": "Hidden Layer",
+            "nl_input": {
+                "n_links": 1,
+                "position": 12,
+                "type": "input"
+            },
+            "nl_output": {
+                "n_links": 1,
+                "position": 13,
+                "type": "output"
+            },
+            "node_class": "Linear",
+            "node_type": 10
         },
-        "nl_output": {
-            "n_links": 1,
-            "position": 13,
-            "type": "output"
+        "cmap": [],
+        "graphic_attributes": {
+            "beziers_coord": [],
+            "node_pos": [
+                0,
+                0
+            ]
         },
-        "node_type": 10,
-        "out_features": [
-            1,
-            "0"
-        ]
+        "properties": {
+            "bias": [
+                3,
+                true
+            ],
+            "in_features": [
+                1,
+                0
+            ],
+            "out_features": [
+                1,
+                0
+            ]
+        },
+        "script": "algorithms/Linear.py",
+        "sub_nodes": {}
     },
     "MaxPool2D": {
-        "ceil_mode": [
-            3,
-            "False"
-        ],
-        "dilation": [
-            1,
-            "1"
-        ],
-        "kernel_size": [
-            1,
-            "0"
-        ],
-        "nl_input": {
-            "n_links": 1,
-            "position": 12,
-            "type": "input"
+        "attributes": {
+            "layer": "Hidden Layer",
+            "nl_input": {
+                "n_links": 1,
+                "position": 12,
+                "type": "input"
+            },
+            "nl_output": {
+                "n_links": 1,
+                "position": 13,
+                "type": "output"
+            },
+            "node_class": "MaxPool2D",
+            "node_type": 10
         },
-        "nl_output": {
-            "n_links": 1,
-            "position": 13,
-            "type": "output"
+        "cmap": [],
+        "graphic_attributes": {
+            "beziers_coord": [],
+            "node_pos": [
+                1111.6666666666665,
+                521.5374677002583
+            ]
         },
-        "node_type": 10,
-        "padding": [
-            1,
-            "0"
-        ],
-        "return_indices": [
-            3,
-            "False"
-        ],
-        "stride": [
-            1,
-            "0"
-        ]
+        "properties": {
+            "ceil_mode": [
+                3,
+                false
+            ],
+            "dilation": [
+                1,
+                1
+            ],
+            "kernel_size": [
+                1,
+                0
+            ],
+            "padding": [
+                1,
+                0
+            ],
+            "return_indices": [
+                3,
+                false
+            ],
+            "stride": [
+                1,
+                0
+            ]
+        },
+        "script": "algorithms/MaxPool2D.py",
+        "sub_nodes": {}
     },
     "ReLU": {
-        "inplace": [
-            3,
-            "False"
-        ],
-        "nl_input": {
-            "n_links": 1,
-            "position": 12,
-            "type": "input"
+        "attributes": {
+            "layer": "Hidden Layer",
+            "nl_input": {
+                "n_links": 1,
+                "position": 12,
+                "type": "input"
+            },
+            "nl_output": {
+                "n_links": 1,
+                "position": 13,
+                "type": "output"
+            },
+            "node_class": "ReLU",
+            "node_type": 10
         },
-        "nl_output": {
-            "n_links": 1,
-            "position": 13,
-            "type": "output"
+        "cmap": [],
+        "graphic_attributes": {
+            "beziers_coord": [],
+            "node_pos": [
+                717.6666666666666,
+                561.5374677002583
+            ]
         },
-        "node_type": 10
+        "properties": {
+            "inplace": [
+                3,
+                false
+            ]
+        },
+        "script": "algorithms/ReLU.py",
+        "sub_nodes": {}
     },
     "Reshape": {
-        "nl_input": {
-            "n_links": 1,
-            "position": 12,
-            "type": "input"
+        "attributes": {
+            "layer": "Hidden Layer",
+            "nl_input": {
+                "n_links": 1,
+                "position": 12,
+                "type": "input"
+            },
+            "nl_output": {
+                "n_links": 1,
+                "position": 13,
+                "type": "output"
+            },
+            "node_class": "Reshape",
+            "node_type": 8
         },
-        "nl_output": {
-            "n_links": 1,
-            "position": 13,
-            "type": "output"
+        "cmap": [],
+        "graphic_attributes": {
+            "beziers_coord": [],
+            "node_pos": [
+                717.6666666666666,
+                561.5374677002583
+            ]
         },
-        "node_type": 10,
-        "x": [
-            1,
-            "1"
-        ],
-        "y": [
-            1,
-            "1"
-        ]
+        "properties": {
+            "x": [
+                1,
+                "1"
+            ],
+            "y": [
+                1,
+                "1"
+            ]
+        },
+        "script": "algorithms/Reshape.py",
+        "sub_nodes": {}
     },
     "Sigmoid": {
-        "nl_input": {
-            "n_links": 1,
-            "position": 12,
-            "type": "input"
+        "attributes": {
+            "layer": "Hidden Layer",
+            "nl_input": {
+                "n_links": 1,
+                "position": 12,
+                "type": "input"
+            },
+            "nl_output": {
+                "n_links": 1,
+                "position": 13,
+                "type": "output"
+            },
+            "node_class": "Sigmoid",
+            "node_type": 10
         },
-        "nl_output": {
-            "n_links": 1,
-            "position": 13,
-            "type": "output"
+        "cmap": [],
+        "graphic_attributes": {
+            "beziers_coord": [],
+            "node_pos": [
+                717.6666666666666,
+                561.5374677002583
+            ]
         },
-        "node_type": 10
+        "properties": {
+            "inplace": [
+                3,
+                false
+            ]
+        },
+        "script": "algorithms/ReLU.py",
+        "sub_nodes": {}
     }
 }

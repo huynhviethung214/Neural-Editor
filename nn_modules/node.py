@@ -1,27 +1,13 @@
 import copy
 import json
-import os
 import kivy
 
 from os.path import abspath
-from kivy.base import runTouchApp
-from kivy.event import EventDispatcher
-from kivy.uix.scatterlayout import ScatterLayout
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.anchorlayout import AnchorLayout
-from kivy.uix.scrollview import ScrollView
 from kivy.uix.spinner import Spinner
-from kivy.uix.treeview import TreeView, TreeViewLabel, TreeViewNode
-from kivy.uix.widget import Widget
-from kivy.graphics import Line, Rectangle
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.label import Label
-from functools import partial
 
 from nn_modules.node_link import NodeLink
+from nn_modules.node_utils import CustomValueInput, CustomSpinnerInput
 from utility.utils import get_obj, draw_beziers, formatting_rels, remove_node_from_interface
-from utility.custom_input.custom_input import CustomTextInput
 from nn_modules.code_names import *
 from nn_modules.node_graphic import NodeGraphic
 
@@ -31,12 +17,11 @@ kivy.require('2.0.0')
 class Node(NodeGraphic):
     def __init__(self, **kwargs):
         super(Node, self).__init__(**kwargs)
-        self.type = NORM
         self.is_loaded = False
 
-        self.attributes = kwargs.get('attributes')
         # self.properties = kwargs.get('properties')
         self.properties = {}
+
         self.graphicObjs = []
         self.connected_nodes = []
 
@@ -61,6 +46,76 @@ class Node(NodeGraphic):
         # Combining components and add event listener/handler
         self.combine()
         self.bind(on_touch_down=self.open_rightclick_menu)
+
+    def apply_schema(self, schema):
+        setattr(self, 'schema', schema)
+
+    # `attributes`
+    def attributes_get(self, key: str):
+        return self.schema['attributes'][key]
+
+    def attributes_set(self, key: str, value):
+        self.schema['attributes'][key] = value
+
+    # `nl_input`
+    def nl_input_get(self, key: str):
+        return self.schema['attributes']['nl_input'][key]
+
+    def nl_input_set(self, key: str, value):
+        self.schema['attributes']['nl_input'][key] = value
+
+    # `nl_output`
+    def nl_output_get(self, key: str):
+        return self.schema['attributes']['nl_output'][key]
+
+    def nl_output_set(self, key: str, value):
+        self.schema['attributes']['nl_output'][key] = value
+
+    # `layer`
+    def layer_get(self):
+        return self.schema['attributes']['layer'][1]
+
+    def layer_set(self, value: str):
+        self.schema['attributes']['layer'][1] = value
+
+    # `sub_nodes`
+    def sub_nodes_get(self, sub_node_name: str):
+        return self.schema['sub_nodes'][sub_node_name]
+
+    def sub_nodes_set(self, sub_node_name: str, schema: {}):
+        self.schema['sub_nodes'][sub_node_name] = schema
+
+    # `graphic_attributes`
+    def graphic_attributes_get(self, value: str):
+        return self.schema['graphic_attributes'][value]
+
+    def beziers_coord_set(self, index: int, value: [float, float]):
+        self.schema['graphic_attributes']['beziers_coord'][index] = value
+
+    def node_pos_set(self, value: [float, float]):
+        self.schema['graphic_attributes']['node_pos'] = value
+
+    # `Connectivity map for `sub_nodes``
+    def cmap_get(self, index: int):
+        return self.schema['cmap'][index]
+
+    def cmap_set(self, index: int, value: [str, str]):
+        self.schema['cmap'][index] = value
+
+    # `properties`
+    def properties_get(self, key: str):
+        return self.schema['properties'][key][0], self.schema['properties'][key][1]
+
+    def properties_set(self, key: str, _type: int, value):
+        self.schema['properties'][key][0] = _type
+        self.schema['properties'][key][1] = value
+
+    # `script`
+    def script_get(self):
+        return self.schema['script']
+
+    def script_set(self, value):
+        self.schema['script'] = value
 
     # In the future version `node_link` will be changed to `node_gate` or `gate`
     def node_links(self):
@@ -99,6 +154,7 @@ class Node(NodeGraphic):
                             fromlist=[node_class + 'Node'])
         return getattr(module, node_class + 'Node')
 
+    # FIX
     def degrouping_nodes(self, obj):
         if self.type == STACKED and self.is_connected():
             with open('./nn_modules/nn_nodes.json', 'r') as f:
@@ -205,8 +261,8 @@ class Node(NodeGraphic):
         for key in model.keys():
             if key != 'rels' and key != 'beziers_coord':
                 try:
-                    node_type = key.split(' ')[0]
-                    node = self.get_functions(node_type)
+                    self.attributes_set('node_type', key.split(' ')[0])
+                    node = self.get_functions(self.attributes_get('node_type'))
 
                     self.interface_template._node = node
                     node = self.interface_template.add_node2interface(node_name=key,
@@ -262,10 +318,3 @@ class Node(NodeGraphic):
 
             rel[0].connected = 1
             rel[1].connected = 1
-
-    def set_stacked_val(self, obj, val, name, node):
-        try:
-            if val:
-                self.interface.template['model'][self.name]['properties'][node]['properties'][name][1] = val
-        except Exception as e:
-            obj.text = ''

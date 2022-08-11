@@ -42,11 +42,11 @@ class Net(Module):
         logging.info('[Initialize][START]')
         for node in self.nodes:
             if not self.use_mapped:
-                if 'Input' in node.c_type:
+                if 'Input' in node.node.layer_get():
                     logging.info(f'Initialize: [Input Node]: {node.name}')
                     self.queue.insert(0, node)
 
-                elif 'Output' in node.c_type:
+                elif 'Output' in node.node.layer_get():
                     logging.info(f'Initialize: [Output Node]: {node.name}')
                     self.queue.insert(len(self.queue), node)
 
@@ -127,7 +127,7 @@ class Net(Module):
         while len(self.outputs) < len(self.nodes):
             for node in self.queue:
                 try:
-                    cted_nodes = node.connected_nodes
+                    cted_nodes = node.cmap_get()
 
                     if self.is_existed_inputs(cted_nodes):
                         # x = self.layers[node.name](*self.zip_inputs(cted_nodes))
