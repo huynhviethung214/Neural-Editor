@@ -158,7 +158,8 @@ class TrainingManager:
             locals()['training_alg'](self, properties['training'])
 
         except Exception as e:
-            logging.warning(f'[TRAINING]: {e}')
+            logging.warning(f'TRAINING: {e}')
+            raise e
             # pass
             # MessageBox(message=str(e),
             #            message_type='Error Message').open()

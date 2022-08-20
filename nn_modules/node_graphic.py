@@ -43,6 +43,7 @@ class NodeGraphic(ScatterLayout):
         self.layout = AnchorLayout(anchor_x='center',
                                    anchor_y='center')
         self.layout.padding = (4, 4, 4, 4)
+        self.name = kwargs.get('node_name')
 
         self.sub_layout = GridLayout()
         self.sub_layout.cols = 1
@@ -95,7 +96,9 @@ class NodeGraphic(ScatterLayout):
     def set_stacked_val(self, obj, val, key, _type, node_name):
         try:
             if val:
-                sub_node = NodeSchematic(self.schema['sub_nodes'][node_name])
+                sub_node = NodeSchematic()
+                sub_node.apply_schematic(self.schema['sub_nodes'][node_name])
+
                 sub_node.properties_set(key, _type, val)
         except Exception as e:
             obj.text = ''
@@ -103,7 +106,7 @@ class NodeGraphic(ScatterLayout):
     def set_type(self, obj, text):
         # template = self.interface.template['model'][self.name]
         # template['properties']['Layer'] = [LAYER_CODE, text]
-        self.attributes_set('layer', text)
+        self.layer_set(text)
         setattr(self, 'currentLayerType', text)
 
     def add_components(self):
@@ -205,19 +208,15 @@ class NodeGraphic(ScatterLayout):
 
         for sub_node_name in sub_nodes.keys():
             try:
-                sub_node = NodeSchematic(sub_nodes[sub_node_name])
+                sub_node = NodeSchematic()
+                sub_node.apply_schematic(sub_nodes[sub_node_name])
+
                 tree_node = tree_view.add_node(TreeViewLabel(text=sub_node_name))
-                # self.properties.update({sub_node: {'properties': {},
-                #                                    'node_class': model[node_name]['node_class'],
-                #                                    'pos': model[node_name]['pos']}})
 
                 for key in sub_node.schema['properties'].keys():
-                    # if property_key != 'Layer':
                     sub_node_property = sub_node.properties_get(key)
                     variable_type = sub_node_property[0]
                     value = str(sub_node_property[1])
-
-                    # self.properties[node_name]['properties'].update({property_key: [variable_type, value]})
 
                     _layout = TreeViewLayout(height=25,
                                              spacing=20)
@@ -234,36 +233,8 @@ class NodeGraphic(ScatterLayout):
                                                    _type=variable_type,
                                                    node_name=sub_node_name))
                     _layout.add_widget(widget)
-
-                    # if variable_type == BOOL_CODE:
-                    #     spinner_form = CustomSpinnerInput(property_name=key,
-                    #                                       c_height=self.c_height)
-                    #     spinner_form.input.text = value
-                    #     spinner_form.input.bind(text=partial(self.set_stacked_val,
-                    #                                          key=key,
-                    #                                          _type=variable_type,
-                    #                                          node_name=sub_node))
-                    #     _layout.add_widget(spinner_form)
-                    # else:
-                    #     input_form = CustomValueInput(name=key)
-                    #     input_form.input.text = value
-                    #     input_form.input.bind(text=partial(self.set_stacked_val,
-                    #                                        key=key,
-                    #                                        _type=variable_type,
-                    #                                        node_name=sub_node))
-                    #     _layout.add_widget(input_form)
-
                     tree_view.add_node(_layout, tree_node)
-                    # else:
-                    #     self.properties[node_name]['properties'].update({property_key: [
-                    #         LAYER_CODE,
-                    #         model[node_name]['properties'][property_key][1]]
-                    #     })
 
-                # self.properties.update({
-                #     'rels': self.node_template['rels'],
-                #     'beziers_coord': self.node_template['beziers_coord'],
-                # })
             except Exception as e:
                 raise e
 
@@ -277,7 +248,7 @@ class NodeGraphic(ScatterLayout):
         _layout = BoxLayout(size_hint=(1, None),
                             height=self.c_height,
                             spacing=20)
-        self.properties.update({name: [_type, default_size]})
+        self.properties_set(name, _type, default_size)
 
         kernel_input = KernelInput(default_size=default_size)
 
@@ -296,7 +267,7 @@ class NodeGraphic(ScatterLayout):
         input_form.input.text = str(default_val)
         input_form.input.bind(text=partial(self.set_val, _type=_type, name=name))
 
-        self.properties.update({name: [_type, str(default_val)]})
+        self.properties_set(name, _type, default_val)
         self.add_component(input_form)
 
     def add_input_node(self, pos: (float, float), name: str = 'Input 0'):
@@ -304,7 +275,15 @@ class NodeGraphic(ScatterLayout):
                               _type=1,
                               node=self,
                               name=name)
+
+        self.interface.node_links.update({f'{self.name} {name}': input_node})
         self.add_widget(input_node)
+
+        if not self.node_links_get('input'):
+            self.node_links_set('input', input_node)
+
+        input_node.schema_set('name', name)
+        self.interface.node_links.update({f'{self.name} {input_node.name}': input_node})
         return input_node
 
     def add_output_node(self, pos: (float, float), name: str = 'Output 0'):
@@ -312,7 +291,14 @@ class NodeGraphic(ScatterLayout):
                                _type=0,
                                node=self,
                                name=name)
+        self.interface.node_links.update({f'{self.name} {name}': output_node})
         self.add_widget(output_node)
+
+        if not self.node_links_get('output'):
+            self.node_links_set('output', output_node)
+
+        output_node.schema_set('name', name)
+        self.interface.node_links.update({f'{self.name} {output_node.name}': output_node})
         return output_node
 
     def add_node_links(self):
@@ -345,48 +331,131 @@ class NodeGraphic(ScatterLayout):
             'bottom-right': (self.width / 2 + (self.width / 3 - 12), -6),
         }
 
-        if n_links == 1:
-            if 'output' in key:
-                out1 = self.add_output_node(pos=stringPos[f'{pos}-middle'])
-                self.outputs.append(out1)
-            else:
-                in1 = self.add_input_node(pos=stringPos[f'{pos}-middle'])
-                self.inputs.append(in1)
+        configurations = [
+            ['middle'],
+            ['top', 'bottom'],
+            ['top', 'middle', 'bottom'],
+        ]
 
-        elif n_links == 2:
-            if 'output' in key:
-                out1 = self.add_output_node(pos=stringPos[f'{pos}-top'])
-                out2 = self.add_output_node(pos=stringPos[f'{pos}-bottom'],
-                                            name='Output 1')
-                self.outputs.append(out1)
-                self.outputs.append(out2)
+        configuration = configurations[n_links - 1]
 
-            else:
-                in1 = self.add_input_node(pos=stringPos[f'{pos}-top'])
-                in2 = self.add_input_node(pos=stringPos[f'{pos}-bottom'],
-                                          name='Input 1')
-                self.inputs.append(in1)
-                self.inputs.append(in2)
+        for nl_index in range(n_links):
+            for config_pos in configuration:
+                if 'output' in key:
+                    out = self.add_output_node(pos=stringPos[f'{pos}-{config_pos}'])
+                    out_schema = self.schema['node_links']['output'][nl_index]
 
-        elif n_links == 3:
-            if 'output' in key:
-                out1 = self.add_output_node(pos=stringPos[f'{pos}-top'])
-                out2 = self.add_output_node(pos=stringPos[f'{pos}-middle'],
-                                            name='Output 1')
-                out3 = self.add_output_node(pos + '-bottom',
-                                            name='Output 2')
-                self.outputs.append(out1)
-                self.outputs.append(out2)
-                self.outputs.append(out3)
-            else:
-                in1 = self.add_input_node(pos=stringPos[f'{pos}-top'])
-                in2 = self.add_input_node(pos=stringPos[f'{pos}-middle'],
-                                          name='Input 1')
-                in3 = self.add_input_node(pos=stringPos[f'{pos}-bottom'],
-                                          name='Input 2')
-                self.inputs.append(in1)
-                self.inputs.append(in2)
-                self.inputs.append(in3)
+                    if type(out_schema) != dict:
+                        out.schema = out_schema.schema
+                    else:
+                        out.schema = out_schema
+
+                    self.schema['node_links']['output'][nl_index] = out.schema
+                    self.outputs.append(out)
+                else:
+                    _in = self.add_input_node(pos=stringPos[f'{pos}-{config_pos}'])
+                    in_schema = self.schema['node_links']['input'][nl_index]
+
+                    if type(in_schema) != dict:
+                        _in.schema = in_schema.schema
+                    else:
+                        _in.schema = in_schema
+
+                    self.schema['node_links']['input'][nl_index] = _in.schema
+                    self.inputs.append(_in)
+
+        # print(self.schema)
+
+        # if n_links == 1:
+        #     if 'output' in key:
+        #         out1 = self.add_output_node(pos=stringPos[f'{pos}-middle'])
+        #         out1_schema = self.schema['node_links']['output'][0]
+        #         out1_schema.schema_set('node', self)
+        #         out1.schema = out1_schema.schema
+        #
+        #         self.outputs.append(out1)
+        #     else:
+        #         in1 = self.add_input_node(pos=stringPos[f'{pos}-middle'])
+        #         in1_schema = self.schema['node_links']['input'][0]
+        #         in1_schema.schema_set('node', self)
+        #         in1.schema = in1_schema.schema
+        #
+        #         self.inputs.append(in1)
+        #
+        # elif n_links == 2:
+        #     if 'output' in key:
+        #         out1 = self.add_output_node(pos=stringPos[f'{pos}-top'])
+        #         out1_schema = self.schema['node_links']['output'][0]
+        #         out1_schema.schema_set('node', self)
+        #         out1.schema = out1_schema.schema
+        #
+        #         out2 = self.add_output_node(pos=stringPos[f'{pos}-bottom'],
+        #                                     name='Output 1')
+        #         out2_schema = self.schema['node_links']['output'][1]
+        #         out2_schema.schema_set('node', self)
+        #         out2.schema = out2_schema.schema
+        #
+        #         self.outputs.append(out1)
+        #         self.outputs.append(out2)
+        #
+        #     else:
+        #         in1 = self.add_input_node(pos=stringPos[f'{pos}-top'])
+        #         in1_schema = self.schema['node_links']['input'][0]
+        #         in1_schema.schema_set('node', self)
+        #         in1.schema = in1_schema.schema
+        #
+        #         in2 = self.add_input_node(pos=stringPos[f'{pos}-bottom'],
+        #                                   name='Input 1')
+        #         in2_schema = self.schema['node_links']['input'][1]
+        #         in2_schema.schema_set('node', self)
+        #         in2.schema = in2_schema.schema
+        #
+        #         self.inputs.append(in1)
+        #         self.inputs.append(in2)
+        #
+        # elif n_links == 3:
+        #     if 'output' in key:
+        #         out1 = self.add_output_node(pos=stringPos[f'{pos}-top'])
+        #         out1_schema = self.schema['node_links']['output'][0]
+        #         out1_schema.schema_set('node', self)
+        #         out1.schema = out1_schema.schema
+        #
+        #         out2 = self.add_output_node(pos=stringPos[f'{pos}-middle'],
+        #                                     name='Output 1')
+        #         out2_schema = self.schema['node_links']['output'][1]
+        #         out2_schema.schema_set('node', self)
+        #         out2.schema = out2_schema.schema
+        #
+        #         out3 = self.add_output_node(pos + '-bottom',
+        #                                     name='Output 2')
+        #         out3_schema = self.schema['node_links']['output'][2]
+        #         out3_schema.schema_set('node', self)
+        #         out3.schema = out3_schema.schema
+        #
+        #         self.outputs.append(out1)
+        #         self.outputs.append(out2)
+        #         self.outputs.append(out3)
+        #     else:
+        #         in1 = self.add_input_node(pos=stringPos[f'{pos}-top'])
+        #         in1_schema = self.schema['node_links']['input'][0]
+        #         in1_schema.schema_set('node', self)
+        #         in1.schema = in1_schema.schema
+        #
+        #         in2 = self.add_input_node(pos=stringPos[f'{pos}-middle'],
+        #                                   name='Input 1')
+        #         in2_schema = self.schema['node_links']['input'][1]
+        #         in2_schema.schema_set('node', self)
+        #         in2.schema = in2_schema.schema
+        #
+        #         in3 = self.add_input_node(pos=stringPos[f'{pos}-bottom'],
+        #                                   name='Input 2')
+        #         in3_schema = self.schema['node_links']['input'][2]
+        #         in3_schema.schema_set('node', self)
+        #         in3.schema = in3_schema.schema
+        #
+        #         self.inputs.append(in1)
+        #         self.inputs.append(in2)
+        #         self.inputs.append(in3)
 
     def add_component(self, obj):
         self.sub_layout.rows += 1
@@ -394,7 +463,8 @@ class NodeGraphic(ScatterLayout):
 
     def add_id(self):
         label = NodeName(size_hint=(1, None),
-                         height=self.c_height)
+                         height=self.c_height,
+                         text=self.name)
         self.add_component(label)
         return label
 

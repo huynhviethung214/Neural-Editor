@@ -149,23 +149,6 @@ class CustomActionBar(ActionBar):
 
     # component_panel._update_panel()
 
-    def get_hvfs(self, interface):
-        hvfs = get_obj(interface, 'IToolBar')
-        hvfs_properties = {}
-
-        for tab in hvfs.tab_list:
-            # print(tab.text)
-            # print(tab.content)
-            current_func = tab.content.children[1].text
-            hvfs_properties.update({tab.text: {current_func: {}}})
-
-            for obj in tab.content.children:
-                if type(obj) == GridLayout:
-                    for children in obj.children:
-                        hvfs_properties[tab.text][current_func].update({children.name: str(children.value)})
-
-        return hvfs_properties
-
     @staticmethod
     def get_beziers_points(interface=None):
         coordinates = []
@@ -202,9 +185,9 @@ class CustomActionBar(ActionBar):
 
         return node_class_module
 
-    def load_hvfs(self, datas, interface):
+    def load_hvfs(self, schema, interface):
         itoolbar = get_obj(interface, 'IToolBar')
-        hvfs = interface.hvfs = datas['hvfs']
+        hvfs = interface.hvfs = schema['hvfs']
 
         for tab in itoolbar.tab_list:
             for form_type in hvfs.keys():
@@ -280,50 +263,67 @@ class CustomActionBar(ActionBar):
         Clock.schedule_once(partial(self.set_model_name, interface, func_name), 0)
 
         with open(selection[0], 'r') as f:
-            datas = json.load(f)
+            schema = json.load(f)
+            # print(schema['nodes']['Linear 0']['node_links'])
+            interface.schema = schema
 
-            for node_name in datas['model'].keys():
+            for node_name in schema['nodes'].keys():
                 try:
                     node_class = node_name.split(' ')[0]
                     node = self.get_nodes(node_class)
 
                     if not node:
-                        node = self.get_grouped_node(datas['model'][node_name])
+                        node = self.get_grouped_node(schema['model'][node_name])
 
                     interface._node = node
+                    # print(node_name)
                     node = interface.add_node2interface(
                         node_name=node_name,
-                        spawn_position=datas['model'][node_name]['pos']
+                        spawn_position=schema['nodes'][node_name]['graphic_attributes']['node_pos'],
+                        schematic=schema['nodes'][node_name]
                     )
+                    layer_type = node.schema['attributes']['layer']
+                    node.set_type(None, layer_type)
+                    node.dropDownList.text = layer_type
 
-                    interface.create_template(node)
+                    # for i, _in in enumerate(node.inputs):
+                    #     node.schema['node_links']['input'][i] = _in.schema
+                    #
+                    # for i, out in enumerate(node.outputs):
+                    #     node.schema['node_links']['output'][i] = out.schema
 
-                    if node.attributes_get('node_type') == NORM:
-                        Clock.schedule_once(partial(self.set_nodes_properties,
-                                                    node,
-                                                    datas['model'][node_name]['properties']), 1)
-                    elif node.attributes_get('node_type') == STACKED:
-                        node.properties = datas['model'][node_name]['properties']
-                        node.properties.update({
-                            'beziers_coord': datas['beziers_coord'],
-                            'rels': datas['rels']
-                        })
-                        Clock.schedule_once(partial(self.set_stacked_node_properties,
-                                                    node,
-                                                    datas['model'][node_name]['properties']), 1)
+                    # print(node.schema)
+                    # interface.nodes_set(node_name, node)
+                    # print(interface.schema['nodes']['Linear 0'].schema)
+                    # print(interface.nodes_get(node_name).schema)
+
+                    # interface.create_template(node)
+                    # if node.attributes_get('node_type') == NORM:
+                    #     Clock.schedule_once(partial(self.set_nodes_properties,
+                    #                                 node,
+                    #                                 schema['nodes'][node_name]['properties']), 1)
+                    # elif node.attributes_get('node_type') == STACKED:
+                    #     node.properties = datas['model'][node_name]['properties']
+                    #     node.properties.update({
+                    #         'beziers_coord': datas['beziers_coord'],
+                    #         'rels': datas['rels']
+                    #     })
+                    #     Clock.schedule_once(partial(self.set_stacked_node_properties,
+                    #                                 node,
+                    #                                 datas['model'][node_name]['properties']), 1)
 
                 except AttributeError as e:
                     raise e
 
-            # interface.draw()
-            if 'mapped_path' in datas.keys():
-                interface.str_mapped_path = datas['mapped_path']
-                interface.is_trained = True
-
-            draw_beziers(datas=datas,
+            draw_beziers(schema=schema,
                          interface=interface)
-            self.load_hvfs(datas=datas,
+            self.load_hvfs(schema=schema,
                            interface=interface)
+
+            # # interface.draw()
+            # if 'mapped_path' in datas.keys():
+            #     interface.str_mapped_path = datas['mapped_path']
+            #     interface.is_trained = True
 
     @staticmethod
     def formatting_rels(rels, node_links):
@@ -362,33 +362,47 @@ class CustomActionBar(ActionBar):
             if 'model_name' in str(e):
                 model_name = tab_manager.current_tab.text
 
-        tab_manager.tab_name_list.append(model_name)
-        # print(interface.template)
+        # tab_manager.tab_name_list.append(model_name)
+        # # print(interface.template)
+        #
+        # # model = interface.m_list
+        # # sorter = Sorter()
+        # # sorted_model = sorter.sort(model)
+        #
+        # # interface.template.update({'relationship': interface.mn_list,
+        # #                            'links_pos': [bezier.points for bezier in interface.beziers]})
+        # # interface.template.update({'relationship': interface.mn_list})
+        # # self.get_nodes_pos()
+        #
+        # interface.template.update({'beziers_coord': self.get_beziers_points(interface=interface),
+        #                            'rels': interface.rels,
+        #                            'hvfs': self.get_hvfs(interface)})
+        # interface.template = self.save_nodes_pos(interface.template,
+        #                                          interface)
+        # # print(interface.template)
+        #
+        # if interface.is_trained:
+        #     interface.template.update({
+        #         'mapped_path': interface.str_mapped_path
+        #     })
 
-        # model = interface.m_list
-        # sorter = Sorter()
-        # sorted_model = sorter.sort(model)
+        model_schema = interface.schema
+        nodes_schema = {}
+        nodes = interface.nodes
 
-        # interface.template.update({'relationship': interface.mn_list,
-        #                            'links_pos': [bezier.points for bezier in interface.beziers]})
-        # interface.template.update({'relationship': interface.mn_list})
-        # self.get_nodes_pos()
-
-        interface.template.update({'beziers_coord': self.get_beziers_points(interface=interface),
-                                   'rels': interface.rels,
-                                   'hvfs': self.get_hvfs(interface)})
-        interface.template = self.save_nodes_pos(interface.template,
-                                                 interface)
-        # print(interface.template)
-
-        if interface.is_trained:
-            interface.template.update({
-                'mapped_path': interface.str_mapped_path
+        for node_name in nodes.keys():
+            nodes_schema.update({
+                node_name: nodes[node_name].schema
             })
+
+        model_schema['hvfs'] = interface.get_hvfs()
+        model_schema['nodes'] = nodes_schema
+        model_schema['beziers_coord'] = interface.beziers_coord_get()
+        model_schema['cmap'] = interface.cmap_get()
 
         with open('{0}/{1}.json'.format(configs['models_path'],
                                         model_name), 'w') as f:
-            json.dump(interface.template,
+            json.dump(model_schema,
                       f,
                       sort_keys=True,
                       indent=4)

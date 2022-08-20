@@ -156,9 +156,9 @@ class Hierarchy(TreeView):
         self.add_node(tree_node)
 
     def load_hierarchy_from_interface(self, interface):
-        for node in interface.nodes():
-            if not self.on_tree(node.name):
-                self.add_tree_node(node.name)
+        for node_name in interface.nodes.keys():
+            if not self.on_tree(node_name):
+                self.add_tree_node(node_name)
 
     def open_rightclick_menu(self, obj, touch):
         overlay = get_obj(self, 'Overlay')
@@ -242,8 +242,8 @@ class ComponentPanel(ScrollView):
             nodes = json.load(f)
 
             for node_name in nodes.keys():
-                node_schematic = NodeSchematic(nodes[node_name])
-                # print(node_name, node_schematic.schema['attributes'])
+                node_schematic = NodeSchematic()
+                node_schematic.apply_schematic(nodes[node_name])
 
                 if node_name not in self.get_node_names():
                     module = __import__('nn_modules.nn_components',
@@ -285,7 +285,6 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
         self.hvfs = None
         self.model_name = 'Unknown'
 
-        self.current_bezier_pos = []
         self.rels = []
 
         self.current_node_down = None
@@ -295,7 +294,7 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
         self.rows = 2
         self.cols = 3
 
-        self.ori = (0, 0)
+        # self.ori = (0, 0)
         self.box_ori = (0, 0)
 
         # Selected Box Variables
@@ -311,13 +310,13 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
         self.is_trained = False
         self.is_drawing = False
 
-        self.selected_node_link = None
+        # self.selected_node_link = None
         self.connected_node_link = None
 
         self.links = []
         self.instructions = []
-        self.template = {'model': {},
-                         'beziers_coord': []}
+        # self.template = {'model': {},
+        #                  'beziers_coord': []}
 
         self.rightclick_menu_funcs = {
             'Select Node(s)': lambda obj: setattr(self, 'enable_drawing_box', True)
@@ -343,6 +342,10 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
 
         self.add_widget(Widget())
         self.add_scatter_plane()
+
+        self.nodes = self.allocating_nodes()
+        self.node_links = self.allocating_node_links()
+        self.beziers = []
 
         self.bind(on_touch_up=self.add_node)
         self.bind(on_touch_move=self.unbind)
@@ -410,7 +413,6 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
         # Remove connected node from the selected node
         formattedTargetNodeLinkName = targetNodeLink.node.name + ' 0'
         # print(formattedTargetNodeLinkName, node_gate.node.connected_nodes)
-        node_gate.node.connected_nodes.remove(formattedTargetNodeLinkName)
 
     def set_unbind(self, node_gate):
         # Unbinding nodes base on connected node_links
@@ -432,11 +434,17 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
                 self.instructions.remove(info[-1])
                 self.clear_canvas()
 
+    def connection_exist(self):
+        if self.touch_info_get('selected') and self.is_drawing and \
+                self.node_links[self.touch_info_get('selected')].schema_get('target'):
+            return True
+        return False
+
     def unbind(self, obj, touch):
         if touch.button == 'left' and self.collide_point(*touch.pos):
             try:
-                if self.selected_node_link and self.is_drawing and self.selected_node_link.target:
-                    self.set_unbind(self.selected_node_link)
+                if self.connection_exist():
+                    self.set_unbind(self.touch_info_get('selected'))
                     # for info in self.links:
                     #     if self.selected_node_link in info and self.selected_node_link.target in info:
                     #         self.instructions.remove(info[-1])
@@ -464,35 +472,51 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
                 valid, node, node_link = self.check_nl_collision(touch=touch)
 
                 if valid:
-                    if node_link.gateType == 1 and not node_link.connected:
+                    if node_link.schema_get('gate_type') == 1 and not node_link.schema_get('connected'):
                         pos = self.scatter_plane.to_local(*touch.pos)
+                        selected_node_link = self.node_links[self.touch_info_get('selected')]
+                        selected_node_link.schema_set('target_pos', pos)
 
-                        node_link.c_pos = pos
-                        node_link.target = self.connected_node_link
-                        node_link.t_pos = self.connected_node_link.c_pos  # WILL BE DEPRECATED IN FUTURE VERSION
+                        node_link.schema_set('c_pos', pos)
+                        node_link.schema_set('target', self.touch_info_get('selected'))
+                        node_link.schema_set('target_pos', selected_node_link.schema_get('c_pos'))
 
-                        self.connected_node_link.t_pos = pos
-                        self.connected_node_link.target = node_link
+                        # print(selected_node_link.schema_get('c_pos'), self.touch_info_get('selected'))
 
-                        nl_index = self.connected_node_link.index()
-                        node_name = self.connected_node_link.node.name
+                        # node_link.c_pos = pos
+                        # node_link.target = self.connected_node_link
+                        # node_link.t_pos = self.connected_node_link.c_pos  # WILL BE DEPRECATED IN FUTURE VERSION
 
-                        self.connected_node_link.target.node.connected_nodes.append(
-                            f'{node_name} {nl_index}'
-                        )
+                        # self.touch_info_get('selected').schema_set('target_pos', pos)
+                        # print(self.touch_info_get('selected'))
 
-                        bezier = self.draw(self.ori, pos)
+                        # nl_index = self.touch_info_get('selected').index()
+                        # node_name = self.touch_info_get('selected').node.name
 
-                        rel = [self.current_node_down,
-                               f'{node.name} {node_link.name}']
-                        self.rels.append(rel)
+                        bezier = self.draw(self.touch_info_get('down_pos'), pos)
+                        self.beziers.append(bezier)
 
-                        node_link.connected = 1
-                        node_link.target.connected = 1
+                        self.beziers_coord_set([[bezier.points[0], bezier.points[1]],
+                                                [bezier.points[-2], bezier.points[-1]]])
+
+                        # rel = [self.current_node_down,
+                        #        f'{node.name} {node_link.name}']
+                        # self.rels.append(rel)
+
+                        self.cmap_set([self.touch_info_get('selected'),
+                                       f'{node.name} {node_link.name}'])
+                        selected_node_link.schema_set('target', f'{node.name} {node_link.name}')
+
+                        node_link.schema_set('connected', True)
+                        selected_node_link.schema_set('connected', True)
+
+                        self.touch_info_set('selected', None)
+                        # self.touch_info_set('down_node_link', None)
 
                         self.links.append([node_link,
-                                           self.connected_node_link,
+                                           selected_node_link,
                                            bezier])
+                        # print(self.links)
                         self.instructions.append(bezier)
 
                         self.is_drawing = False
@@ -501,7 +525,8 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
 
                 elif not valid:
                     if self.is_drawing:
-                        self.selected_node_link = None
+                        self.touch_info_set('selected', None)
+                        # self.touch_info_set('down_node_link', None)
                         self.is_drawing = False
                         self.clear_canvas()
 
@@ -514,8 +539,8 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
 
                 return False
 
-            except TypeError:
-                pass
+            except Exception as e:
+                raise e
 
     def touch_down(self, obj, touch):
         overlay = get_obj(self, 'Overlay')
@@ -527,22 +552,33 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
             try:
                 valid, node, node_link = self.check_nl_collision(touch=touch)
 
-                if valid:
-                    if node_link.gateType == 0 and not node_link.connected:
+                if valid and not node_link.schema_get('connected'):
+                    if node_link.schema_get('gate_type') == 0:
                         pos = self.scatter_plane.to_local(*touch.pos)
-                        node_link.c_pos = (pos[0] + 5, pos[1] + 5)
+                        # pos = (pos[0] + 5, pos[1] + 5)
 
-                        self.connected_node_link = node_link
-                        self.selected_node_link = node_link
+                        self.touch_info_set('down_pos', pos)
+                        node_link.schema_set('c_pos', pos)
+                        # print(pos, f'{node_link.node.name} {node_link.name}')
 
-                        self.ori = pos
-                        self.current_node_down = f'{node.name} {node_link.name}'
+                        # node_link.c_pos = (pos[0] + 5, pos[1] + 5)
+                        # node_link.schema_set('c_pos', (pos[0] + 5, pos[1] + 5))
+
+                        self.touch_info_set('selected', f'{node_link.node.name} {node_link.name}')
+
+                        # self.connected_node_link = node_link
+                        # self.selected_node_link = node_link
+
+                        # self.ori = pos
+                        # self.touch_info_set('down_node_link', f'{node.name} {node_link.name}')
+                        # self.current_node_down = f'{node.name} {node_link.name}'
 
                         # self.is_drawing = 1
 
-                    elif node_link.gateType == 1 and node_link.connected:
-                        self.ori = node_link.t_pos
-                        self.selected_node_link = node_link
+                    elif node_link.schema_get('gate_type') == 1:
+                        # self.ori = node_link.t_pos
+                        self.touch_info_set('selected', f'{node_link.node.name} {node_link.name}')
+                        # self.selected_node_link = node_link
 
                     self.is_drawing = 1
                     return True
@@ -691,7 +727,7 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
             old_rels_nodes = []
 
             # Get grouped nodes relationship
-            for node in self.nodes():
+            for node in self.nodes:
                 if node not in self.selected_nodes:
                     group_remove_list.append(node)
                 else:
@@ -777,10 +813,10 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
             }
 
             # Node's template format for Interface
-            for node_name in template['model'].keys():
-                self.template['model'][node.name]['properties'].update({
-                    node_name: template['model'][node_name]
-                })
+            # for node_name in template['model'].keys():
+            #     self.template['model'][node.name]['properties'].update({
+            #         node_name: template['model'][node_name]
+            #     })
 
             # Let's prefer Node Link as Gate from this point forward
             # Add Input Gates
@@ -860,7 +896,7 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
         bottom_left = self.selected_box[0]
         top_right = self.selected_box[1]
 
-        for node in self.nodes():
+        for node in self.nodes:
             if self.is_in_range(node.pos, bottom_left, top_right):
                 self.selected_nodes.append(node)
 
@@ -906,22 +942,25 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
             bezier.begin = output_node
             bezier.end = input_node
 
-            self.template['beziers_coord'].append([ori, end])
+            # self.template['beziers_coord'].append([ori, end])
+
             return bezier
 
     def remove_node(self, node):
         self.scatter_plane.remove_widget(node)
-        self.template['model'].pop(node.name)
+        self.schema['nodes'].pop(node.name)
+        # self.template['model'].pop(node.name)
 
     def draw_link(self, obj, touch):
         if self.is_drawing:
             input_node = None
-            output_node = self.selected_node_link
+            output_node = self.touch_info_get('selected')
+            # print(self.node_links)
 
-            if self.selected_node_link:
-                input_node = self.selected_node_link.target
+            if output_node:
+                input_node = self.node_links[output_node].schema_get('target')
 
-            self.draw(self.ori,
+            self.draw(self.touch_info_get('down_pos'),
                       self.scatter_plane.to_local(*touch.pos),
                       output_node,
                       input_node)
@@ -949,45 +988,74 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
     def num_nodes(self, node_class):
         c = 0
 
-        for node in self.nodes():
-            if node_class in str(type(node)):
+        for node in self.nodes.keys():
+            if node_class in node:
                 c += 1
 
         return c
 
-    def node_links(self):
-        _node_links = []
+    def allocating_node_links(self):
+        node_links = {}
 
-        for node in self.nodes():
-            for widget in node.children[0].children:
-                if type(widget) == NodeLink:
-                    _node_links.append(widget)
+        for node_name in self.nodes.keys():
+            for node_link in self.nodes[node_name].inputs:
+                node_links.update({f'{node_name} {node_link.name}': node_link})
 
-        return _node_links
+            for node_link in self.nodes[node_name].outputs:
+                node_links.update({f'{node_name} {node_link.name}': node_link})
 
-    def nodes(self):
-        ws = []
+            # for widget in node.children[0].children:
+            #     if type(widget) == NodeLink:
+            #         node_links.update({f'{node.name} {widget.name}': widget})
+
+        return node_links
+
+    def allocating_nodes(self):
+        nodes = {}
 
         for widget in get_obj(self, 'ScatterPlaneLayout').children:
             if 'Node' in str(widget):
-                ws.append(widget)
+                nodes.update({widget.name: widget})
 
-        return ws
+        return nodes
 
-    def add_node2interface(self, node_name=None, spawn_position=(0, 0), has_parent=False):
-        node = self._node(spawn_position=spawn_position,
-                          interface=self)
+    def add_node2interface(self, schematic=None, node_name=None, spawn_position=(0, 0), has_parent=False):
+        with open('nn_modules\\nn_nodes.json', 'r') as f:
+            nodes = json.load(f)
+            node_class = str(self._node).split('.')[-1].split('Node')[0]
+            hierarchy = get_obj(self, 'Hierarchy')
 
-        self.add_node_names(node_name=node_name,
-                            node=node,
-                            hierarchy=get_obj(self, 'Hierarchy'),
-                            has_parent=has_parent)
+            if not node_name:
+                node_name = f'{node_class} {self.num_nodes(node_class)}'
 
-        get_obj(self, 'ScatterPlaneLayout').add_widget(node)
-        self._state = 0
-        self._node = None
+            # print(node_name)
 
-        return node
+            hierarchy.load_hierarchy_from_interface(self)
+
+            # node_name = self.add_node_names(node_class=node_class,
+            #                                 hierarchy=get_obj(self, 'Hierarchy'),
+            #                                 has_parent=has_parent)
+
+            if not schematic:
+                node = self._node(spawn_position=spawn_position,
+                                  interface=self,
+                                  schematic=nodes[node_class],
+                                  node_name=node_name)
+            else:
+                node = self._node(spawn_position=spawn_position,
+                                  interface=self,
+                                  schematic=schematic,
+                                  node_name=node_name)
+
+            node.node_pos_set(spawn_position)
+            # self.nodes_set(node_name, node.schema)
+            self.nodes.update({node_name: node})
+
+            get_obj(self, 'ScatterPlaneLayout').add_widget(node)
+            self._state = 0
+            self._node = None
+
+            return node
 
     def add_node(self, obj, touch):
         if touch.button == 'left' and self.collide_point(*touch.pos):
@@ -1000,21 +1068,22 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
 
             return True
 
-    def add_node_names(self, hierarchy, node_name=None, node=None, has_parent=False):
-        if not node_name:
-            node_class = str(node)
-            node_class = node_class.split(' ')[0]
-            node_class = node_class.split('.')[-1]
-            node_class = node_class[0:-4]
-            node_name = f'{node_class} {self.num_nodes(node_class)}'
+    def add_node_names(self, hierarchy, node_class=None, has_parent=False):
+        # if not node_name:
+        # node_class = node_class.split(' ')[0]
+        # node_class = node_class.split('.')[-1]
+        # node_class = node_class[0:-4]
+        node_name = f'{node_class} {self.num_nodes(node_class)}'
 
         # self.node_names.append(node_name)
 
-        node_name_obj = get_obj(node, 'NodeName')
-        node_name_obj.text = node.name = node_name
+        # node_name_obj = get_obj(node, 'NodeName')
+        # node_name_obj.text = node.name = node_name
 
         if not has_parent:
             hierarchy.add_tree_node(node_name)
+
+        return node_name
 
     def _update_canvas(self, obj, touch):
         try:
@@ -1026,13 +1095,16 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
                     for node_link in node.children[0].children:
                         if type(node_link) == NodeLink:
                             for info in self.links:
-                                if node_link in info and node_link.target in info:
-                                    for bezier in self.scatter_plane.canvas.children:
+                                if node_link in info and \
+                                        self.node_links[node_link.schema_get('target')] in info:
+                                    for bezier in self.beziers:
                                         if bezier in info:
+                                            node_link_cpos = node_link.schema_get('c_pos')
+                                            node_link_tpos = node_link.schema_get('target_pos')
                                             _pos = self.get_pos(node_link, node_link.pos)
 
-                                            if _pos != node_link.c_pos and node_link.t_pos is not None:
-                                                ori = (node_link.t_pos[0] + 5, node_link.t_pos[1] + 5)
+                                            if _pos != node_link_cpos:
+                                                ori = (node_link_tpos[0] + 5, node_link_tpos[1] + 5)
                                                 end = (_pos[0] + 5, _pos[1] + 5)
 
                                                 bezier.points = (ori[0], ori[1],
@@ -1040,8 +1112,10 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
                                                                  (end[0] + ori[0]) / 2 - 20, end[1],
                                                                  end[0], end[1])
 
-                                                node_link.c_pos = _pos
-                                                node_link.target.t_pos = _pos
+                                            node_link.schema_set('c_pos', _pos)
+                                            self.node_links[node_link.schema_get('target')].schema_set('target_pos',
+                                                                                                       _pos)
+                                            # node_link.target.t_pos = _pos
 
         except IndexError:
             pass
@@ -1060,8 +1134,59 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
         self.template['model'].update({node.name: {'properties': node_properties}})
 
         # if node.attributes_get('node_type') != STACKED:
-            # node.attributes_set('node_class', node.node_class)
-            # self.template['model'][node.name].update({'node_class': node.node_class})
+        # node.attributes_set('node_class', node.node_class)
+        # self.template['model'][node.name].update({'node_class': node.node_class})
+
+    def get_hvfs(self):
+        hvfs = get_obj(self, 'IToolBar')
+        hvfs_properties = {}
+
+        for tab in hvfs.tab_list:
+            # print(tab.text)
+            # print(tab.content)
+            current_func = tab.content.children[1].text
+            hvfs_properties.update({tab.text: {current_func: {}}})
+
+            for obj in tab.content.children:
+                if type(obj) == GridLayout:
+                    for children in obj.children:
+                        hvfs_properties[tab.text][current_func].update({children.name: str(children.value)})
+
+        return hvfs_properties
+
+    def __dict__(self):
+        nodes_key = self.schema['nodes'].keys()
+
+        for node in nodes_key:
+            node_schema = self.schema['nodes'][node].schema
+            node_links = node_schema['node_links']
+
+            for io in ['input', 'output']:
+                # print(len(node_links[io]))
+                for nl_index in range(len(node_links[io])):
+                    # print(node_links[io][nl_index].schema)
+                    node_link_io_schema = node_links[io][nl_index].schema
+                    target_node_link = node_link_io_schema['target']
+
+                    if target_node_link:
+                        target_node = target_node_link.schema['node']
+                        node_links[io][nl_index].schema['target'] = f'{target_node.name} {target_node_link.name}'
+
+        for node in nodes_key:
+            node_schema = self.schema['nodes'][node].schema
+            node_links = node_schema['node_links']
+
+            for io in ['input', 'output']:
+                for nl_index in range(len(node_links[io])):
+                    node_links[io][nl_index].schema.pop('node')
+                    self.schema['nodes'][node].schema['node_links'][io][nl_index] = node_links[io][nl_index].schema
+
+        for node in nodes_key:
+            self.schema['nodes'][node] = self.schema['nodes'][node].schema
+
+        self.schema['hvfs'] = self.get_hvfs()
+
+        return self.schema
 
 
 class ILayout(BoxLayout):

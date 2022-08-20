@@ -17,7 +17,7 @@ class Net(Module):
 
         self.layers = ModuleDict()
 
-        self.queue = []
+        self.queue = [[], []]
         self.outputs = {}
 
         # If `use_mapped` = 0 => using random node's path
@@ -31,31 +31,37 @@ class Net(Module):
             self.use_mapped = True
 
         # Add nodes as layers to the Module
-        for node in self.nodes:
+        for node_name in self.nodes.keys():
             # Format: `Node's name`: `Node's Algorithm`
-            self.layers.update({node.name: node.algorithm()})
+            self.layers.update({node_name: self.nodes[node_name].algorithm()})
         # print(self.layers)
 
     # Add all needed nodes into a queue with the Input at index 0 and
     # Output at index len(self.queue)
     def initialize(self):
         logging.info('[Initialize][START]')
-        for node in self.nodes:
-            if not self.use_mapped:
-                if 'Input' in node.node.layer_get():
-                    logging.info(f'Initialize: [Input Node]: {node.name}')
-                    self.queue.insert(0, node)
 
-                elif 'Output' in node.node.layer_get():
-                    logging.info(f'Initialize: [Output Node]: {node.name}')
-                    self.queue.insert(len(self.queue), node)
+        for node_name in self.nodes.keys():
+            if not self.use_mapped:
+                layer_type = self.nodes[node_name].layer_get()
+
+                if 'Input' in layer_type:
+                    # logging.info(f'Initialize: [Input Node]: {node_name}')
+                    self.queue.insert(1, self.nodes[node_name])
+
+                elif 'Output' in layer_type:
+                    # logging.info(f'Initialize: [Output Node]: {node_name}')
+                    self.queue.insert(len(self.queue) - 1, self.nodes[node_name])
 
                 else:
-                    logging.info(f'Initialize: [Hidden Node]: {node.name}')
-                    self.queue.insert(len(self.queue) - 1, node)
+                    # logging.info(f'Initialize: [Hidden Node]: {node_name}')
+                    self.queue.insert(2, self.nodes[node_name])
             else:
                 self.queue = self.mapped_path
 
+        for node in self.queue:
+            if not node:
+                self.queue.remove([])
         # logging.info(colored('INITIALIZE: [QUEUE]', 'blue') + f'{self.queue}')
         logging.info('[Initialize][END]')
 
@@ -77,7 +83,7 @@ class Net(Module):
         n = len(x)  # Number of outputs
 
         for i in range(n):
-            self.outputs.update({node.name + ' ' + str(i): x[i]})
+            self.outputs.update({f'{node.name} Output {str(i)}': x[i]})
         # logging.info(f'OUTPUT: Number of outputs: {len(self.outputs)}')
 
     def remove_output(self, node):
@@ -99,15 +105,23 @@ class Net(Module):
             return 1
         return 0
 
+    def get_connected_nodes(self, node):
+        connected_nodes = []
+
+        for node_link in node.inputs:
+            tag = f'{node.name} {node_link.name}'
+            target_tag = self.interface.node_links[tag].schema_get('target')
+            connected_nodes.append(target_tag)
+            # print(target.node.name)
+
+        return connected_nodes
+
     def forward(self, x):
         logging.info('[FORWARD][START]')
         self.initialize()
         # print(f'Forward: {self.queue}')
 
         # Remove empty array in `self.queue`
-        if [] in self.queue:
-            self.queue.remove([])
-
         # Processing Input Node's output
         input_node = self.queue[0]
         logging.info(f'Input Node: {input_node.name}')
@@ -124,10 +138,10 @@ class Net(Module):
             self.mapped_path.insert(1, self.queue)
 
         # Process & Map other nodes to self.mapped_path
-        while len(self.outputs) < len(self.nodes):
+        while len(self.outputs) < len(self.nodes.keys()):
             for node in self.queue:
                 try:
-                    cted_nodes = node.cmap_get()
+                    cted_nodes = self.get_connected_nodes(node)
 
                     if self.is_existed_inputs(cted_nodes):
                         # x = self.layers[node.name](*self.zip_inputs(cted_nodes))
@@ -139,12 +153,13 @@ class Net(Module):
                         if len(cted_nodes) >= 1:
                             # logging.info(f'FORWARD: [INPUT\'S SIZE]: {len(x)}')
                             x = self.layers[node.name](*self.zip_inputs(cted_nodes))
-                        logging.info(f'FORWARD: {node.name}')
 
                         if len(x) == 2 or len(x) == 3:
                             self.add_output(node, x)
                         else:
                             self.add_output(node, (x,))
+
+                        logging.info(f'FORWARD: {node.name}')
                         logging.info(f'ADD OUTPUT: {node.name}')
 
                         if not self.use_mapped:

@@ -1,6 +1,10 @@
 {
     "BatchNorm2D": {
         "attributes": {
+            "links": {
+                "from": [],
+                "to": []
+            },
             "layer": "Hidden Layer",
             "nl_input": {
                 "n_links": 1,
@@ -50,6 +54,10 @@
     },
     "Concatenate": {
         "attributes": {
+            "links": {
+                "from": [],
+                "to": []
+            },
             "layer": "Hidden Layer",
             "nl_input": {
                 "n_links": 2,
@@ -83,6 +91,10 @@
     },
     "Conv1D": {
         "attributes": {
+            "links": {
+                "from": [],
+                "to": []
+            },
             "layer": "Hidden Layer",
                 "nl_input": {
                 "n_links": 1,
@@ -151,6 +163,10 @@
     },
     "Conv2D": {
         "attributes": {
+            "links": {
+                "from": [],
+                "to": []
+            },
             "layer": "Hidden Layer",
             "nl_input": {
                 "n_links": 1,
@@ -216,6 +232,10 @@
     },
     "Conv2dBlock": {
         "attributes": {
+            "links": {
+                "from": [],
+                "to": []
+            },
             "layer": "Hidden Layer",
             "nl_input": {
                 "n_links": 1,
@@ -489,6 +509,10 @@
     },
     "Conv3D": {
         "attributes": {
+            "links": {
+                "from": [],
+                "to": []
+            },
             "layer": "Hidden Layer",
                 "nl_input": {
                     "n_links": 1,
@@ -557,6 +581,10 @@
     },
     "Duplicate": {
         "attributes": {
+            "links": {
+                "from": [],
+                "to": []
+            },
             "layer": "Hidden Layer",
             "nl_input": {
                 "n_links": 1,
@@ -585,6 +613,10 @@
     },
     "Flatten": {
         "attributes": {
+            "links": {
+                "from": [],
+                "to": []
+            },
             "layer": "Hidden Layer",
             "nl_input": {
                 "n_links": 1,
@@ -627,6 +659,10 @@
             "node_class": "Linear",
             "node_type": 10
         },
+        "node_links": {
+            "input": [],
+            "output": []
+        },
         "cmap": [],
         "graphic_attributes": {
             "beziers_coord": [],
@@ -654,6 +690,10 @@
     },
     "MaxPool2D": {
         "attributes": {
+            "links": {
+                "from": [],
+                "to": []
+            },
             "layer": "Hidden Layer",
             "nl_input": {
                 "n_links": 1,
@@ -671,10 +711,7 @@
         "cmap": [],
         "graphic_attributes": {
             "beziers_coord": [],
-            "node_pos": [
-                1111.6666666666665,
-                521.5374677002583
-            ]
+            "node_pos": [0, 0]
         },
         "properties": {
             "ceil_mode": [
@@ -707,6 +744,10 @@
     },
     "ReLU": {
         "attributes": {
+            "links": {
+                "from": [],
+                "to": []
+            },
             "layer": "Hidden Layer",
             "nl_input": {
                 "n_links": 1,
@@ -724,10 +765,7 @@
         "cmap": [],
         "graphic_attributes": {
             "beziers_coord": [],
-            "node_pos": [
-                717.6666666666666,
-                561.5374677002583
-            ]
+            "node_pos": [0, 0]
         },
         "properties": {
             "inplace": [
@@ -740,6 +778,10 @@
     },
     "Reshape": {
         "attributes": {
+            "links": {
+                "from": [],
+                "to": []
+            },
             "layer": "Hidden Layer",
             "nl_input": {
                 "n_links": 1,
@@ -757,10 +799,7 @@
         "cmap": [],
         "graphic_attributes": {
             "beziers_coord": [],
-            "node_pos": [
-                717.6666666666666,
-                561.5374677002583
-            ]
+            "node_pos": [0, 0]
         },
         "properties": {
             "x": [
@@ -777,6 +816,10 @@
     },
     "Sigmoid": {
         "attributes": {
+            "links": {
+                "from": [],
+                "to": []
+            },
             "layer": "Hidden Layer",
             "nl_input": {
                 "n_links": 1,
@@ -794,10 +837,7 @@
         "cmap": [],
         "graphic_attributes": {
             "beziers_coord": [],
-            "node_pos": [
-                717.6666666666666,
-                561.5374677002583
-            ]
+            "node_pos": [0, 0]
         },
         "properties": {
             "inplace": [

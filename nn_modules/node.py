@@ -7,6 +7,7 @@ from kivy.uix.spinner import Spinner
 
 from nn_modules.node_link import NodeLink
 from nn_modules.node_utils import CustomValueInput, CustomSpinnerInput
+from schematics.node_schematic import NodeSchematic
 from utility.utils import get_obj, draw_beziers, formatting_rels, remove_node_from_interface
 from nn_modules.code_names import *
 from nn_modules.node_graphic import NodeGraphic
@@ -14,16 +15,16 @@ from nn_modules.node_graphic import NodeGraphic
 kivy.require('2.0.0')
 
 
-class Node(NodeGraphic):
+class Node(NodeGraphic, NodeSchematic):
     def __init__(self, **kwargs):
         super(Node, self).__init__(**kwargs)
         self.is_loaded = False
+        self.apply_schematic(kwargs.get('schematic'))
 
         # self.properties = kwargs.get('properties')
-        self.properties = {}
+        # self.properties = {}
 
         self.graphicObjs = []
-        self.connected_nodes = []
 
         self.inputs = []
         self.outputs = []
@@ -46,76 +47,6 @@ class Node(NodeGraphic):
         # Combining components and add event listener/handler
         self.combine()
         self.bind(on_touch_down=self.open_rightclick_menu)
-
-    def apply_schema(self, schema):
-        setattr(self, 'schema', schema)
-
-    # `attributes`
-    def attributes_get(self, key: str):
-        return self.schema['attributes'][key]
-
-    def attributes_set(self, key: str, value):
-        self.schema['attributes'][key] = value
-
-    # `nl_input`
-    def nl_input_get(self, key: str):
-        return self.schema['attributes']['nl_input'][key]
-
-    def nl_input_set(self, key: str, value):
-        self.schema['attributes']['nl_input'][key] = value
-
-    # `nl_output`
-    def nl_output_get(self, key: str):
-        return self.schema['attributes']['nl_output'][key]
-
-    def nl_output_set(self, key: str, value):
-        self.schema['attributes']['nl_output'][key] = value
-
-    # `layer`
-    def layer_get(self):
-        return self.schema['attributes']['layer'][1]
-
-    def layer_set(self, value: str):
-        self.schema['attributes']['layer'][1] = value
-
-    # `sub_nodes`
-    def sub_nodes_get(self, sub_node_name: str):
-        return self.schema['sub_nodes'][sub_node_name]
-
-    def sub_nodes_set(self, sub_node_name: str, schema: {}):
-        self.schema['sub_nodes'][sub_node_name] = schema
-
-    # `graphic_attributes`
-    def graphic_attributes_get(self, value: str):
-        return self.schema['graphic_attributes'][value]
-
-    def beziers_coord_set(self, index: int, value: [float, float]):
-        self.schema['graphic_attributes']['beziers_coord'][index] = value
-
-    def node_pos_set(self, value: [float, float]):
-        self.schema['graphic_attributes']['node_pos'] = value
-
-    # `Connectivity map for `sub_nodes``
-    def cmap_get(self, index: int):
-        return self.schema['cmap'][index]
-
-    def cmap_set(self, index: int, value: [str, str]):
-        self.schema['cmap'][index] = value
-
-    # `properties`
-    def properties_get(self, key: str):
-        return self.schema['properties'][key][0], self.schema['properties'][key][1]
-
-    def properties_set(self, key: str, _type: int, value):
-        self.schema['properties'][key][0] = _type
-        self.schema['properties'][key][1] = value
-
-    # `script`
-    def script_get(self):
-        return self.schema['script']
-
-    def script_set(self, value):
-        self.schema['script'] = value
 
     # In the future version `node_link` will be changed to `node_gate` or `gate`
     def node_links(self):
@@ -311,10 +242,6 @@ class Node(NodeGraphic):
             rel[0].target = rel[1]
             nl_index = rel[0].index()
             node_name = rel[0].node.name
-
-            rel[0].target.node.connected_nodes.append(
-                f'{node_name} {nl_index}'
-            )
 
             rel[0].connected = 1
             rel[1].connected = 1

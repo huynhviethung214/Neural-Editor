@@ -1,4 +1,6 @@
 import math
+from json import JSONEncoder
+
 import torch
 from functools import wraps
 
@@ -37,7 +39,7 @@ def get_obj(hierarchy=None, widget_name='', condition=None):
 
 
 def remove_node_from_interface(interface, node_name):
-    for node in interface.nodes():
+    for node in interface.nodes:
         if node.name == node_name:
             for node_gate in node.node_links():
                 if node_gate.gateType == 1:
@@ -64,13 +66,14 @@ def breaker(obj):
 def map_properties(fn):
     @wraps(fn)
     def _map_properties(*args, **kwargs):
-        obj = args[0]
-        algorithm = fn(obj)
+        obj = args[0]  # Node object
+        algorithm = fn(obj)  # Passing in `self` as argument
         new_properties = {}
+        node_properties = obj.schema['properties']
 
-        for key in obj.properties.keys():
-            property_type = obj.properties[key][0]
-            value = obj.properties[key][1]
+        for key in node_properties.keys():
+            property_type = node_properties[key][0]
+            value = node_properties[key][1]
 
             if property_type == INT_CODE:
                 new_properties.update({key: int(value)})
@@ -147,8 +150,11 @@ def formatting_rels(rels, node_links):
 
     for rel in rels:
         for rel_name in rel:
-            for node_link in node_links:
-                if f'{node_link.node.name} {node_link.name}' == rel_name:
+            for node_link_name in node_links.keys():
+                node_link = node_links[node_link_name]
+                node = node_link.node
+
+                if f'{node.name} {node_link.name}' == rel_name:
                     current_rel.append(node_link)
 
                 if len(current_rel) == 2:
@@ -159,31 +165,24 @@ def formatting_rels(rels, node_links):
 
 
 # Draw beziers from the formatted relationships to the interface
-def draw_beziers(datas, interface):
+def draw_beziers(schema, interface):
     # print(f'Datas: {datas}')
-    rels = formatting_rels(datas['rels'], interface.node_links())
+    # print(schema)
+    rels = formatting_rels(schema['cmap'], interface.node_links)
 
-    for coord, rel in zip(datas['beziers_coord'], rels):
+    for coord, rel in zip(schema['beziers_coord'], rels):
         # Touch Down
-        rel[0].c_pos = coord[0]
+        rel[0].schema_set('c_pos', coord[0])
+        rel[0].schema_set('target_pos', coord[1])
+        rel[0].schema_set('target', f'{rel[1].node.name} {rel[1].name}')
 
         # Touch Up
-        rel[1].c_pos = coord[1]
-        rel[1].target = rel[0]
-        rel[1].t_pos = rel[0].c_pos
+        rel[1].schema_set('c_pos', coord[1])
+        rel[1].schema_set('target_pos', rel[0].schema_get('c_pos'))
+        rel[1].schema_set('target', f'{rel[0].node.name} {rel[0].name}')
 
-        rel[0].t_pos = coord[0]
-        rel[0].target = rel[1]
-
-        nl_index = rel[0].index()
-        node_name = rel[0].node.name
-
-        rel[0].target.node.connected_nodes.append(
-            f'{node_name} {nl_index}'
-        )
-
-        rel[0].connected = 1
-        rel[1].connected = 1
+        rel[0].schema_set('connected', True)
+        rel[1].schema_set('connected', True)
 
         # Draw Bezier
         bezier = interface.draw(*coord)
@@ -192,9 +191,10 @@ def draw_beziers(datas, interface):
 
         # print(bezier.begin.node.name, bezier.end.node.name)
 
-        interface.links.append([rel[1], rel[0], bezier])
+        interface.links.append([rel[0], rel[1], bezier])
         interface.instructions.append(bezier)
+        interface.beziers.append(bezier)
 
-    interface.template['beziers_coord'] = datas['beziers_coord']
-    # print(interface.template['beziers_coord'])
-    interface.rels = datas['rels']
+    # interface.template['beziers_coord'] = schema['beziers_coord']
+    # # print(interface.template['beziers_coord'])
+    # interface.rels = schema['cmap']

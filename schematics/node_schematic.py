@@ -1,5 +1,8 @@
 class NodeSchematic:
-    def __init__(self, schema):
+    def __init__(self):
+        self.schema = None
+
+    def apply_schematic(self, schema):
         self.schema = schema
 
     # `attributes`
@@ -8,6 +11,13 @@ class NodeSchematic:
 
     def attributes_set(self, key: str, value):
         self.schema['attributes'][key] = value
+
+    # `links`
+    def links_get(self, key: str):
+        return self.schema['attributes']['links'][key]
+
+    def links_set(self, key: str, value):
+        return self.schema['attributes']['links'][key].append(value)
 
     # `nl_input`
     def nl_input_get(self, key: str):
@@ -25,10 +35,10 @@ class NodeSchematic:
 
     # `layer`
     def layer_get(self):
-        return self.schema['attributes']['layer'][1]
+        return self.schema['attributes']['layer']
 
     def layer_set(self, value: str):
-        self.schema['attributes']['layer'][1] = value
+        self.schema['attributes']['layer'] = value
 
     # `sub_nodes`
     def sub_nodes_get(self, sub_node_name: str):
@@ -68,3 +78,10 @@ class NodeSchematic:
 
     def script_set(self, value):
         self.schema['script'] = value
+
+    # `node_links`
+    def node_links_get(self, key: str):
+        return self.schema['node_links'][key]
+
+    def node_links_set(self, key: str, value):
+        self.schema['node_links'][key].append(value)

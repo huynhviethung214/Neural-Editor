@@ -81,7 +81,7 @@ class TrainButton(Button):
         try:
             if not self.is_training:
                 # print('Training')
-                model = Net(nodes=interface.nodes(),
+                model = Net(nodes=interface.nodes,
                             interface=interface,
                             mapped_path=self.to_mapped_path(interface)).to(configs['device']['id'])
                 # print(self.model)

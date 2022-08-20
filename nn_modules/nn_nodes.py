@@ -1,5 +1,6 @@
 import json
 from nn_modules.node import Node
+from schematics.node_schematic import NodeSchematic
 
 
 def generate_nn_nodes():
@@ -17,7 +18,7 @@ def generate_nn_nodes():
                 globals()[_name] = type(_name,
                                         (Node,),
                                         {})
-                globals()[_name].schema = nodes[node_name]
+                # globals()[_name].schema = nodes[node_name]
 
                 globals()[_name].name = node_name
                 globals()[_name].algorithm = algo

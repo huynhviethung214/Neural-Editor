@@ -1,0 +1,304 @@
+{
+    "beziers_coord": [
+        [
+            [
+                29.66666666666663,
+                690.5374677002583
+            ],
+            [
+                246.66666666666663,
+                665.5374677002583
+            ]
+        ],
+        [
+            [
+                477.66666666666674,
+                667.5374677002583
+            ],
+            [
+                566.6666666666667,
+                681.5374677002585
+            ]
+        ]
+    ],
+    "cmap": [
+        [
+            "Linear 0 Output 0",
+            "Linear 1 Input 0"
+        ],
+        [
+            "Linear 1 Output 0",
+            "Linear 2 Input 0"
+        ]
+    ],
+    "hvfs": {
+        "Criterion": {
+            "BCEWithLogitsLoss": {
+                "reduce": "True",
+                "reduction": "mean",
+                "size_average": "True"
+            }
+        },
+        "Evaluating": {
+            "PerceptronExample": {
+                "epochs": "10",
+                "file_path": "hyper_variables_forms\\perceptron_example\\eval\\evaluating.py"
+            }
+        },
+        "Optimizer": {
+            "ASGD": {
+                "alpha": "0.75",
+                "lambd": "0.0001",
+                "lr": "0.01",
+                "t0": "1000000.0",
+                "weight_decay": "0"
+            }
+        },
+        "Processor": {
+            "BinaryProcessor": {
+                "fpath": "test_set\\binary_dataset.txt"
+            }
+        },
+        "Training": {
+            "PerceptronExample": {
+                "epochs": "10",
+                "file_path": "hyper_variables_forms\\perceptron_example\\train\\training.py"
+            }
+        }
+    },
+    "nodes": {
+        "Linear 0": {
+            "attributes": {
+                "layer": "Input Layer",
+                "nl_input": {
+                    "n_links": 1,
+                    "position": 12,
+                    "type": "input"
+                },
+                "nl_output": {
+                    "n_links": 1,
+                    "position": 13,
+                    "type": "output"
+                },
+                "node_class": "Linear",
+                "node_type": 10
+            },
+            "cmap": [],
+            "graphic_attributes": {
+                "beziers_coord": [],
+                "node_pos": [
+                    -204.33333333333337,
+                    592.5374677002582
+                ]
+            },
+            "node_links": {
+                "input": [
+                    {
+                        "c_pos": [
+                            -6,
+                            95.0
+                        ],
+                        "connected": false,
+                        "gate_type": 1,
+                        "name": "",
+                        "target": null,
+                        "target_pos": [
+                            0,
+                            0
+                        ]
+                    }
+                ],
+                "output": [
+                    {
+                        "c_pos": [
+                            29.66666666666663,
+                            690.5374677002583
+                        ],
+                        "connected": true,
+                        "gate_type": 0,
+                        "name": "",
+                        "target": "Linear 1 Input 0",
+                        "target_pos": [
+                            246.66666666666663,
+                            665.5374677002583
+                        ]
+                    }
+                ]
+            },
+            "properties": {
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "5"
+                ],
+                "out_features": [
+                    1,
+                    "10"
+                ]
+            },
+            "script": "algorithms/Linear.py",
+            "sub_nodes": {}
+        },
+        "Linear 1": {
+            "attributes": {
+                "layer": "Hidden Layer",
+                "nl_input": {
+                    "n_links": 1,
+                    "position": 12,
+                    "type": "input"
+                },
+                "nl_output": {
+                    "n_links": 1,
+                    "position": 13,
+                    "type": "output"
+                },
+                "node_class": "Linear",
+                "node_type": 10
+            },
+            "cmap": [],
+            "graphic_attributes": {
+                "beziers_coord": [],
+                "node_pos": [
+                    243.66666666666663,
+                    566.5374677002583
+                ]
+            },
+            "node_links": {
+                "input": [
+                    {
+                        "c_pos": [
+                            246.66666666666663,
+                            665.5374677002583
+                        ],
+                        "connected": true,
+                        "gate_type": 1,
+                        "name": "",
+                        "target": "Linear 0 Output 0",
+                        "target_pos": [
+                            29.66666666666663,
+                            690.5374677002583
+                        ]
+                    }
+                ],
+                "output": [
+                    {
+                        "c_pos": [
+                            477.66666666666674,
+                            667.5374677002583
+                        ],
+                        "connected": true,
+                        "gate_type": 0,
+                        "name": "",
+                        "target": "Linear 2 Input 0",
+                        "target_pos": [
+                            566.6666666666667,
+                            681.5374677002585
+                        ]
+                    }
+                ]
+            },
+            "properties": {
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "10"
+                ],
+                "out_features": [
+                    1,
+                    "20"
+                ]
+            },
+            "script": "algorithms/Linear.py",
+            "sub_nodes": {}
+        },
+        "Linear 2": {
+            "attributes": {
+                "layer": "Output Layer",
+                "nl_input": {
+                    "n_links": 1,
+                    "position": 12,
+                    "type": "input"
+                },
+                "nl_output": {
+                    "n_links": 1,
+                    "position": 13,
+                    "type": "output"
+                },
+                "node_class": "Linear",
+                "node_type": 10
+            },
+            "cmap": [],
+            "graphic_attributes": {
+                "beziers_coord": [],
+                "node_pos": [
+                    566.6666666666667,
+                    582.5374677002583
+                ]
+            },
+            "node_links": {
+                "input": [
+                    {
+                        "c_pos": [
+                            566.6666666666667,
+                            681.5374677002585
+                        ],
+                        "connected": true,
+                        "gate_type": 1,
+                        "name": "Input 0",
+                        "target": "Linear 1 Output 0",
+                        "target_pos": [
+                            477.66666666666674,
+                            667.5374677002583
+                        ]
+                    }
+                ],
+                "output": [
+                    {
+                        "c_pos": [
+                            234,
+                            95.0
+                        ],
+                        "connected": false,
+                        "gate_type": 0,
+                        "name": "Output 0",
+                        "target": null,
+                        "target_pos": [
+                            0,
+                            0
+                        ]
+                    }
+                ]
+            },
+            "properties": {
+                "bias": [
+                    3,
+                    true
+                ],
+                "in_features": [
+                    1,
+                    "20"
+                ],
+                "out_features": [
+                    1,
+                    "5"
+                ]
+            },
+            "script": "algorithms/Linear.py",
+            "sub_nodes": {}
+        }
+    },
+    "touch_info": {
+        "down_node_link": null,
+        "down_pos": [
+            477.66666666666674,
+            667.5374677002583
+        ],
+        "selected": null
+    }
+}
