@@ -1,6 +1,32 @@
+from nn_modules.code_names import NORM
+
+
 class NodeSchematic:
     def __init__(self):
-        self.schema = None
+        self.schema = {
+            "attributes": {
+                "layer": "Hidden Layer",
+                "nl_input": {},
+                "nl_output": {},
+                "node_class": "",
+                "node_type": 10
+            },
+            "node_links": {
+                "input": [],
+                "output": []
+            },
+            "cmap": [],
+            "graphic_attributes": {
+                "beziers_coord": [],
+                "node_pos": [
+                    0,
+                    0
+                ]
+            },
+            "properties": {},
+            "script": "algorithms/",
+            "sub_nodes": {}
+        }
 
     def apply_schematic(self, schema):
         self.schema = schema

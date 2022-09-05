@@ -37,13 +37,15 @@ class NodeGraphic(ScatterLayout):
 
     in_list = {}
 
-    def __init__(self, **kwargs):
-        super(NodeGraphic, self).__init__()
-        self.pos = kwargs.get('spawn_position')
+    def __init__(self, spawn_position=(0, 0), node_name=None, **kwargs):
+        super(NodeGraphic, self).__init__(**kwargs)
+        self.pos = spawn_position
         self.layout = AnchorLayout(anchor_x='center',
                                    anchor_y='center')
         self.layout.padding = (4, 4, 4, 4)
-        self.name = kwargs.get('node_name')
+        self.name = node_name
+
+        self.graphicObjs = []
 
         self.sub_layout = GridLayout()
         self.sub_layout.cols = 1
@@ -96,10 +98,18 @@ class NodeGraphic(ScatterLayout):
     def set_stacked_val(self, obj, val, key, _type, node_name):
         try:
             if val:
-                sub_node = NodeSchematic()
-                sub_node.apply_schematic(self.schema['sub_nodes'][node_name])
+                # sub_node = NodeSchematic()
+                # sub_node.apply_schematic(self.schema['sub_nodes'][node_name])
+                #
+                # sub_node.properties_set(key, _type, val)
+                datatype = bool
 
-                sub_node.properties_set(key, _type, val)
+                if _type == INT_CODE:
+                    datatype = int
+                elif _type == FLOAT_CODE:
+                    datatype = float
+
+                self.schema['sub_nodes'][node_name].schema[key] = datatype(val)
         except Exception as e:
             obj.text = ''
 
@@ -208,13 +218,13 @@ class NodeGraphic(ScatterLayout):
 
         for sub_node_name in sub_nodes.keys():
             try:
-                sub_node = NodeSchematic()
-                sub_node.apply_schematic(sub_nodes[sub_node_name])
+                sub_node = sub_nodes[sub_node_name]
+                sub_node_schematic = sub_node.schema
 
-                tree_node = tree_view.add_node(TreeViewLabel(text=sub_node_name))
+                tree_node = tree_view.add_node(TreeViewLabel(text=sub_node.name))
 
-                for key in sub_node.schema['properties'].keys():
-                    sub_node_property = sub_node.properties_get(key)
+                for key in sub_node_schematic['properties'].keys():
+                    sub_node_property = sub_node_schematic['properties'][key]
                     variable_type = sub_node_property[0]
                     value = str(sub_node_property[1])
 
@@ -231,7 +241,7 @@ class NodeGraphic(ScatterLayout):
                     widget.input.bind(text=partial(self.set_stacked_val,
                                                    key=key,
                                                    _type=variable_type,
-                                                   node_name=sub_node_name))
+                                                   node_name=sub_node.name))
                     _layout.add_widget(widget)
                     tree_view.add_node(_layout, tree_node)
 

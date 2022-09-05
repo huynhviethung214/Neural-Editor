@@ -123,18 +123,18 @@ def record_graph(fn):
         properties = args[1]
 
         screen_manager = get_obj(interface, '_Container').request_obj('Manager')
-        graph_tab_manager = screen_manager.get_screen('graph').children[-1].children[-1]
+        # graph_tab_manager = screen_manager.get_screen('graph').children[-1].children[-1]
 
         losses, epochs = fn(self, properties)
-        graph_tab_manager.add_tab(func_name=interface.model_name,
-                                  _fkwargs={'graphs': {
-                                      'Train / Loss': {
-                                          'xlabel': 'Epochs',
-                                          'ylabel': 'Loss',
-                                          'losses': losses,
-                                          'epochs': epochs
-                                      }
-                                  }})
+        # graph_tab_manager.add_tab(func_name=interface.model_name,
+        #                           _fkwargs={'graphs': {
+        #                               'Train / Loss': {
+        #                                   'xlabel': 'Epochs',
+        #                                   'ylabel': 'Loss',
+        #                                   'losses': losses,
+        #                                   'epochs': epochs
+        #                               }
+        #                           }})
     return _record_graph
 
 
@@ -178,7 +178,7 @@ def draw_beziers(schema, interface):
 
         # Touch Up
         rel[1].schema_set('c_pos', coord[1])
-        rel[1].schema_set('target_pos', rel[0].schema_get('c_pos'))
+        rel[1].schema_set('target_pos', coord[0])
         rel[1].schema_set('target', f'{rel[0].node.name} {rel[0].name}')
 
         rel[0].schema_set('connected', True)
@@ -191,9 +191,10 @@ def draw_beziers(schema, interface):
 
         # print(bezier.begin.node.name, bezier.end.node.name)
 
-        interface.links.append([rel[0], rel[1], bezier])
+        # print(coord)
+        # interface.links.append([rel[0], rel[1], bezier])
         interface.instructions.append(bezier)
-        interface.beziers.append(bezier)
+        # interface.beziers.append(bezier)
 
     # interface.template['beziers_coord'] = schema['beziers_coord']
     # # print(interface.template['beziers_coord'])

@@ -256,6 +256,21 @@ class CustomActionBar(ActionBar):
     def set_model_name(interface, func_name, *args):
         interface.model_name_input.text = func_name
 
+    def add_normal_node(self, node_name, interface, schema):
+        node_class = node_name.split(' ')[0]
+        node = self.get_nodes(node_class)
+
+        interface._node = node
+        node = interface.add_node2interface(
+            node_name=node_name,
+            spawn_position=schema['graphic_attributes']['node_pos'],
+            schematic=schema
+        )
+
+        layer_type = node.schema['attributes']['layer']
+        node.set_type(None, layer_type)
+        node.dropDownList.text = layer_type
+
     def add_nodes(self, tab_manager, func_name, selection, *args):
         interface = tab_manager.current_tab.content.children[-1]
         interface.model_name_input.text = ''
@@ -269,48 +284,64 @@ class CustomActionBar(ActionBar):
 
             for node_name in schema['nodes'].keys():
                 try:
-                    node_class = node_name.split(' ')[0]
-                    node = self.get_nodes(node_class)
+                    node_type = schema['nodes'][node_name]['attributes']['node_type']
+                    node_schema = schema['nodes'][node_name]
 
-                    if not node:
-                        node = self.get_grouped_node(schema['model'][node_name])
+                    if node_type == NORM:
+                        self.add_normal_node(
+                            node_name=node_name,
+                            interface=interface,
+                            schema=node_schema
+                        )
 
-                    interface._node = node
-                    # print(node_name)
-                    node = interface.add_node2interface(
-                        node_name=node_name,
-                        spawn_position=schema['nodes'][node_name]['graphic_attributes']['node_pos'],
-                        schematic=schema['nodes'][node_name]
-                    )
-                    layer_type = node.schema['attributes']['layer']
-                    node.set_type(None, layer_type)
-                    node.dropDownList.text = layer_type
+                    elif node_type == STACKED:
+                        sub_nodes_schema = node_schema['sub_nodes']
 
-                    # for i, _in in enumerate(node.inputs):
-                    #     node.schema['node_links']['input'][i] = _in.schema
-                    #
-                    # for i, out in enumerate(node.outputs):
-                    #     node.schema['node_links']['output'][i] = out.schema
+                        for sub_node_name in sub_nodes_schema.keys():
+                            sub_node_schema = sub_nodes_schema[sub_node_name]
 
-                    # print(node.schema)
-                    # interface.nodes_set(node_name, node)
-                    # print(interface.schema['nodes']['Linear 0'].schema)
-                    # print(interface.nodes_get(node_name).schema)
+                            sub_node = Node(
+                                spawn_position=sub_node_schema['graphic_attributes']['node_pos'],
+                                node_name=sub_node_name,
+                                schematic=sub_node_schema,
+                                interface=interface
+                            )
+                            sub_node.apply_schematic(sub_node_schema)
+                            # sub_nodes_schema[sub_node_name] = sub_node
+                            node_schema['sub_nodes'][sub_node_name] = sub_node
 
-                    # interface.create_template(node)
-                    # if node.attributes_get('node_type') == NORM:
-                    #     Clock.schedule_once(partial(self.set_nodes_properties,
-                    #                                 node,
-                    #                                 schema['nodes'][node_name]['properties']), 1)
-                    # elif node.attributes_get('node_type') == STACKED:
-                    #     node.properties = datas['model'][node_name]['properties']
-                    #     node.properties.update({
-                    #         'beziers_coord': datas['beziers_coord'],
-                    #         'rels': datas['rels']
-                    #     })
-                    #     Clock.schedule_once(partial(self.set_stacked_node_properties,
-                    #                                 node,
-                    #                                 datas['model'][node_name]['properties']), 1)
+                        interface._node = Node
+                        interface.add_node2interface(
+                            spawn_position=node_schema['graphic_attributes']['node_pos'],
+                            node_name=node_name,
+                            schematic=node_schema
+                        )
+
+                # for i, _in in enumerate(node.inputs):
+                #     node.schema['node_links']['input'][i] = _in.schema
+                #
+                # for i, out in enumerate(node.outputs):
+                #     node.schema['node_links']['output'][i] = out.schema
+
+                # print(node.schema)
+                # interface.nodes_set(node_name, node)
+                # print(interface.schema['nodes']['Linear 0'].schema)
+                # print(interface.nodes_get(node_name).schema)
+
+                # interface.create_template(node)
+                # if node.attributes_get('node_type') == NORM:
+                #     Clock.schedule_once(partial(self.set_nodes_properties,
+                #                                 node,
+                #                                 schema['nodes'][node_name]['properties']), 1)
+                # elif node.attributes_get('node_type') == STACKED:
+                #     node.properties = datas['model'][node_name]['properties']
+                #     node.properties.update({
+                #         'beziers_coord': datas['beziers_coord'],
+                #         'rels': datas['rels']
+                #     })
+                #     Clock.schedule_once(partial(self.set_stacked_node_properties,
+                #                                 node,
+                #                                 datas['model'][node_name]['properties']), 1)
 
                 except AttributeError as e:
                     raise e
@@ -349,6 +380,32 @@ class CustomActionBar(ActionBar):
 
         return template
 
+    def get_node_schema(self, nodes):
+        nodes_schema = {}
+
+        for node_name in nodes.keys():
+            node = nodes[node_name]
+
+            if node.attributes_get('node_type') == NORM:
+                nodes_schema.update({
+                    node_name: node.schema.copy()
+                })
+            else:
+                sub_nodes = self.get_node_schema(node.schema['sub_nodes'])
+                sub_nodes_schema = {}
+
+                for sub_node_name in sub_nodes.keys():
+                    sub_nodes_schema.update({
+                        sub_node_name: sub_nodes[sub_node_name]
+                    })
+
+                nodes_schema.update({
+                    node_name: node.schema.copy()
+                })
+                nodes_schema[node_name]['sub_nodes'] = sub_nodes_schema
+
+        return nodes_schema
+
     def save_model(self, obj):
         model_name = None
         tab_manager = get_obj(self, 'InterfaceTabManager')
@@ -362,41 +419,11 @@ class CustomActionBar(ActionBar):
             if 'model_name' in str(e):
                 model_name = tab_manager.current_tab.text
 
-        # tab_manager.tab_name_list.append(model_name)
-        # # print(interface.template)
-        #
-        # # model = interface.m_list
-        # # sorter = Sorter()
-        # # sorted_model = sorter.sort(model)
-        #
-        # # interface.template.update({'relationship': interface.mn_list,
-        # #                            'links_pos': [bezier.points for bezier in interface.beziers]})
-        # # interface.template.update({'relationship': interface.mn_list})
-        # # self.get_nodes_pos()
-        #
-        # interface.template.update({'beziers_coord': self.get_beziers_points(interface=interface),
-        #                            'rels': interface.rels,
-        #                            'hvfs': self.get_hvfs(interface)})
-        # interface.template = self.save_nodes_pos(interface.template,
-        #                                          interface)
-        # # print(interface.template)
-        #
-        # if interface.is_trained:
-        #     interface.template.update({
-        #         'mapped_path': interface.str_mapped_path
-        #     })
-
         model_schema = interface.schema
-        nodes_schema = {}
         nodes = interface.nodes
 
-        for node_name in nodes.keys():
-            nodes_schema.update({
-                node_name: nodes[node_name].schema
-            })
-
         model_schema['hvfs'] = interface.get_hvfs()
-        model_schema['nodes'] = nodes_schema
+        model_schema['nodes'] = self.get_node_schema(nodes)
         model_schema['beziers_coord'] = interface.beziers_coord_get()
         model_schema['cmap'] = interface.cmap_get()
 

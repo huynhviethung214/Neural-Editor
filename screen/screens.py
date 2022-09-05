@@ -8,7 +8,6 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.core.window import Window
 
-from graph.graph import Graphs
 from training_manager.training_manager import TrainingManager
 from utility.application_close_popup import ApplicationClosePopup
 from i_modules.interface.interface import Container
@@ -44,19 +43,6 @@ class MainScreen(Screen):
 
 class ScriptingScreen(Screen):
     pass
-
-
-class GraphScreen(Screen):
-    def __init__(self, **kwargs):
-        super(GraphScreen, self).__init__(**kwargs)
-        self.layout = BoxLayout()
-        self.graph_tab_manager = TabManager(func=Graphs,
-                                            default_name='New Graph',
-                                            _fkwargs={},
-                                            default_tab=False)
-
-        self.layout.add_widget(self.graph_tab_manager)
-        self.add_widget(self.layout)
 
 
 class Manager(ScreenManager):

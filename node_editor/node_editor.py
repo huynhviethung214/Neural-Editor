@@ -276,7 +276,7 @@ class NodeEditor(Popup):
 
     @staticmethod
     def get_code_template(node_name):
-        with open('i_modules\\code_template.txt', 'r') as f:
+        with open('i_modules\\code_template.py', 'r') as f:
             lines = f.readlines()
             code_template = ''
             lines[0] = lines[0].format(node_name.lower())

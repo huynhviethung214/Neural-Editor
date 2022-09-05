@@ -10,6 +10,9 @@ from kivy.app import App
 
 # from nn_modules.node import Node
 # from utility.base_form.baseform import BaseForm
+from kivy.uix.popup import Popup
+
+from graph.graph import Graph
 from message_box.message_box import MessageBox
 from training_manager.training_manager import TrainingManager
 from utility.utils import get_obj
@@ -43,6 +46,20 @@ class TrainedModelLabel(Label):
 
     def update_text(self, model_name):
         self.text += model_name
+
+
+class OpenGraphButton(Button):
+    def __init__(self, **kwargs):
+        super(OpenGraphButton, self).__init__()
+        self.popup = Popup(size_hint=(0.7, 0.8),
+                           padding=10)
+        self.graph = Graph(interface=kwargs.get('interface'))
+
+        self.popup.content = self.graph
+        self.popup.bind(on_open=lambda obj: self.graph.draw_graph())
+
+    def on_press(self):
+        self.popup.open()
 
 
 class ProgressIndicator(Label):

@@ -13,9 +13,6 @@
 <ScriptingScreen>:
 	name: 'scripting'
 
-<GraphScreen>:
-    name: 'graph'
-
 
 <ToolPanel>:
 	orientation: 'vertical'
@@ -35,10 +32,6 @@
 		text: 'Scripting'
 		on_press: root.parent.children[1].current = 'scripting'
 
-	Button:
-		text: 'Graph'
-		on_press: root.parent.children[1].current = 'graph'
-
 
 <Manager>:
 	current: 'interface'
@@ -52,5 +45,3 @@
 
 	ScriptingScreen:
 		Editor:
-
-	GraphScreen:

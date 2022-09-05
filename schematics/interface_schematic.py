@@ -9,7 +9,8 @@ class InterfaceSchematic:
                 'down_pos': [0, 0],
                 'selected': None
             },
-            'beziers_coord': []
+            'beziers_coord': [],
+            'train_log': {}
         }
 
     # `nodes`

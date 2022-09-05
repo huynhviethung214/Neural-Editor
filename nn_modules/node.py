@@ -16,22 +16,20 @@ kivy.require('2.0.0')
 
 
 class Node(NodeGraphic, NodeSchematic):
-    def __init__(self, **kwargs):
+    def __init__(self, schematic=None, interface=None, **kwargs):
         super(Node, self).__init__(**kwargs)
         self.is_loaded = False
-        self.apply_schematic(kwargs.get('schematic'))
+        self.apply_schematic(schematic)
 
         # self.properties = kwargs.get('properties')
         # self.properties = {}
-
-        self.graphicObjs = []
 
         self.inputs = []
         self.outputs = []
 
         self.code_names = [INT_CODE, STR_CODE, FLOAT_CODE, OBJ_CODE]
 
-        self.interface = kwargs.get('interface')
+        self.interface = interface
         self.interface_template = type(self.interface)()
         self.add_components()
         self.add_ib()

@@ -10,6 +10,6 @@ from settings.config import configs
 
 def algorithm(self):
     # YOUR CODE GOES HERE
-    self.load_nodes()
-    return Net(nodes=self.interface_template.nodes(),
-               interface=self.interface_template).to(configs['device']['id'])
+    # self.load_nodes()
+    return Net(nodes=self.schema['sub_nodes'],
+               interface=self.interface).to(configs['device']['id'])
