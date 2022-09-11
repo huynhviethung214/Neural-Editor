@@ -688,10 +688,8 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
                 spawn_position[0] += node.pos[0]
                 spawn_position[1] += node.pos[1]
 
-            # spawn_position[[i for i in range(len(self.selected_nodes))][0]] /= len(self.selected_nodes)
             spawn_position[1] /= len(self.selected_nodes)
             spawn_position[0] /= len(self.selected_nodes)
-            # print(spawn_position)
 
             schematic = {
                 "attributes": {
@@ -736,27 +734,26 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
                 ]
 
                 points = bezier.points
-
                 beziers_coord = [
                     [points[0], points[1]],
                     [points[-2], points[-1]]
                 ]
 
-                # print(beziers_coord)
-                # print(self.schema['beziers_coord'])
-                # print(points)
-
                 schematic['cmap'].append(nodes_relationship)
                 self.schema['cmap'].remove(nodes_relationship)
+
+                # print(self.schema['beziers_coord'])
+                # print(beziers_coord)
 
                 schematic['graphic_attributes']['beziers_coord'].append([beziers_coord])
                 self.schema['beziers_coord'].remove(beziers_coord)
                 self.instructions.remove(bezier)
 
             self._node = Node
-            self.add_node2interface(schematic=schematic,
-                                    node_name='Stacked',
-                                    spawn_position=spawn_position)
+            self._node.algorithm = stacked_algorithm
+            node = self.add_node2interface(schematic=schematic,
+                                           node_name='Stacked',
+                                           spawn_position=spawn_position)
 
             # Clear grouped nodes
             for node in self.selected_nodes:
@@ -933,38 +930,31 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
     def add_node2interface(self, schematic=None, node_name=None, spawn_position=(0, 0), has_parent=False):
         with open('nn_modules\\nn_nodes.json', 'r') as f:
             nodes = json.load(f)
-            hierarchy = get_obj(self, 'Hierarchy')
 
             if not node_name:
                 node_class = str(self._node).split('.')[-1].split('Node')[0]
                 node_name = f'{node_class} {self.num_nodes(node_class)}'
 
-            # print(node_name)
-
-            hierarchy.load_hierarchy_from_interface(self)
-
-            # node_name = self.add_node_names(node_class=node_class,
-            #                                 hierarchy=get_obj(self, 'Hierarchy'),
-            #                                 has_parent=has_parent)
-
             if not schematic:
-                node = self._node(spawn_position=spawn_position,
-                                  interface=self,
-                                  schematic=nodes[node_class],
-                                  node_name=node_name)
-            else:
-                node = self._node(spawn_position=spawn_position,
-                                  interface=self,
-                                  schematic=schematic,
-                                  node_name=node_name)
+                schematic = nodes[node_class]
+
+            node = self._node(spawn_position=spawn_position,
+                              interface=self,
+                              schematic=schematic,
+                              node_name=node_name)
 
             node.node_pos_set(spawn_position)
-            # self.nodes_set(node_name, node.schema)
             self.nodes.update({node_name: node})
 
             get_obj(self, 'ScatterPlaneLayout').add_widget(node)
             self._state = 0
             self._node = None
+
+            try:
+                hierarchy = get_obj(self, 'Hierarchy')
+                hierarchy.load_hierarchy_from_interface(self)
+            except AttributeError:
+                pass
 
             return node
 
@@ -1010,44 +1000,55 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
                     and len(self.instructions) >= 1 \
                     and not self.is_drawing \
                     and touch.button == 'left':
-                for node_link_name in self.node_links.keys():
-                    node_link = self.node_links[node_link_name]
+                # for node_link_name in self.node_links.keys():
+                #     node_link = self.node_links[node_link_name]
+                #
+                #     if node_link.schema_get('target'):
+                #         target_node_link = self.node_links[node_link.schema_get('target')]
+                #         # print(target_node_link.pos)
 
-                    if node_link.schema_get('target'):
-                        target_node_link = self.node_links[node_link.schema_get('target')]
-                        # print(target_node_link.pos)
+                for bezier in self.instructions:
+                    node_link = bezier.begin
+                    target_node_link = bezier.end
 
-                        for bezier in self.instructions:
-                            if bezier.begin == node_link:
-                                # ori = node_link.to_scatter_plane(self.scatter_plane)
-                                # end = target_node_link.to_scatter_plane(self.scatter_plane)
-                                # ori = node_link.schema_get('c_pos')
-                                # end = target_node_link.schema_get('c_pos')
+                    # if bezier.begin == node_link:
+                        # ori = node_link.to_scatter_plane(self.scatter_plane)
+                        # end = target_node_link.to_scatter_plane(self.scatter_plane)
+                        # ori = node_link.schema_get('c_pos')
+                        # end = target_node_link.schema_get('c_pos')
 
-                                ori = list(node_link.to_scatter_plane(self.scatter_plane))
-                                ori[0] += node_link.width / 2
-                                ori[1] += node_link.height / 2
-                                ori = self.round_pos(ori)
+                    points = bezier.points
+                    old_bezier_coord = [
+                        [points[0], points[1]],
+                        [points[-2], points[-1]]
+                    ]
 
-                                end = list(target_node_link.to_scatter_plane(self.scatter_plane))
-                                end[0] += node_link.width / 2
-                                end[1] += node_link.height / 2
-                                end = self.round_pos(end)
+                    ori = list(node_link.to_scatter_plane(self.scatter_plane))
+                    ori[0] += node_link.width / 2
+                    ori[1] += node_link.height / 2
+                    ori = self.round_pos(ori)
 
-                                midpoint0 = round((end[0] + ori[0]) / 2 + 20, 1)
-                                midpoint1 = round((end[0] + ori[0]) / 2 - 20, 1)
+                    end = list(target_node_link.to_scatter_plane(self.scatter_plane))
+                    end[0] += target_node_link.width / 2
+                    end[1] += target_node_link.height / 2
+                    end = self.round_pos(end)
 
-                                # print(ori, end)
-                                bezier.points = (ori[0], ori[1],
-                                                 midpoint0, ori[1],
-                                                 midpoint1, end[1],
-                                                 end[0], end[1])
+                    midpoint0 = round((end[0] + ori[0]) / 2 + 20, 1)
+                    midpoint1 = round((end[0] + ori[0]) / 2 - 20, 1)
 
-                                # node_link.schema_set('c_pos', ori)
-                                # node_link.schema_set('target_pos', end)
-                                #
-                                # target_node_link.schema_set('c_pos', end)
-                                # target_node_link.schema_set('target_pos', ori)
+                    bezier.points = (ori[0], ori[1],
+                                     midpoint0, ori[1],
+                                     midpoint1, end[1],
+                                     end[0], end[1])
+
+                    index = self.schema['beziers_coord'].index(old_bezier_coord)
+                    self.schema['beziers_coord'][index] = [ori, end]
+
+                    # node_link.schema_set('c_pos', ori)
+                    # node_link.schema_set('target_pos', end)
+                    #
+                    # target_node_link.schema_set('c_pos', end)
+                    # target_node_link.schema_set('target_pos', ori)
         except IndexError:
             pass
 

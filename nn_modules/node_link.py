@@ -14,7 +14,7 @@ class NodeLink(Widget, NodeLinkSchematic):
 
         self.schema_set('gate_type', _type)
         # self.schema_set('rec_pos', kwargs.get('pos'))
-        self.schema_set('c_pos', kwargs.get('pos'))
+        # self.schema_set('c_pos', kwargs.get('pos'))
         # self.pos = kwargs.get('pos')
 
         # self.gateType = kwargs.get('_type')  # Input is 1 and Output is 0
@@ -31,7 +31,9 @@ class NodeLink(Widget, NodeLinkSchematic):
         self.draw_widget()
 
     def to_scatter_plane(self, scatter_plane):
-        return scatter_plane.to_widget(*self.to_window(*self.to_local(*self.pos)))
+        # to_interface = scatter_plane.parent.to_widget(*self.to_window(*self.pos))
+        # return scatter_plane.to_local(*to_interface)
+        return scatter_plane.to_widget(*self.to_window(*self.pos))
 
     def index(self):
         return int(self.name.split(' ')[-1])

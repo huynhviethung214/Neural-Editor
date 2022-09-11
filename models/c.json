@@ -2,12 +2,12 @@
     "beziers_coord": [
         [
             [
-                263.2,
-                669.5
+                117.7,
+                604.5
             ],
             [
-                329.7,
-                706.5
+                219.7,
+                673.5
             ]
         ]
     ],
@@ -19,7 +19,7 @@
     ],
     "hvfs": {
         "Criterion": {
-            "BCELoss": {
+            "BCEWithLogitsLoss": {
                 "reduce": "True",
                 "reduction": "mean",
                 "size_average": "True"
@@ -55,7 +55,7 @@
     "nodes": {
         "Linear 0": {
             "attributes": {
-                "layer": "Hidden Layer",
+                "layer": "Output Layer",
                 "nl_input": {
                     "n_links": 1,
                     "position": 12,
@@ -73,32 +73,32 @@
             "graphic_attributes": {
                 "beziers_coord": [],
                 "node_pos": [
-                    329.66666666666663,
-                    605.5374677002583
+                    281.66666666666663,
+                    561.5374677002584
                 ]
             },
             "node_links": {
                 "input": [
                     {
                         "c_pos": [
-                            -6,
-                            95.0
+                            219.7,
+                            673.5
                         ],
                         "connected": true,
                         "gate_type": 1,
                         "name": "Input 0",
                         "target": "Stacked Output 0",
                         "target_pos": [
-                            234,
-                            170.0
+                            117.7,
+                            604.5
                         ]
                     }
                 ],
                 "output": [
                     {
                         "c_pos": [
-                            234,
-                            95.0
+                            0,
+                            0
                         ],
                         "connected": false,
                         "gate_type": 0,
@@ -118,11 +118,11 @@
                 ],
                 "in_features": [
                     1,
-                    0
+                    "20"
                 ],
                 "out_features": [
                     1,
-                    0
+                    "10"
                 ]
             },
             "script": "algorithms/Linear.py",
@@ -130,7 +130,7 @@
         },
         "Stacked": {
             "attributes": {
-                "layer": "Hidden Layer",
+                "layer": "Input Layer",
                 "nl_input": {
                     "n_links": 1,
                     "position": 12,
@@ -155,27 +155,27 @@
                     [
                         [
                             [
-                                92.7,
-                                628.5
+                                117.7,
+                                529.5
                             ],
                             [
-                                193.7,
-                                560.5
+                                223.7,
+                                608.5
                             ]
                         ]
                     ]
                 ],
                 "node_pos": [
-                    23.16666666666663,
-                    493.5374677002583
+                    -122.33333333333337,
+                    428.5374677002582
                 ]
             },
             "node_links": {
                 "input": [
                     {
                         "c_pos": [
-                            -6,
-                            170.0
+                            0,
+                            0
                         ],
                         "connected": false,
                         "gate_type": 1,
@@ -190,16 +190,16 @@
                 "output": [
                     {
                         "c_pos": [
-                            234,
-                            170.0
+                            117.7,
+                            604.5
                         ],
                         "connected": true,
                         "gate_type": 0,
                         "name": "Output 0",
                         "target": "Linear 0 Input 0",
                         "target_pos": [
-                            0,
-                            0
+                            219.7,
+                            673.5
                         ]
                     }
                 ]
@@ -227,16 +227,16 @@
                     "graphic_attributes": {
                         "beziers_coord": [],
                         "node_pos": [
-                            -147.33333333333337,
-                            527.5374677002583
+                            -122.33333333333337,
+                            428.5374677002582
                         ]
                     },
                     "node_links": {
                         "input": [
                             {
                                 "c_pos": [
-                                    -6,
-                                    95.0
+                                    0,
+                                    0
                                 ],
                                 "connected": false,
                                 "gate_type": 1,
@@ -251,16 +251,16 @@
                         "output": [
                             {
                                 "c_pos": [
-                                    234,
-                                    95.0
+                                    117.7,
+                                    529.5
                                 ],
                                 "connected": true,
                                 "gate_type": 0,
                                 "name": "Output 0",
                                 "target": "Linear 1 Input 0",
                                 "target_pos": [
-                                    0,
-                                    0
+                                    223.7,
+                                    608.5
                                 ]
                             }
                         ]
@@ -302,32 +302,32 @@
                     "graphic_attributes": {
                         "beziers_coord": [],
                         "node_pos": [
-                            193.66666666666663,
-                            459.5374677002583
+                            223.66666666666663,
+                            507.5374677002583
                         ]
                     },
                     "node_links": {
                         "input": [
                             {
                                 "c_pos": [
-                                    -6,
-                                    95.0
+                                    223.7,
+                                    608.5
                                 ],
                                 "connected": true,
                                 "gate_type": 1,
                                 "name": "Input 0",
                                 "target": "Linear 0 Output 0",
                                 "target_pos": [
-                                    234,
-                                    95.0
+                                    117.7,
+                                    529.5
                                 ]
                             }
                         ],
                         "output": [
                             {
                                 "c_pos": [
-                                    234,
-                                    95.0
+                                    0,
+                                    0
                                 ],
                                 "connected": false,
                                 "gate_type": 0,
@@ -363,8 +363,8 @@
     "touch_info": {
         "down_node_link": null,
         "down_pos": [
-            263.2,
-            669.5
+            117.7,
+            604.5
         ],
         "selected": null
     },

@@ -2,12 +2,12 @@
     "beziers_coord": [
         [
             [
-                92.7,
-                628.5
+                117.7,
+                529.5
             ],
             [
-                193.7,
-                560.5
+                223.7,
+                608.5
             ]
         ]
     ],
@@ -73,16 +73,16 @@
             "graphic_attributes": {
                 "beziers_coord": [],
                 "node_pos": [
-                    -147.33333333333337,
-                    527.5374677002583
+                    -122.33333333333337,
+                    428.5374677002582
                 ]
             },
             "node_links": {
                 "input": [
                     {
                         "c_pos": [
-                            -6,
-                            95.0
+                            0,
+                            0
                         ],
                         "connected": false,
                         "gate_type": 1,
@@ -97,8 +97,8 @@
                 "output": [
                     {
                         "c_pos": [
-                            234,
-                            95.0
+                            0,
+                            0
                         ],
                         "connected": true,
                         "gate_type": 0,
@@ -148,32 +148,32 @@
             "graphic_attributes": {
                 "beziers_coord": [],
                 "node_pos": [
-                    193.66666666666663,
-                    459.5374677002583
+                    223.66666666666663,
+                    507.5374677002583
                 ]
             },
             "node_links": {
                 "input": [
                     {
                         "c_pos": [
-                            -6,
-                            95.0
+                            0,
+                            0
                         ],
                         "connected": true,
                         "gate_type": 1,
                         "name": "Input 0",
                         "target": "Linear 0 Output 0",
                         "target_pos": [
-                            234,
-                            95.0
+                            0,
+                            0
                         ]
                     }
                 ],
                 "output": [
                     {
                         "c_pos": [
-                            234,
-                            95.0
+                            0,
+                            0
                         ],
                         "connected": false,
                         "gate_type": 0,
@@ -207,8 +207,8 @@
     "touch_info": {
         "down_node_link": null,
         "down_pos": [
-            92.7,
-            628.5
+            117.7,
+            529.5
         ],
         "selected": null
     },

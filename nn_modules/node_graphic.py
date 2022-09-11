@@ -71,6 +71,10 @@ class NodeGraphic(ScatterLayout):
         self.dropDownList = None
         self.label = None
 
+    def on_pos(self, obj, pos):
+        self.node_pos_set(pos)
+        self.pos = pos
+
     def open_rightclick_menu(self, obj, touch):
         overlay = get_obj(self.interface, 'Overlay')
         funcs = None

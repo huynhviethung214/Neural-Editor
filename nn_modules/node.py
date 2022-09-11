@@ -30,7 +30,7 @@ class Node(NodeGraphic, NodeSchematic):
         self.code_names = [INT_CODE, STR_CODE, FLOAT_CODE, OBJ_CODE]
 
         self.interface = interface
-        self.interface_template = type(self.interface)()
+        # self.interface_template = type(self.interface)()
         self.add_components()
         self.add_ib()
 
@@ -55,14 +55,6 @@ class Node(NodeGraphic, NodeSchematic):
                 node_links.append(children)
 
         return node_links
-
-    @staticmethod
-    def get_algorithm(node_class):
-        module = __import__(f'algorithms.{node_class}',
-                            fromlist=['algorithm'])
-        algo = getattr(module, 'algorithm')
-
-        return algo
 
     def is_connected(self):
         c = 0

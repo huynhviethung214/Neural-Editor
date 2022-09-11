@@ -21,7 +21,7 @@ from nn_modules.code_names import NORM, STACKED
 from nn_modules.node import NodeLink, Node
 from nn_modules.node_utils import CustomValueInput
 from node_editor.node_editor import NodeEditor
-from utility.utils import get_obj, draw_beziers, CustomBezier
+from utility.utils import get_obj, draw_beziers, CustomBezier, get_algorithm
 from settings.config import configs
 
 
@@ -271,6 +271,8 @@ class CustomActionBar(ActionBar):
         node.set_type(None, layer_type)
         node.dropDownList.text = layer_type
 
+        return node
+
     def add_nodes(self, tab_manager, func_name, selection, *args):
         interface = tab_manager.current_tab.content.children[-1]
         interface.model_name_input.text = ''
@@ -296,52 +298,38 @@ class CustomActionBar(ActionBar):
 
                     elif node_type == STACKED:
                         sub_nodes_schema = node_schema['sub_nodes']
+                        obj = type(interface)
+                        dummy_interface = type('DummyInterface', (obj,), {})()
 
                         for sub_node_name in sub_nodes_schema.keys():
-                            sub_node_schema = sub_nodes_schema[sub_node_name]
-
-                            sub_node = Node(
-                                spawn_position=sub_node_schema['graphic_attributes']['node_pos'],
-                                node_name=sub_node_name,
-                                schematic=sub_node_schema,
-                                interface=interface
-                            )
-                            sub_node.apply_schematic(sub_node_schema)
+                            sub_node = self.add_normal_node(
+                                            node_name=sub_node_name,
+                                            interface=dummy_interface,
+                                            schema=sub_nodes_schema[sub_node_name]
+                                        )
+                            # sub_node_schema = sub_nodes_schema[sub_node_name]
+                            # dummy_interface._node = Node
+                            # dummy_interface._node.algorithm = get_algorithm(
+                            #     sub_node_name.split(' ')[0]
+                            # )
+                            #
+                            # sub_node = dummy_interface.add_node2interface(
+                            #     spawn_position=sub_node_schema['graphic_attributes']['node_pos'],
+                            #     node_name=sub_node_name,
+                            #     schematic=sub_node_schema
+                            # )
+                            #
+                            # sub_node.apply_schematic(sub_node_schema)
                             # sub_nodes_schema[sub_node_name] = sub_node
                             node_schema['sub_nodes'][sub_node_name] = sub_node
 
                         interface._node = Node
+                        interface._node.algorithm = stacked_algorithm
                         interface.add_node2interface(
                             spawn_position=node_schema['graphic_attributes']['node_pos'],
                             node_name=node_name,
                             schematic=node_schema
                         )
-
-                # for i, _in in enumerate(node.inputs):
-                #     node.schema['node_links']['input'][i] = _in.schema
-                #
-                # for i, out in enumerate(node.outputs):
-                #     node.schema['node_links']['output'][i] = out.schema
-
-                # print(node.schema)
-                # interface.nodes_set(node_name, node)
-                # print(interface.schema['nodes']['Linear 0'].schema)
-                # print(interface.nodes_get(node_name).schema)
-
-                # interface.create_template(node)
-                # if node.attributes_get('node_type') == NORM:
-                #     Clock.schedule_once(partial(self.set_nodes_properties,
-                #                                 node,
-                #                                 schema['nodes'][node_name]['properties']), 1)
-                # elif node.attributes_get('node_type') == STACKED:
-                #     node.properties = datas['model'][node_name]['properties']
-                #     node.properties.update({
-                #         'beziers_coord': datas['beziers_coord'],
-                #         'rels': datas['rels']
-                #     })
-                #     Clock.schedule_once(partial(self.set_stacked_node_properties,
-                #                                 node,
-                #                                 datas['model'][node_name]['properties']), 1)
 
                 except AttributeError as e:
                     raise e
@@ -418,6 +406,30 @@ class CustomActionBar(ActionBar):
         except AttributeError as e:
             if 'model_name' in str(e):
                 model_name = tab_manager.current_tab.text
+
+        # tab_manager.tab_name_list.append(model_name)
+        # # print(interface.template)
+        #
+        # # model = interface.m_list
+        # # sorter = Sorter()
+        # # sorted_model = sorter.sort(model)
+        #
+        # # interface.template.update({'relationship': interface.mn_list,
+        # #                            'links_pos': [bezier.points for bezier in interface.beziers]})
+        # # interface.template.update({'relationship': interface.mn_list})
+        # # self.get_nodes_pos()
+        #
+        # interface.template.update({'beziers_coord': self.get_beziers_points(interface=interface),
+        #                            'rels': interface.rels,
+        #                            'hvfs': self.get_hvfs(interface)})
+        # interface.template = self.save_nodes_pos(interface.template,
+        #                                          interface)
+        # # print(interface.template)
+        #
+        # if interface.is_trained:
+        #     interface.template.update({
+        #         'mapped_path': interface.str_mapped_path
+        #     })
 
         model_schema = interface.schema
         nodes = interface.nodes

@@ -63,6 +63,14 @@ def breaker(obj):
         raise BreakException
 
 
+def get_algorithm(node_class):
+    module = __import__(f'algorithms.{node_class}',
+                        fromlist=['algorithm'])
+    algo = getattr(module, 'algorithm')
+
+    return algo
+
+
 def map_properties(fn):
     @wraps(fn)
     def _map_properties(*args, **kwargs):

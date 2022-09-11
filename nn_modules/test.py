@@ -82,5 +82,9 @@
 # except RecursionError:
 #     print('No Solution(s)!')
 
-a = int
-print(a(10.0))
+a = []
+a.insert(0, 1)
+a.insert(3, 4)
+a.insert(2, 9)
+a.insert(1, 8)
+print(a)
