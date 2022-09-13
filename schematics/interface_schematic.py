@@ -6,8 +6,7 @@ class InterfaceSchematic:
             'hvfs': None,
             'touch_info': {
                 'down_pos': [0, 0],
-                'selected': None,
-                'is_disconnect': False
+                'selected': None
             },
             'beziers_coord': [],
             'train_log': {}

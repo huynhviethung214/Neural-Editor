@@ -402,21 +402,13 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
 
         self.cmap_get().remove(_rel)
 
-    def set_unbind(self, node_gate):
-        # Unbinding nodes base on connected node_links
-        for info in self.links:
-            if node_gate in info:
-                # Disconnecting node_link and node_link.target
-                self.node_links[node_gate.schema_get('target')].schema_set('connected', False)
-                node_gate.schema_set('connected', False)
+    @staticmethod
+    def unbind_connection(selected_node_link, target_node_link):
+        selected_node_link.schema_set('connected', False)
+        target_node_link.schema_set('connected', False)
 
-                # Remove old `node link`'s relationship
-                self.remove_rel(node_gate)
-                self.node_links[node_gate.schema_get('target')].schema_set('target', None)
-                node_gate.schema_set('target', None)
-
-                self.instructions.remove(info[-1])
-                self.clear_canvas()
+        selected_node_link.schema_set('target', None)
+        target_node_link.schema_set('target', None)
 
     def connection_exist(self):
         if self.touch_info_get('selected') and self.is_drawing and \
@@ -424,37 +416,11 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
             return True
         return False
 
-    def unbind_node_links(self, obj, touch):
-        if touch.button == 'left' and self.collide_point(*touch.pos):
-            if self.touch_info_get('is_disconnect'):
-                selected_node_link = self.node_links[self.touch_info_get('selected')]
-                target_node_link = self.node_links[selected_node_link.schema_get('target')]
-
-                selected_node_link.schema_set('connected', False)
-                target_node_link.schema_set('connected', False)
-
-                selected_node_link.schema_set('target', None)
-                target_node_link.schema_set('target', None)
-
-                for bezier in self.instructions:
-                    if bezier.end == selected_node_link:
-                        self.instructions.remove(bezier)
-                        self.beziers_coord_rm(get_bezier_endpoints(bezier))
-
-                self.touch_info_set('is_disconnect', False)
-                self.clear_canvas()
-
-            return True
-
     def remove_bezier(self, bezier):
         node_link_begin = bezier.begin
         node_link_end = bezier.end
 
-        node_link_begin.schema_set('target', None)
-        node_link_end.schema_set('target', None)
-
-        node_link_begin.schema_set('connected', False)
-        node_link_end.schema_set('connected', False)
+        self.unbind_connection(node_link_begin, node_link_end)
 
         self.instructions.remove(bezier)
         self.clear_canvas()
@@ -560,7 +526,6 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
 
                     elif node_link.schema_get('gate_type') == 1 and node_link.schema_get('connected'):
                         self.touch_info_set('selected', f'{node_link.node.name} {node_link.name}')
-                        self.touch_info_set('is_disconnect', True)
 
                     return True
 
