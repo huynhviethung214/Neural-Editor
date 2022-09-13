@@ -151,16 +151,6 @@ class CustomActionBar(ActionBar):
     # component_panel._update_panel()
 
     @staticmethod
-    def get_beziers_points(interface=None):
-        coordinates = []
-
-        for children in interface.scatter_plane.canvas.children:
-            if type(children) == CustomBezier:
-                coordinates.append([children.points[0:2], children.points[-2:]])
-
-        return coordinates
-
-    @staticmethod
     def get_grouped_node(template):
         _template = copy.deepcopy(template)
         stacked_node = Node

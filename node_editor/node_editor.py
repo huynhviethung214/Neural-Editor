@@ -17,7 +17,6 @@ from utility.custom_input.custom_input import CustomTextInput
 from .property_form import PropertyForm
 from .nl_form import NLForm
 from .node_form import NodeForm
-from nn_modules.twn2j.n2j import post_node
 
 import nn_modules.nn_components
 
@@ -261,7 +260,6 @@ class NodeEditor(Popup):
             #     json.dump(nodes, f, sort_keys=True, indent=4)
 
             attributes.update({'node_name': node_name})
-            post_node(attributes, properties)
 
             importlib.reload(nn_modules.nn_components)
             self.component_panel.update_panel()
