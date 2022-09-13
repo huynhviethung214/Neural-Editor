@@ -48,8 +48,10 @@ class CustomBezier(Widget):
             self.bezier = Bezier(points=points,
                                  segments=self.segments)
 
-        self._points = self.bezier.points
         self.trigger = Clock.create_trigger(self.redraw_bezier)
+
+        self._points = self.bezier.points
+        self.set_bounding_boxes()
 
     def delete_connection(self, obj):
         interface = get_obj(self, 'Interface')
@@ -73,6 +75,19 @@ class CustomBezier(Widget):
             self.set_bezier_color_cyan()
         self.redraw_bezier(-1)
 
+    def set_bounding_boxes(self):
+        self.bounding_boxes = [
+            BoundingBox(*self._points[0:4],
+                        self.bbox_offset_y,
+                        self.bbox_offset_x),
+            BoundingBox(*self._points[2:6],
+                        self.bbox_offset_y,
+                        self.bbox_offset_x),
+            BoundingBox(*self._points[4:8],
+                        self.bbox_offset_y,
+                        self.bbox_offset_x)
+        ]
+
     def clear_canvas(self):
         for ins in self.canvas.children:
             if type(ins) == Bezier and ins.points != self._points:
@@ -87,18 +102,7 @@ class CustomBezier(Widget):
     @points.setter
     def points(self, _points):
         self._points = _points
-        self.bounding_boxes = [
-            BoundingBox(*self._points[0:4],
-                        self.bbox_offset_y,
-                        self.bbox_offset_x),
-            BoundingBox(*self._points[2:6],
-                        self.bbox_offset_y,
-                        self.bbox_offset_x),
-            BoundingBox(*self._points[4:8],
-                        self.bbox_offset_y,
-                        self.bbox_offset_x)
-        ]
-
+        self.set_bounding_boxes()
         self.trigger()
 
     @staticmethod
@@ -115,6 +119,7 @@ class CustomBezier(Widget):
             Color(self.r, self.g, self.b)
             self.bezier = Bezier(points=self._points,
                                  segments=self.segments)
+            Color(1, 1, 1)
 
             if self.debug:
                 for bbox in self.bounding_boxes:

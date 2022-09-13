@@ -22,7 +22,7 @@ from nn_modules.node import NodeLink, Node
 from nn_modules.node_utils import CustomValueInput
 from node_editor.node_editor import NodeEditor
 from utility.custom_bezier.custom_bezier import CustomBezier
-from utility.utils import get_obj, draw_beziers, get_algorithm
+from utility.utils import get_obj, draw_beziers
 from settings.config import configs
 
 

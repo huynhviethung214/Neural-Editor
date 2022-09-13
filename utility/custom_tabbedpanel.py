@@ -56,11 +56,15 @@ class TabManager(TabbedPanel):
     def get_missing_idx(list_of_index):
         list_of_index = sorted(list_of_index)
 
-        for i in range(max(list_of_index) - 1):
-            if list_of_index[i + 1] - list_of_index[i] != 1:
-                return i + 1
+        try:
+            for i in range(max(list_of_index) - 1):
+                if list_of_index[i + 1] - list_of_index[i] != 1:
+                    return i + 1
 
-        if 0 not in list_of_index:
+            if 0 not in list_of_index:
+                return 0
+
+        except ValueError as e:
             return 0
 
         return len(list_of_index)
