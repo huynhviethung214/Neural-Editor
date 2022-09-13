@@ -1,6 +1,9 @@
 from kivy.clock import Clock
-from kivy.graphics import Bezier, Line
+from kivy.graphics import Bezier, Line, Color
 from kivy.uix.widget import Widget
+
+from utility.rightclick_toolbar.rightclick_toolbar import RightClickMenu
+from utility.utils import get_obj
 
 
 class BoundingBox:
@@ -25,6 +28,7 @@ class CustomBezier(Widget):
         super(CustomBezier, self).__init__(**kwargs)
         self.begin = None
         self.end = None
+        self.debug = False
 
         self.bbox_offset_y = 40
         self.bbox_offset_x = 30
@@ -32,7 +36,13 @@ class CustomBezier(Widget):
         self.segments = segments
         self.bounding_boxes = []
 
-        self.debug = False
+        self.r = 1
+        self.g = 1
+        self.b = 1
+
+        self.rightclick_menu = {
+            'Delete Connection': self.delete_connection
+        }
 
         with self.canvas:
             self.bezier = Bezier(points=points,
@@ -40,6 +50,28 @@ class CustomBezier(Widget):
 
         self._points = self.bezier.points
         self.trigger = Clock.create_trigger(self.redraw_bezier)
+
+    def delete_connection(self, obj):
+        interface = get_obj(self, 'Interface')
+        interface.remove_bezier(self)
+        return True
+
+    def set_bezier_color_cyan(self):
+        self.r = 0
+        self.g = 1
+        self.b = 1
+
+    def set_bezier_color_white(self):
+        self.r = 1
+        self.g = 1
+        self.b = 1
+
+    def set_bezier_color(self, color: str):
+        if color == 'white':
+            self.set_bezier_color_white()
+        else:
+            self.set_bezier_color_cyan()
+        self.redraw_bezier(-1)
 
     def clear_canvas(self):
         for ins in self.canvas.children:
@@ -80,6 +112,7 @@ class CustomBezier(Widget):
         self.clear_canvas()
 
         with self.canvas:
+            Color(self.r, self.g, self.b)
             self.bezier = Bezier(points=self._points,
                                  segments=self.segments)
 
@@ -96,5 +129,19 @@ class CustomBezier(Widget):
         return False
 
     def on_touch_down(self, touch):
+        overlay = get_obj(self, 'Overlay')
+
         if self.collide_point(*touch.pos):
-            print('Collide')
+            if touch.button == 'right':
+                self.set_bezier_color('cyan')
+                menu = RightClickMenu(pos=overlay.to_overlay_coord(touch, self),
+                                      button_width=140,
+                                      funcs=self.rightclick_menu)
+                overlay.open_menu(menu)
+            else:
+                self.set_bezier_color('white')
+                overlay.clear_menu()
+            return True
+        else:
+            self.set_bezier_color('white')
+            return False

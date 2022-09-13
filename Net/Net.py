@@ -62,9 +62,7 @@ class Net(Module):
 
         # logging.info(colored('INITIALIZE: [QUEUE]', 'blue') + f'{self.queue}')
         # logging.info('[Initialize][END]')
-        for e in self.queue:
-            if type(e) == str or not e:
-                self.queue.remove(e)
+        self.clear_queue_padding()
 
     # Zipping multiple inputs into 1 single list of inputs
     def zip_inputs(self, cted_nodes):
@@ -115,10 +113,16 @@ class Net(Module):
 
         return connected_nodes
 
+    def clear_queue_padding(self):
+        for e in self.queue:
+            if type(e) == str or not e:
+                self.queue.remove(e)
+
     def forward(self, x):
         logging.info('[FORWARD][START]')
         self.initialize()
         # print(f'Forward: {self.queue}')
+        self.clear_queue_padding()
 
         # Processing Input Node's output
         input_node = self.queue[0]

@@ -5,7 +5,6 @@ class InterfaceSchematic:
             'cmap': [],
             'hvfs': None,
             'touch_info': {
-                'down_node_link': None,
                 'down_pos': [0, 0],
                 'selected': None,
                 'is_disconnect': False

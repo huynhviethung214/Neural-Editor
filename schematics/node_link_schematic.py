@@ -5,7 +5,6 @@ class NodeLinkSchematic:
             'gate_type': 0,
             'name': '',
             'connected': False,
-            'target_pos': [0, 0],
             'c_pos': [0, 0]
         }
 
