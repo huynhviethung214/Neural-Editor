@@ -7,7 +7,8 @@ class InterfaceSchematic:
             'touch_info': {
                 'down_node_link': None,
                 'down_pos': [0, 0],
-                'selected': None
+                'selected': None,
+                'is_disconnect': False
             },
             'beziers_coord': [],
             'train_log': {}
@@ -26,6 +27,9 @@ class InterfaceSchematic:
 
     def beziers_coord_set(self, value: [float, float]):
         self.schema['beziers_coord'].append(value)
+
+    def beziers_coord_rm(self, value: [float, float]):
+        self.schema['beziers_coord'].remove(value)
 
     # `cmap`
     def cmap_get(self):

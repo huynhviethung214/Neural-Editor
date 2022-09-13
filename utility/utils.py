@@ -4,7 +4,10 @@ from json import JSONEncoder
 import torch
 from functools import wraps
 
-from kivy.graphics import Bezier
+from kivy.clock import Clock
+from kivy.graphics import Bezier, Line
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.widget import Widget
 
 from nn_modules.code_names import *
 
@@ -13,13 +16,6 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 class BreakException(Exception):
     pass
-
-
-class CustomBezier(Bezier):
-    def __init__(self, **kwargs):
-        super(CustomBezier, self).__init__(**kwargs)
-        self.begin = None
-        self.end = None
 
 
 # Dynamically retrieve a widget from it's hierarchy
@@ -38,6 +34,20 @@ def get_obj(hierarchy=None, widget_name='', condition=None):
                         return w
 
 
+def get_bezier_endpoints(bezier):
+    points = bezier.points
+    beziers_coord = [
+        [points[0], points[1]],
+        [points[-2], points[-1]]
+    ]
+
+    return beziers_coord
+
+
+def round_pos(pos, precision=1):
+    return [round(pos[0], precision), round(pos[1], precision)]
+
+
 def remove_node_from_interface(interface, node_name):
     for node in interface.nodes:
         if node.name == node_name:
@@ -48,7 +58,6 @@ def remove_node_from_interface(interface, node_name):
                     interface.set_unbind(node_gate.target)
 
             interface.remove_node(node)
-            # interface.node_names.remove(node_name)
             break
 
 
@@ -96,6 +105,7 @@ def map_properties(fn):
                 new_properties.update({key: str(value)})
 
         return algorithm(**new_properties)
+
     return _map_properties
 
 
@@ -143,6 +153,7 @@ def record_graph(fn):
         #                                   'epochs': epochs
         #                               }
         #                           }})
+
     return _record_graph
 
 

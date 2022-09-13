@@ -2,6 +2,7 @@ from kivy.graphics import Rectangle
 from kivy.uix.widget import Widget
 
 from schematics.node_link_schematic import NodeLinkSchematic
+from utility.utils import round_pos
 
 
 class NodeLink(Widget, NodeLinkSchematic):
@@ -29,6 +30,14 @@ class NodeLink(Widget, NodeLinkSchematic):
         # self.target = None
 
         self.draw_widget()
+
+    def get_center_position(self, scatter_plane):
+        pos = list(self.to_scatter_plane(scatter_plane))
+        pos[0] += self.width / 2
+        pos[1] += self.height / 2
+        pos = round_pos(pos)
+
+        return pos
 
     def to_scatter_plane(self, scatter_plane):
         # to_interface = scatter_plane.parent.to_widget(*self.to_window(*self.pos))

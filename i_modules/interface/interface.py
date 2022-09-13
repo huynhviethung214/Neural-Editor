@@ -16,7 +16,7 @@ from kivy.uix.tabbedpanel import TabbedPanel
 from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
 from kivy.uix.progressbar import ProgressBar
-from kivy.graphics import Line
+from kivy.graphics import Line, Bezier
 
 from kivy.config import Config
 
@@ -27,8 +27,10 @@ from schematics.interface_schematic import InterfaceSchematic
 from schematics.node_schematic import NodeSchematic
 from node_editor.node_editor import NodeEditor
 from utility.custom_action_bar import CustomActionBar
+from utility.custom_bezier.custom_bezier import CustomBezier
 from utility.rightclick_toolbar.rightclick_toolbar import RightClickMenu
-from utility.utils import get_obj, remove_node_from_interface, CustomBezier
+from utility.utils import get_obj, remove_node_from_interface, round_pos, \
+    get_bezier_endpoints
 from utility.custom_tabbedpanel import TabManager
 from utility.custom_input.custom_input import CustomTextInput
 from i_modules.interface_actionbar.interface_actionbar import TrainButton, \
@@ -313,7 +315,7 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
         # self.selected_node_link = None
         self.connected_node_link = None
 
-        self.links = []
+        # self.links = []
         self.instructions = []
         # self.beziers = []
         # self.template = {'model': {},
@@ -348,7 +350,7 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
         self.node_links = self.allocating_node_links()
 
         self.bind(on_touch_up=self.add_node)
-        self.bind(on_touch_move=self.unbind)
+        # self.bind(on_touch_move=self.unbind_node_links)
 
         Window.bind(mouse_pos=self._is_in_bbox)
 
@@ -388,13 +390,13 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
 
     def check_nl_collision(self, touch):
         try:
-            for node in self.scatter_plane.children:
-                for node_link in node.children[0].children:
-                    if type(node_link) == NodeLink:
-                        pos = node_link.to_widget(*touch.pos)
+            # for node in self.scatter_plane.children:
+            for node_link in self.node_links.values():
+                if type(node_link) == NodeLink:
+                    pos = node_link.to_widget(*touch.pos)
 
-                        if node_link.collide_point(*pos):
-                            return True, node, node_link
+                    if node_link.collide_point(*pos):
+                        return True, node_link.node, node_link
 
             return False, None, None
 
@@ -431,8 +433,8 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
                 node_gate.schema_set('target', None)
 
                 self.instructions.remove(info[-1])
-                self.links.remove(info)
-                self.clear_canvas_beziers()
+                # self.links.remove(info)
+                self.clear_canvas()
 
     def connection_exist(self):
         if self.touch_info_get('selected') and self.is_drawing and \
@@ -440,19 +442,63 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
             return True
         return False
 
-    def unbind(self, obj, touch):
+    def unbind_node_links(self, obj, touch):
         if touch.button == 'left' and self.collide_point(*touch.pos):
-            try:
-                if self.connection_exist():
-                    self.set_unbind(self.node_links[self.touch_info_get('selected')])
-                return True
+            if self.touch_info_get('is_disconnect'):
+                selected_node_link = self.node_links[self.touch_info_get('selected')]
+                target_node_link = self.node_links[selected_node_link.schema_get('target')]
 
-            except TypeError as e:
-                raise e
+                selected_node_link.schema_set('connected', False)
+                target_node_link.schema_set('connected', False)
 
-    @staticmethod
-    def round_pos(pos, precision=1):
-        return [round(pos[0], precision), round(pos[1], precision)]
+                selected_node_link.schema_set('target', None)
+                target_node_link.schema_set('target', None)
+
+                for bezier in self.instructions:
+                    if bezier.end == selected_node_link:
+                        self.instructions.remove(bezier)
+                        self.beziers_coord_rm(get_bezier_endpoints(bezier))
+
+                self.touch_info_set('is_disconnect', False)
+                self.clear_canvas()
+
+            return True
+
+    def draw(self, ori=None, end=None, output_node=None, input_node=None):
+        self.clear_canvas()
+        # self.scatter_plane.canvas.ask_update()
+
+        # with self.scatter_plane.canvas:
+        midpoint0 = round((end[0] + ori[0]) / 2 + 20, 1)
+        midpoint1 = round((end[0] + ori[0]) / 2 - 20, 1)
+
+        bezier = CustomBezier(points=(ori[0], ori[1],
+                                      midpoint0, ori[1],
+                                      midpoint1, end[1],
+                                      end[0], end[1]),
+                              segments=800)
+
+        if output_node and input_node:
+            bezier.begin = self.node_links[output_node]
+            bezier.end = self.node_links[input_node]
+
+            # self.template['beziers_coord'].append([ori, end])
+
+        self.scatter_plane.add_widget(bezier)
+        return bezier
+
+    def draw_link(self, obj, touch):
+        if self.is_drawing:
+            input_node = None
+            output_node = self.touch_info_get('selected')
+
+            if output_node:
+                input_node = self.node_links[output_node].schema_get('target')
+
+            self.draw(self.touch_info_get('down_pos'),
+                      self.scatter_plane.to_local(*touch.pos),
+                      output_node,
+                      input_node)
 
     def touch_up(self, obj, touch):
         if touch.button == 'left' and self.collide_point(*touch.pos):
@@ -462,11 +508,12 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
                 if valid:
                     if node_link.schema_get('gate_type') == 1 and not node_link.schema_get('connected'):
                         # print(node_link.pos)
-                        pos = list(node_link.to_scatter_plane(self.scatter_plane))
-                        pos[0] += node_link.width / 2
-                        pos[1] += node_link.height / 2
-                        pos = self.round_pos(pos)
+                        # pos = list(node_link.to_scatter_plane(self.scatter_plane))
+                        # pos[0] += node_link.width / 2
+                        # pos[1] += node_link.height / 2
+                        # pos = round_pos(pos)
                         # print(pos)
+                        pos = node_link.get_center_position(self.scatter_plane)
 
                         selected_node_link = self.node_links[self.touch_info_get('selected')]
                         # selected_node_link.schema_set('target_pos', pos)
@@ -493,9 +540,9 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
 
                         self.touch_info_set('selected', None)
 
-                        self.links.append([node_link,
-                                           selected_node_link,
-                                           bezier])
+                        # self.links.append([node_link,
+                        #                    selected_node_link,
+                        #                    bezier])
                         self.instructions.append(bezier)
 
                         self.is_drawing = False
@@ -504,9 +551,12 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
 
                 elif not valid:
                     if self.is_drawing:
-                        self.touch_info_set('selected', None)
                         self.is_drawing = False
-                        self.clear_canvas_beziers()
+
+                        # selected_node_link = self.node_links[self.touch_info_get('selected')]
+                        # self.touch_info_set('selected', selected_node_link.schema_get('target'))
+
+                        self.clear_canvas()
 
                     if self.is_drawing_box:
                         overlay = get_obj(self, 'Overlay')
@@ -525,28 +575,30 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
 
         if touch.button == 'left' and self.collide_point(*touch.pos):
             overlay.clear_menu()
-            self.clear_canvas_beziers()
+            self.clear_canvas()
 
             try:
                 valid, node, node_link = self.check_nl_collision(touch=touch)
 
                 if valid:
                     if node_link.schema_get('gate_type') == 0 and not node_link.schema_get('connected'):
-                        pos = list(node_link.to_scatter_plane(self.scatter_plane))
-                        pos[0] += node_link.width / 2
-                        pos[1] += node_link.height / 2
-                        pos = self.round_pos(pos)
+                        # pos = list(node_link.to_scatter_plane(self.scatter_plane))
+                        # pos[0] += node_link.width / 2
+                        # pos[1] += node_link.height / 2
+                        # pos = round_pos(pos)
+                        pos = node_link.get_center_position(self.scatter_plane)
 
                         self.touch_info_set('down_pos', pos)
                         # node_link.schema_set('c_pos', pos)
                         # print(pos)
 
                         self.touch_info_set('selected', f'{node_link.node.name} {node_link.name}')
+                        self.is_drawing = 1
 
                     elif node_link.schema_get('gate_type') == 1 and node_link.schema_get('connected'):
                         self.touch_info_set('selected', f'{node_link.node.name} {node_link.name}')
+                        self.touch_info_set('is_disconnect', True)
 
-                    self.is_drawing = 1
                     return True
 
                 elif not valid and self.enable_drawing_box:
@@ -563,14 +615,15 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
             except Exception as e:
                 raise e
 
-        elif touch.button == 'right' and self.collide_point(*touch.pos):
-            menu = RightClickMenu(pos=overlay.to_overlay_coord(touch, self),
-                                  button_width=140,
-                                  funcs=self.rightclick_menu_funcs)
-            overlay.open_menu(menu)
+        elif touch.button == 'right':
+            if self.collide_point(*touch.pos):
+                menu = RightClickMenu(pos=overlay.to_overlay_coord(touch, self),
+                                      button_width=140,
+                                      funcs=self.rightclick_menu_funcs)
+                overlay.open_menu(menu)
 
-        elif touch.button == 'right' and not self.collide_point(*touch.pos):
-            overlay.clear_menu()
+            else:
+                overlay.clear_menu()
 
     def add_selected_box_menu(self, top_right_overlay):
         if self.selected_nodes:
@@ -602,7 +655,7 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
             overlay.open_menu(menu_layout)
         else:
             # Clear Canvas if there aren't any nodes selected
-            self.clear_canvas_beziers()
+            self.clear_canvas()
 
     def group_infos(self):
         input_nodes = []
@@ -733,11 +786,7 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
                     f'{bezier.end.node.name} {bezier.end.name}'
                 ]
 
-                points = bezier.points
-                beziers_coord = [
-                    [points[0], points[1]],
-                    [points[-2], points[-1]]
-                ]
+                beziers_coord = get_bezier_endpoints(bezier)
 
                 schematic['cmap'].append(nodes_relationship)
                 self.schema['cmap'].remove(nodes_relationship)
@@ -762,10 +811,10 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
             # Clean canvas after rendering new grouped node
             overlay.clear_menu()
 
-            # Somehow you have to invoke `self.clear_canvas_beziers()`
+            # Somehow you have to invoke `self.clear_canvas()`
             # twice to get rid of the selection box
-            self.clear_canvas_beziers()
-            self.clear_canvas_beziers()
+            self.clear_canvas()
+            self.clear_canvas()
         else:
             print(f'[DEBUG]: Warning: There is no Output / Input Layer (And the number of'
                   f' links must be at least: {len(self.selected_nodes) - 1})')
@@ -826,7 +875,7 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
         self.add_selected_box_menu(top_right_overlay)
 
     def _draw_selected_box(self, ori=None, end=None):
-        self.clear_canvas_beziers()
+        self.clear_canvas()
         self.scatter_plane.canvas.ask_update()
 
         with self.scatter_plane.canvas:
@@ -843,45 +892,9 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
             self._draw_selected_box(self.box_ori,
                                     self.scatter_plane.to_local(*touch.pos))
 
-    def draw(self, ori=None, end=None, output_node=None, input_node=None):
-        self.clear_canvas_beziers()
-        self.scatter_plane.canvas.ask_update()
-
-        with self.scatter_plane.canvas:
-            midpoint0 = round((end[0] + ori[0]) / 2 + 20, 1)
-            midpoint1 = round((end[0] + ori[0]) / 2 - 20, 1)
-
-            bezier = CustomBezier(points=(ori[0], ori[1],
-                                          midpoint0, ori[1],
-                                          midpoint1, end[1],
-                                          end[0], end[1]),
-                                  segments=800)
-
-            if output_node and input_node:
-                bezier.begin = self.node_links[output_node]
-                bezier.end = self.node_links[input_node]
-
-            # self.template['beziers_coord'].append([ori, end])
-
-            return bezier
-
     def remove_node(self, node):
         self.scatter_plane.remove_widget(node)
         self.nodes.pop(node.name)
-
-    def draw_link(self, obj, touch):
-        if self.is_drawing:
-            input_node = None
-            output_node = self.touch_info_get('selected')
-            # print(self.node_links)
-
-            if output_node:
-                input_node = self.node_links[output_node].schema_get('target')
-
-            self.draw(self.touch_info_get('down_pos'),
-                      self.scatter_plane.to_local(*touch.pos),
-                      output_node,
-                      input_node)
 
     def _is_in_bbox(self, obj, pos):
         _pos = self.to_widget(*pos)
@@ -986,15 +999,14 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
 
         return node_name
 
-    def clear_canvas_beziers(self):
-        if len(self.scatter_plane.canvas.children) > 1:
-            for ins in self.scatter_plane.canvas.children:
-                if (type(ins) == CustomBezier or type(ins) == Line) and ins not in self.instructions:
-                    self.scatter_plane.canvas.remove(ins)
+    def clear_canvas(self):
+        for widget in self.scatter_plane.children:
+            if widget not in self.instructions and type(widget) == CustomBezier:
+                self.scatter_plane.remove_widget(widget)
 
     def _update_canvas(self, obj, touch):
         try:
-            self.clear_canvas_beziers()
+            self.clear_canvas()
 
             if self.collide_point(*self.to_widget(*obj.pos)) \
                     and len(self.instructions) >= 1 \
@@ -1012,10 +1024,10 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
                     target_node_link = bezier.end
 
                     # if bezier.begin == node_link:
-                        # ori = node_link.to_scatter_plane(self.scatter_plane)
-                        # end = target_node_link.to_scatter_plane(self.scatter_plane)
-                        # ori = node_link.schema_get('c_pos')
-                        # end = target_node_link.schema_get('c_pos')
+                    # ori = node_link.to_scatter_plane(self.scatter_plane)
+                    # end = target_node_link.to_scatter_plane(self.scatter_plane)
+                    # ori = node_link.schema_get('c_pos')
+                    # end = target_node_link.schema_get('c_pos')
 
                     points = bezier.points
                     old_bezier_coord = [
@@ -1023,18 +1035,21 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
                         [points[-2], points[-1]]
                     ]
 
-                    ori = list(node_link.to_scatter_plane(self.scatter_plane))
-                    ori[0] += node_link.width / 2
-                    ori[1] += node_link.height / 2
-                    ori = self.round_pos(ori)
+                    # ori = list(node_link.to_scatter_plane(self.scatter_plane))
+                    # ori[0] += node_link.width / 2
+                    # ori[1] += node_link.height / 2
+                    # ori = round_pos(ori)
 
-                    end = list(target_node_link.to_scatter_plane(self.scatter_plane))
-                    end[0] += target_node_link.width / 2
-                    end[1] += target_node_link.height / 2
-                    end = self.round_pos(end)
+                    # end = list(target_node_link.to_scatter_plane(self.scatter_plane))
+                    # end[0] += target_node_link.width / 2
+                    # end[1] += target_node_link.height / 2
+                    # end = round_pos(end)
 
-                    midpoint0 = round((end[0] + ori[0]) / 2 + 20, 1)
-                    midpoint1 = round((end[0] + ori[0]) / 2 - 20, 1)
+                    ori = node_link.get_center_position(self.scatter_plane)
+                    end = target_node_link.get_center_position(self.scatter_plane)
+
+                    midpoint0 = round((end[0] + ori[0]) / 2 - 20, 1)
+                    midpoint1 = round((end[0] + ori[0]) / 2 + 20, 1)
 
                     bezier.points = (ori[0], ori[1],
                                      midpoint0, ori[1],
