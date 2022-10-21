@@ -1,5 +1,6 @@
 import copy
 import json
+from typing import List
 
 from kivy.clock import Clock
 from kivy.uix.gridlayout import GridLayout
@@ -415,6 +416,13 @@ class Interface(StencilView, GridLayout, InterfaceSchematic):
                 self.node_links[self.touch_info_get('selected')].schema_get('target'):
             return True
         return False
+
+    def get_bezier(self, begin: NodeLink, end:NodeLink):
+        for widget in self.scatter_plane.children:
+            if type(widget) == CustomBezier:
+                if (widget.begin == begin and widget.end == end) or \
+                        (widget.begin == end and widget.end == begin):
+                    return widget
 
     def remove_bezier(self, bezier):
         node_link_begin = bezier.begin

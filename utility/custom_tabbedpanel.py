@@ -74,8 +74,6 @@ class TabManager(TabbedPanel):
         _fkwargs = fkwargs.get('_fkwargs')
         missing_idx = 0
 
-        # tabs_name = self.get_tabs_name()
-
         if func_name not in list(self.tab_dict.keys()):
             self.tab_dict.update({func_name: [0]})
         else:
@@ -87,7 +85,6 @@ class TabManager(TabbedPanel):
         header = CustomHeader(func_name=func_name,
                               tabbed_panel=self,
                               _fkwargs=_fkwargs)
-        # print(func_name, _fkwargs)
         header.content = self.func(**_fkwargs)
 
         self.add_widget(header, len(self.children) - 1)
@@ -95,7 +92,6 @@ class TabManager(TabbedPanel):
         # Wait for the newly created header to be initialized
         # Switch to the newly created header 1 frame after the header is being initialized
         Clock.schedule_once(partial(self.switch, header), 0)
-        # self.tab_name_list.append(func_name)
 
     # Let the widget initiate completely and then add your tabs
     def switch(self, header, *args):

@@ -48,14 +48,18 @@ def round_pos(pos, precision=1):
     return [round(pos[0], precision), round(pos[1], precision)]
 
 
-def remove_node_from_interface(interface, node_name):
-    for node in interface.nodes:
-        if node.name == node_name:
+def remove_node_from_interface(interface, ref_node_name):
+    for node_name in interface.nodes.keys():
+        if node_name == ref_node_name:
+            node = interface.nodes[node_name]
+
             for node_gate in node.node_links():
-                if node_gate.gateType == 1:
-                    interface.set_unbind(node_gate)
-                else:
-                    interface.set_unbind(node_gate.target)
+                # gate_type = gate_type.schema_get('gate_type')
+                node_gate.unbind()
+                # if node_gate == 1:
+                #     interface.set_unbind(node_gate)
+                # else:
+                #     interface.set_unbind(node_gate.target)
 
             interface.remove_node(node)
             break
@@ -185,8 +189,6 @@ def formatting_rels(rels, node_links):
 
 # Draw beziers from the formatted relationships to the interface
 def draw_beziers(schema, interface):
-    # print(f'Datas: {datas}')
-    # print(schema)
     rels = formatting_rels(schema['cmap'], interface.node_links)
 
     for coord, rel in zip(schema['beziers_coord'], rels):
@@ -208,13 +210,4 @@ def draw_beziers(schema, interface):
         bezier.begin = rel[0]
         bezier.end = rel[1]
 
-        # print(bezier.begin.node.name, bezier.end.node.name)
-
-        # print(coord)
-        # interface.links.append([rel[0], rel[1], bezier])
         interface.instructions.append(bezier)
-        # interface.beziers.append(bezier)
-
-    # interface.template['beziers_coord'] = schema['beziers_coord']
-    # # print(interface.template['beziers_coord'])
-    # interface.rels = schema['cmap']

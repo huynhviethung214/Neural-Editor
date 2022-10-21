@@ -31,6 +31,19 @@ class NodeLink(Widget, NodeLinkSchematic):
 
         self.draw_widget()
 
+    def unbind(self):
+        if self.schema_get('target'):
+            target = self.node.interface.node_links[self.schema_get('target')]
+            self.node.interface.remove_bezier(
+                self.node.interface.get_bezier(self, target)
+            )
+
+            target.schema_set('target', None)
+            target.schema_set('connected', False)
+
+            self.schema_set('target', None)
+            self.schema_set('connected', False)
+
     def get_center_position(self, scatter_plane):
         pos = list(self.to_scatter_plane(scatter_plane))
         pos[0] += self.width / 2
